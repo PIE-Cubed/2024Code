@@ -35,7 +35,7 @@ public class PoseEstimation {
             drive.swerveDriveKinematics,
             new Rotation2d( drive.getYawAdjusted() ),
             moduleStartPosition,
-            new Pose2d(0, 0, new Rotation2d(-Math.PI))
+            new Pose2d(0, 0, new Rotation2d(0))
         );
     }
 

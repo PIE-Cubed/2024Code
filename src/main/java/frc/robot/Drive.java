@@ -40,9 +40,7 @@ public class Drive {
     private double  initXVelocity      = 0;
     private double  initYVelocity      = 0;
     private double  initRotateVelocity = 0;
-    private double  yawAdjustment      = Math.PI;
-    private Translation2d startLocation;
-
+    
     // Rate limiters for auto drive
     private SlewRateLimiter xLimiter;
     private SlewRateLimiter yLimiter;
@@ -119,11 +117,11 @@ public class Drive {
             BACK_RIGHT_LOCATION
         );
 
-        // Creates the swerve modules
-        frontLeft  = new SwerveModule(16, 17, true);
-        frontRight = new SwerveModule(10, 11, false);
-        backLeft   = new SwerveModule(14, 15, true);
-        backRight  = new SwerveModule(12, 13, false);
+        // Creates the swerve modules. Encoders should be zeroed with the block
+        frontLeft  = new SwerveModule(14, 15, false);
+        frontRight = new SwerveModule(16, 17, true);
+        backLeft   = new SwerveModule(12, 13, false);
+        backRight  = new SwerveModule(10, 11, true);
 
         // PID instantiation
         autoDriveXController = new PIDController(adp, adi, add);
@@ -135,8 +133,6 @@ public class Drive {
         autoDriveRotateController = new PIDController(adrp, adri, adrd);
         autoDriveRotateController.setTolerance(AUTO_DRIVE_ROTATE_TOLERANCE);
         autoDriveRotateController.enableContinuousInput(Math.PI, -Math.PI);
-
-        startLocation = new Translation2d();
     }
 
     /**
@@ -384,11 +380,7 @@ public class Drive {
      * Adjusts for all autos starting facing backwards
      */
     public double getYawAdjusted() {
-        return MathUtil.angleModulus(-1 * Units.degreesToRadians( ahrs.getYaw() ) + yawAdjustment);
-    }
-
-    public void correctYaw(double radians) {
-        yawAdjustment += radians;
+        return MathUtil.angleModulus(-Units.degreesToRadians( ahrs.getYaw() ));
     }
 
 
