@@ -4,12 +4,16 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
+import frc.robot.LimelightHelpers.LimelightResults;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -65,7 +69,9 @@ public class Robot extends TimedRobot {
 
 		// Instance getters
 		nTables  = CustomTables.getInstance();
-	}
+
+    LimelightHelpers.setLEDMode_ForceOff("limelight");
+  	}
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -145,7 +151,10 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during test mode. */
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+    LimelightResults llresults = LimelightHelpers.getLatestResults("limelight");
+    System.out.println(llresults.targetingResults.getBotPose3d().getRotation().getX() + " : " + llresults.targetingResults.getBotPose3d().getRotation().getY() + " : " + llresults.targetingResults.getBotPose3d().getRotation().getZ());
+  }
 
   /** This function is called once when the robot is first started up. */
   @Override
