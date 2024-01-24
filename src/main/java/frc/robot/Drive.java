@@ -106,7 +106,7 @@ public class Drive {
          * whereas positive y values represent moving toward the left of the robot 
          * Values are in meters
          */
-        FRONT_LEFT_LOCATION  = new Translation2d(0.26035, 0.26035);
+        FRONT_LEFT_LOCATION  = new Translation2d(0.26035, 0.26035); // 10.25in
         FRONT_RIGHT_LOCATION = new Translation2d(0.26035, -0.26035);
         BACK_LEFT_LOCATION   = new Translation2d(-0.26035, 0.26035);
         BACK_RIGHT_LOCATION  = new Translation2d(-0.26035, -0.26035);
@@ -515,6 +515,17 @@ public class Drive {
             System.out.println("Drive Speed: " + frontLeft.getDriveVelocity());
         }
         printCount++;
+    }
+
+    /**
+     * Sets all drive motors to the given power
+     * @param power
+     */
+    public void setAllDriveMotorPower(double power) {
+        frontLeft.setDriveMotorPower(power);
+        frontRight.setDriveMotorPower(power);
+        backLeft.setDriveMotorPower(power);
+        backRight.setDriveMotorPower(power);
     }
 }
 
