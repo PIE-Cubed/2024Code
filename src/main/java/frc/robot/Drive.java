@@ -35,10 +35,12 @@ public class Drive {
     // Instance Variables
     private int     printCount         = 0;
     private int     autoPointIndex     = 0;
-    private boolean autoPointFirstTime = true;
+    private boolean driveFirstTime     = true;
     private boolean autoPointAngled    = false; // Tracks if wheels have been angled before driving
+    private boolean autoPointFirstTime = true;
     private double  initXVelocity      = 0;
     private double  initYVelocity      = 0;
+    private double  targetPosition     = 0;
     private double  initRotateVelocity = 0;
     
     // Rate limiters for auto drive
@@ -77,7 +79,7 @@ public class Drive {
         try {
             ahrs = new AHRS(SPI.Port.kMXP);
         } catch (RuntimeException ex) {
-            System.out.println("Error Instantiating navX MXP: " + ex.getMessage());
+            System.out.println("[ERROR] >> Error Instantiating navX MXP: " + ex.getMessage() + "\n");
         }
 
         ahrs.reset();
@@ -85,10 +87,10 @@ public class Drive {
         while (ahrs.isConnected() == false) {
             // System.out.println("Connecting navX");
         }
-        System.out.println("navX Connected");
+        System.out.println("[INFO] >> navX Connected...");
 
         while (ahrs.isCalibrating() == true) {
-            System.out.println("Calibrating navX");
+            System.out.println("[INFO] >> Calibrating navX...");
         }
         System.out.println("navX Ready");
 
@@ -165,6 +167,36 @@ public class Drive {
         else {
             stopWheels();
         }
+    }
+
+    /**
+     * Drives N feet
+     * @param distance -> The distance to drive in feet
+     * @param power -> The power to apply to the motor (controls speed, values should be between -1 and 1)
+     * @return
+     */
+    public int driveDistance(double distanceFeet, double power) {
+        // If this function is being run for the first time, find the encoder 
+        // tick value (Current encoder tick + Number of ticks in the distance parameter)
+        if (driveFirstTime) {
+            driveFirstTime = false;
+            targetPosition = frontLeft.getDrivePositionFeet() + distanceFeet;
+        }
+
+        // If the robot has traveled the correct distance,
+        if (frontLeft.getDrivePositionFeet() >= targetPosition) {
+            driveFirstTime = true;
+            return Robot.DONE;
+        }
+
+        double clampedPower = MathUtil.clamp(power, -1, 1);      
+
+        frontLeft.setDriveMotorPower(clampedPower);
+        frontRight.setDriveMotorPower(clampedPower);
+        backLeft.setDriveMotorPower(clampedPower);
+        backRight.setDriveMotorPower(clampedPower);
+
+        return Robot.CONT;
     }
 
     /**

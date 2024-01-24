@@ -38,7 +38,7 @@ public class SwerveModule {
     private final double WHEEL_DIAMETER_METERS       = Units.inchesToMeters(3);
     private final double WHEEL_ROTATION_METERS       = Math.PI * WHEEL_DIAMETER_METERS;
     private final double ROTATIONS_PER_TICK          = 1 / 4.71 / 1; // 1 / external gearing / gearbox
-    private final double DRIVE_POS_CONVERSION_FACTOR = 0.96 * WHEEL_ROTATION_METERS * ROTATIONS_PER_TICK; // Meters per tick
+    private final double DRIVE_POS_CONVERSION_FACTOR = WHEEL_ROTATION_METERS * ROTATIONS_PER_TICK; // Meters per tick
     private final double DRIVE_VEL_CONVERSION_FACTOR = DRIVE_POS_CONVERSION_FACTOR / 60;           // Meters per second
 
     // Absolute Encoder Conversion Factors
@@ -146,6 +146,14 @@ public class SwerveModule {
      */
     public double getDrivePosition() {
         return driveEncoder.getPosition();
+    }
+
+    /**
+     * Gets the drive motor position.
+     * @return The drive motor's position in feet
+     */
+    public double getDrivePositionFeet() {
+        return Units.metersToFeet(getDrivePosition());
     }
 
     /**
