@@ -4,9 +4,12 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -147,13 +150,16 @@ public class Robot extends TimedRobot {
 
   /** This function is called once when test mode is enabled. */
   @Override
-  public void testInit() {}
+  public void testInit() {
+    SmartDashboard.putNumber("Power", 0.0);
+  }
 
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
-    LimelightResults llresults = LimelightHelpers.getLatestResults("limelight");
-    System.out.println(llresults.targetingResults.getBotPose3d().getRotation().getX() + " : " + llresults.targetingResults.getBotPose3d().getRotation().getY() + " : " + llresults.targetingResults.getBotPose3d().getRotation().getZ());
+    double power = SmartDashboard.getNumber("Power", 0.0);
+    drive.setAllDriveMotorPower(MathUtil.clamp(power, -1, 1));
+    drive.printPowerandVelocity();
   }
 
   /** This function is called once when the robot is first started up. */
@@ -197,4 +203,29 @@ public class Robot extends TimedRobot {
 				drive.teleopDrive(newXVel, newYVel, rotateSpeed, true);
 			}
 	}
+
+  private void testAprilTag() {
+    // Using NetworkTables
+    NetworkTable aprilTagTable = NetworkTableInstance.getDefault().getTable("limelight");
+    if(aprilTagTable.getEntry("tv").getBoolean(false)){
+      System.out.println("Has Target: " + aprilTagTable.getEntry("tv").getBoolean(false));
+      double[] targetPoseRobotSpace = aprilTagTable.getEntry("targetpose_robotspace").getDoubleArray(new double[0]);
+    
+      /* Print the AprilTag's pose in robotspace
+       * Prints out as: x, y, z, rx, ry, rz
+      */
+      for(double num : targetPoseRobotSpace) {
+        System.out.print(num + ", ");
+      }
+    }
+        
+    /* Using LimelightResults
+     * LimelightResults llresults = LimelightHelpers.getLatestResults("limelight");
+     * System.out.println(
+     *  llresults.targetingResults.getBotPose3d().getRotation().getX() + " : " + 
+     *  llresults.targetingResults.getBotPose3d().getRotation().getY() + " : " + 
+     *  llresults.targetingResults.getBotPose3d().getRotation().getZ());
+    */
+
+  }
 }
