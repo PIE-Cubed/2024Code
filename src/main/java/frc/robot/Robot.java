@@ -151,15 +151,26 @@ public class Robot extends TimedRobot {
   /** This function is called once when test mode is enabled. */
   @Override
   public void testInit() {
-    SmartDashboard.putNumber("Power", 0.0);
+    SmartDashboard.putNumber("Power", 0.0);     // Power input through shuffleboard
+    SmartDashboard.putNumber("Distance", 0.0);  // Distance input in feet through shuffleboard
   }
 
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
     double power = SmartDashboard.getNumber("Power", 0.0);
-    drive.setAllDriveMotorPower(MathUtil.clamp(power, -1, 1));
-    drive.printPowerandVelocity();
+
+    // Test power and velocity
+    // drive.setAllDriveMotorPower(MathUtil.clamp(power, -1, 1));
+    // drive.printPowerandVelocity();
+
+    // Test distance
+    double distance = SmartDashboard.getNumber("Distance", 0.0);
+    status = drive.driveDistance(distance, power);
+    if(status == Robot.DONE) {
+      System.out.println("Done, traveled " + distance + "ft");
+      SmartDashboard.putNumber("Distance", 0.0);  // Reset distance to avoid infinite loop
+    }
   }
 
   /** This function is called once when the robot is first started up. */
