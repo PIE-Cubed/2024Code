@@ -106,7 +106,7 @@ public class Drive {
          * whereas positive y values represent moving toward the left of the robot 
          * Values are in meters
          */
-        FRONT_LEFT_LOCATION  = new Translation2d(0.26035, 0.26035); // 10.25in
+        FRONT_LEFT_LOCATION  = new Translation2d(0.26035, 0.26035);
         FRONT_RIGHT_LOCATION = new Translation2d(0.26035, -0.26035);
         BACK_LEFT_LOCATION   = new Translation2d(-0.26035, 0.26035);
         BACK_RIGHT_LOCATION  = new Translation2d(-0.26035, -0.26035);
@@ -189,8 +189,10 @@ public class Drive {
             return Robot.DONE;
         }
 
+        // Clamp the motor power to any number between -1 and 1
         double clampedPower = MathUtil.clamp(power, -1, 1);      
 
+        // Set the motor power
         frontLeft.setDriveMotorPower(clampedPower);
         frontRight.setDriveMotorPower(clampedPower);
         backLeft.setDriveMotorPower(clampedPower);
