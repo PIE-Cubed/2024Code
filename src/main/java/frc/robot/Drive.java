@@ -33,15 +33,15 @@ public class Drive {
     private final double AUTO_DRIVE_ROTATE_TOLERANCE = 0.05;
 
     // Instance Variables
-    private int     printCount         = 0;
-    private int     autoPointIndex     = 0;
-    private boolean driveFirstTime     = true;
-    private boolean autoPointAngled    = false; // Tracks if wheels have been angled before driving
-    private boolean autoPointFirstTime = true;
-    private double  initXVelocity      = 0;
-    private double  initYVelocity      = 0;
-    private double  targetPosition     = 0;
-    private double  initRotateVelocity = 0;
+    private int     printCount             = 0;
+    private int     autoPointIndex         = 0;
+    private boolean autoPointAngled        = false; // Tracks if wheels have been angled before driving
+    private boolean autoPointFirstTime     = true;
+    private boolean driveDistanceFirstTime = true;
+    private double  initXVelocity          = 0;
+    private double  initYVelocity          = 0;
+    private double  targetPosition         = 0;
+    private double  initRotateVelocity     = 0;
     
     // Rate limiters for auto drive
     private SlewRateLimiter xLimiter;
@@ -178,14 +178,15 @@ public class Drive {
     public int driveDistance(double distanceFeet, double power) {
         // If this function is being run for the first time, find the encoder 
         // tick value (Current encoder tick + Number of ticks in the distance parameter)
-        if (driveFirstTime) {
-            driveFirstTime = false;
+        if (driveDistanceFirstTime) {
+            driveDistanceFirstTime = false;
             targetPosition = frontLeft.getDrivePositionFeet() + distanceFeet;
         }
 
-        // If the robot has traveled the correct distance,
+        // If the robot has traveled the correct distance, stop the wheels and reset the drive distance
         if (frontLeft.getDrivePositionFeet() >= targetPosition) {
-            driveFirstTime = true;
+            driveDistanceFirstTime = true;
+            stopWheels();
             return Robot.DONE;
         }
 
