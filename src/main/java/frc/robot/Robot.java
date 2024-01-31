@@ -166,9 +166,12 @@ public class Robot extends TimedRobot {
 
     // Test distance
     double distance = SmartDashboard.getNumber("Distance", 0.0);
-    status = drive.driveDistance(distance, power);
+
+    if (status == Robot.CONT) {
+      status = drive.driveDistance((Math.PI * 2.875) / 12, 0.1);
+    }
+
     if(status == Robot.DONE) {
-      System.out.println("Done, traveled " + distance + "ft");
       SmartDashboard.putNumber("Distance", 0.0);  // Reset distance to avoid infinite loop
     }
   }

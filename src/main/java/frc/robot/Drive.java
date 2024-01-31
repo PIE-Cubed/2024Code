@@ -87,12 +87,14 @@ public class Drive {
         while (ahrs.isConnected() == false) {
             // System.out.println("Connecting navX");
         }
+
         System.out.println("[INFO] >> navX Connected...");
 
         while (ahrs.isCalibrating() == true) {
             System.out.println("[INFO] >> Calibrating navX...");
         }
-        System.out.println("navX Ready");
+
+        System.out.println("[INFO] >> navX Ready");
 
         ahrs.zeroYaw();
 
@@ -180,11 +182,15 @@ public class Drive {
         // tick value (Current encoder tick + Number of ticks in the distance parameter)
         if (driveDistanceFirstTime) {
             driveDistanceFirstTime = false;
-            targetPosition = frontLeft.getDrivePositionFeet() + distanceFeet;
+            backRight.zeroDriveEncoder();
+            
+            System.out.println("Current position: " + backRight.getDrivePositionFeet() + "ft");
+            System.out.println("Target position: " + distanceFeet + "ft");
         }
 
         // If the robot has traveled the correct distance, stop the wheels and reset the drive distance
-        if (frontLeft.getDrivePositionFeet() >= targetPosition) {
+        if (backRight.getDrivePositionFeet() >= distanceFeet) {  
+            System.out.println("Done, traveled " + backRight.getDrivePositionFeet() + "ft");
             driveDistanceFirstTime = true;
             stopWheels();
             return Robot.DONE;
@@ -199,6 +205,7 @@ public class Drive {
         backLeft.setDriveMotorPower(clampedPower);
         backRight.setDriveMotorPower(clampedPower);
 
+        System.out.println(backRight.getDrivePosition());
         return Robot.CONT;
     }
 
@@ -447,11 +454,11 @@ public class Drive {
     /**
      * Zeros the motor encoders
      */
-    public void zeroMotorEncoders() {
-        frontLeft .zeroMotorEncoders();
-        frontRight.zeroMotorEncoders();
-        backLeft  .zeroMotorEncoders();
-        backRight .zeroMotorEncoders();
+    public void zeroDriveEncoders() {
+        frontLeft .zeroDriveEncoder();
+        frontRight.zeroDriveEncoder();
+        backLeft  .zeroDriveEncoder();
+        backRight .zeroDriveEncoder();
     }
 
     /**
