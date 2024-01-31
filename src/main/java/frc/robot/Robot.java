@@ -41,6 +41,7 @@ public class Robot extends TimedRobot {
 	Controls       controls;
 	Drive          drive;
 	Auto           auto;
+  Shooter        shooter;
 
 	// Constants
 	private final double ROTATE_SPEED_OFFSET = -0.16;
@@ -69,6 +70,7 @@ public class Robot extends TimedRobot {
 		controls = new Controls();
 		position = new PoseEstimation(drive);
 		auto     = new Auto(drive, position);
+    shooter  = new Shooter();
 
 		// Instance getters
 		nTables  = CustomTables.getInstance();
