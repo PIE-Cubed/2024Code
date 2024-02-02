@@ -25,9 +25,9 @@ public class Drive {
     private final Translation2d BACK_LEFT_LOCATION;
     private final Translation2d BACK_RIGHT_LOCATION;
 
-    public  static final double MAX_DRIVE_SPEED      = 1;
-    public  static final double MAX_ROTATE_SPEED     = 4 * Math.PI; // Radians per second
-    private static final double MAX_WHEEL_SPEED      = 1;
+    public  static final double POWER_SPEED_RATIO_MPS   = 5.45;    // m/s / power
+    public  static final double MAX_ROTATE_SPEED        = 4 * Math.PI; // Radians per second
+    private static final double MAX_WHEEL_SPEED         = 1;
 
     private final double AUTO_DRIVE_TOLERANCE        = 0.05;
     private final double AUTO_DRIVE_ROTATE_TOLERANCE = 0.05;
@@ -149,10 +149,12 @@ public class Drive {
      */
     public void teleopDrive(double forwardSpeed, double strafeSpeed, double rotationSpeed, boolean fieldDrive) {
         // Calulates the SwerveModuleStates and determines if they are field relative
+        // ChassisSpeeds uses positive values for going left(strafeSpeed)
+        // ChassisSpeeds uses negative values for clockwise rotations(rotationSpeed)
         SwerveModuleState[] swerveModuleStates = 
             swerveDriveKinematics.toSwerveModuleStates(
                 fieldDrive
-                ? ChassisSpeeds.fromFieldRelativeSpeeds(forwardSpeed, strafeSpeed, rotationSpeed, new Rotation2d( getYawAdjusted() ))
+                ? ChassisSpeeds.fromFieldRelativeSpeeds(forwardSpeed, strafeSpeed * -1, rotationSpeed * -1, new Rotation2d( getYawAdjusted() ))
                 : new ChassisSpeeds(forwardSpeed, strafeSpeed, rotationSpeed));
 
         // Limits the max speed of the wheels
@@ -336,7 +338,7 @@ public class Drive {
      */
     public void setModuleStates(SwerveModuleState[] desiredStates) {
         // Limits the wheel speeds
-        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, MAX_DRIVE_SPEED);
+        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, POWER_SPEED_RATIO_MPS);
 
         // Sets the desired states
         frontLeft .setDesiredState(desiredStates[0]);

@@ -20,7 +20,7 @@ public class Controls {
 	// Rate limiters
 	//private SlewRateLimiter xLimiter;
 	//private SlewRateLimiter yLimiter;
-	private SlewRateLimiter rotateLimiter;
+	//private SlewRateLimiter rotateLimiter;
 
 	/**
 	 * The constructor for the Controls class
@@ -53,7 +53,7 @@ public class Controls {
 		power = Math.pow(power, 3);
 
 		// Turns the power into a speed
-		speed = power * Drive.MAX_DRIVE_SPEED;
+		speed = power * Drive.POWER_SPEED_RATIO_MPS;
 
 		// Limits the acceleration when under driver control
 		//speed = xLimiter.calculate(speed);
@@ -63,18 +63,18 @@ public class Controls {
 
 	/**
 	 * Gets the strafe speed
-	 * <p>Left is positive to match chassis speed standards
+	 * <p>Left is negative, converted to chassis speed standards in Drive.teleopDrive()
 	 * <p>This measures rotatation around the X axis, which is effectively translation on the Y axis
 	 * 
 	 * @return strafeSpeed
 	 */
 	public double getStrafeSpeed() {
 		double speed;
-		double power = -1 * driveController.getLeftX();
+		double power = driveController.getLeftX();
 		power = Math.pow(power, 3);
 
 		// Turns the power into a speed
-		speed = power * Drive.MAX_DRIVE_SPEED;
+		speed = power * Drive.POWER_SPEED_RATIO_MPS;
 
 		// Limits the acceleration when under driver control
 		//speed = yLimiter.calculate(speed);
@@ -84,21 +84,21 @@ public class Controls {
 
 	/**
 	 * Gets the rotate speed
-	 * <p>Counterclockwise is positive to match chassis speed standards
+	 * <p>Clockwise is positive, converted to chassis speed standards in Drive.teleopDrive()
 	 * <p>This measures rotatation around the Z axis
 	 * 
 	 * @return rotateSpeed
 	 */
 	public double getRotateSpeed() {
 		double speed;
-		double power = -1 * driveController.getRightX();
+		double power = driveController.getRightX();
 		power = Math.pow(power, 3);
 
 		// Turns the power into a speed
 		speed = power * Drive.MAX_ROTATE_SPEED;
 
 		// Limits the acceleration when under driver control
-		speed = rotateLimiter.calculate(speed);
+		//speed = rotateLimiter.calculate(speed);
 
 		return speed;
 	}
