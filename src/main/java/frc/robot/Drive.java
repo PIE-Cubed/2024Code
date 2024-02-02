@@ -155,7 +155,7 @@ public class Drive {
             swerveDriveKinematics.toSwerveModuleStates(
                 fieldDrive
                 ? ChassisSpeeds.fromFieldRelativeSpeeds(forwardSpeed, strafeSpeed * -1, rotationSpeed * -1, new Rotation2d( getYawAdjusted() ))
-                : new ChassisSpeeds(forwardSpeed, strafeSpeed, rotationSpeed));
+                : new ChassisSpeeds(forwardSpeed, strafeSpeed * -1, rotationSpeed * -1));
 
         // Limits the max speed of the wheels
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, MAX_WHEEL_SPEED);
@@ -539,6 +539,7 @@ public class Drive {
         backLeft.setDriveMotorPower(power);
         backRight.setDriveMotorPower(power);
     }
+
 }
 
 // End of the Drive class

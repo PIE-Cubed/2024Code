@@ -160,14 +160,17 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
+    testTeleopDrive();
     //double power = SmartDashboard.getNumber("Power", 0.0);
 
     // Test power and velocity
-    //drive.setAllDriveMotorPower(MathUtil.clamp(power, -1, 1));
-    //drive.printPowerandVelocity();
+    /*
+    drive.setAllDriveMotorPower(MathUtil.clamp(power, -1, 1));
+    drive.printPowerandVelocity();*/
 
     // Test distance
-    /*double distance = SmartDashboard.getNumber("Distance", 0.0);
+    /*
+    double distance = SmartDashboard.getNumber("Distance", 0.0);
 
     if (status == Robot.CONT) {
       status = drive.driveDistance((Math.PI * 2.875) / 12, 0.1);
@@ -176,7 +179,8 @@ public class Robot extends TimedRobot {
     if(status == Robot.DONE) {
       SmartDashboard.putNumber("Distance", 0.0);  // Reset distance to avoid infinite loop
     }*/
-  
+
+    // Test shooter
     //shooter.startShooting(power);
 
   
@@ -224,6 +228,16 @@ public class Robot extends TimedRobot {
 			}
 	}
 
+  public void testTeleopDrive() {
+    double rotateSpeed = controls.getRotateSpeed();
+    double strafeSpeed = controls.getStrafeSpeed();
+    double forwardSpeed = controls.getForwardSpeed();
+   // double precisionDrive = controls.enablePrecisionDrive();
+
+    drive.teleopDrive(forwardSpeed, strafeSpeed, rotateSpeed, false);
+
+  }
+
   private void testAprilTag() {
     // Using NetworkTables
     NetworkTable aprilTagTable = NetworkTableInstance.getDefault().getTable("limelight");
@@ -248,4 +262,5 @@ public class Robot extends TimedRobot {
     */
 
   }
+
 }

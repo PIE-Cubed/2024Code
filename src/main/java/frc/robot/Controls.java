@@ -50,7 +50,7 @@ public class Controls {
 	public double getForwardSpeed() {
 		double speed;
 		double power = -1 * driveController.getLeftY();
-		power = Math.pow(power, 3);
+		power = Math.pow(power, 7);
 
 		// Turns the power into a speed
 		speed = power * Drive.POWER_SPEED_RATIO_MPS;
@@ -71,7 +71,7 @@ public class Controls {
 	public double getStrafeSpeed() {
 		double speed;
 		double power = driveController.getLeftX();
-		power = Math.pow(power, 3);
+		power = Math.pow(power, 7);
 
 		// Turns the power into a speed
 		speed = power * Drive.POWER_SPEED_RATIO_MPS;
@@ -92,7 +92,7 @@ public class Controls {
 	public double getRotateSpeed() {
 		double speed;
 		double power = driveController.getRightX();
-		power = Math.pow(power, 3);
+		power = Math.pow(power, 7);
 
 		// Turns the power into a speed
 		speed = power * Drive.MAX_ROTATE_SPEED;
