@@ -237,6 +237,17 @@ public class SwerveModule {
 
     /**
      * Displays the power and velocity of the drive motor.
+     * Conversion Factor 1:
+     *  Power 0.25 = 1675rpm
+     *  Power 0.50 = 3315rpm
+     *  Power 0.75 = 4975rpm
+     *  Power 1.00 = 6600rpm
+     * 
+     * Conversion to Meters Per Second:
+     *  Power 0.25 = 1.37m/s
+     *  Power 0.50 = 2.71m/s
+     *  Power 0.75 = 4.75m/s
+     *  Power 1.00 = 5.45m/s
      */
     public void displayPowerAndVelocity() {
         System.out.println(driveMotor.getDeviceId() + " Power " + prevPower + " Velocity " + getDriveVelocity() + " Ratio " + prevPower/getDriveVelocity());
