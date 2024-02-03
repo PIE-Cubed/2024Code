@@ -58,6 +58,9 @@ public class Robot extends TimedRobot {
 	// Auto Delay
 	private long delaySec = 0;
 
+  // Distance test status
+  private boolean driveDistance;  /// Whether the robot is at the drive step of the test
+
 	/**
 	 * Constructor
 	 */
@@ -154,7 +157,7 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit() {
     //SmartDashboard.putNumber("Power", 0.0);     // Power input through shuffleboard
-    //SmartDashboard.putNumber("Distance", 0.0);  // Distance input in feet through shuffleboard
+    driveDistance = false;
   }
 
   /** This function is called periodically during test mode. */
@@ -169,16 +172,28 @@ public class Robot extends TimedRobot {
     drive.printPowerandVelocity();*/
 
     // Test distance
-    /*
-    double distance = SmartDashboard.getNumber("Distance", 0.0);
 
-    if (status == Robot.CONT) {
-      status = drive.driveDistance((Math.PI * 2.875) / 12, 0.1);
+    /// Encoders passed the 1ft test
+
+    double distance = 9;
+    // TODO Check or fix this to make sure it zero wheels and continues to drive test
+    // Are all wheels at 0 radians and driveDistance is true
+    if(driveDistance == false){
+      // Rotate all wheels to 0 radians
+      if(status == Robot.CONT){
+        status = drive.rotateWheels(0.0, 0.0, 0.0);
+      } else if(status == Robot.DONE){
+        status = Robot.CONT;  // Continue test
+        driveDistance = true; // Start the test
+      }
+    } 
+    else {
+      // At 0 radians, start/continue the test
+      if(status == Robot.CONT){
+        //status = drive.driveDistance((Math.PI * 2.875) / 12, 0.05);  // ~0.75ft
+        status = drive.driveDistance(distance, 0.35);
+      }
     }
-
-    if(status == Robot.DONE) {
-      SmartDashboard.putNumber("Distance", 0.0);  // Reset distance to avoid infinite loop
-    }*/
 
     // Test shooter
     //shooter.startShooting(power);
