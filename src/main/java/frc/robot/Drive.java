@@ -126,7 +126,7 @@ public class Drive {
         // Creates the swerve modules. Encoders should be zeroed with the block
         frontLeft  = new SwerveModule(14, 15, false);
         frontRight = new SwerveModule(16, 17, true);
-        backLeft   = new SwerveModule(12, 13, false);
+        backLeft   = new SwerveModule(12, 13, true);
         backRight  = new SwerveModule(10, 11, true);
 
         // PID instantiation
@@ -305,7 +305,6 @@ public class Drive {
      * @param driveX
      * @param driveY
      * @param driveZ
-     * @param fieldDrive
      * @return
      */
     public int rotateWheels(double driveX, double driveY, double driveZ) {
@@ -326,7 +325,6 @@ public class Drive {
 
         return Robot.CONT;
     }
-
 
     /****************************************************************************************** 
     *
@@ -541,6 +539,33 @@ public class Drive {
         backLeft.setDriveMotorPower(power);
         backRight.setDriveMotorPower(power);
     }
+
+	/**
+	 * <p> Checks if all swerve module rotate encoders at setpoint
+     * 
+	 * @return Whether all of the swerve modules at setpoint
+	 */
+	public boolean allEncodersAtSetpoint() {
+		// Test if all angles are within rotate tolerance
+		return 
+			frontLeft.rotateControllerAtSetpoint() && 
+			frontRight.rotateControllerAtSetpoint() && 
+			backLeft.rotateControllerAtSetpoint() && 
+			backRight.rotateControllerAtSetpoint();
+	}
+		
+	/**
+	 * Checks if the value is within the tolerance of the desired value
+	 * 
+	 * @param value The value to be checked
+	 * @param setValue The desired value
+	 * @param tolerance The tolerance for the desired value
+	 * 
+	 * @return Whether the value is withing tolerance or not
+	 */
+	public boolean inTolerance(double value, double setValue, double tolerance) {
+		return (value <= (setValue + tolerance) && value >= (setValue - tolerance));
+	}
 
 }
 
