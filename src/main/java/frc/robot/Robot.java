@@ -203,7 +203,6 @@ public class Robot extends TimedRobot {
 		double  rotateSpeed       = controls.getRotateSpeed();
 		double  strafeSpeed       = controls.getStrafeSpeed();
 		double  forwardSpeed      = controls.getForwardSpeed();
-		boolean precisionDrive    = controls.enablePrecisionDrive();
 
 		// Gets the Manipulator values
 		boolean zeroYaw           = controls.zeroYaw();
@@ -211,21 +210,17 @@ public class Robot extends TimedRobot {
 		if (zeroYaw == true) {
 			drive.resetYaw();
 		}
+		// Calculated line of best fit for relationship between rotate speed and drift angle
+    // Think its used to travel straight when rotating
+    // Will allegedly revisit later to adjust to new motors 
+		// double angleTransform = ROTATE_SPEED_OFFSET * rotateSpeed;
+		// Translation2d velocity = new Translation2d(forwardSpeed, strafeSpeed);
+		// Translation2d newVelocity = velocity.rotateBy(new Rotation2d(angleTransform));
 
-		if (precisionDrive)  {
-				drive.teleopDrive(forwardSpeed / 4, strafeSpeed / 4, rotateSpeed / 4, true);
-			}
-			else {
-				// Calculated line of best fit for relationship between rotate speed and drift angle
-				double angleTransform = ROTATE_SPEED_OFFSET * rotateSpeed;
-				Translation2d velocity = new Translation2d(forwardSpeed, strafeSpeed);
-				Translation2d newVelocity = velocity.rotateBy(new Rotation2d(angleTransform));
+		// double newXVel = newVelocity.getX();
+		// double newYVel = newVelocity.getY();
 
-				double newXVel = newVelocity.getX();
-				double newYVel = newVelocity.getY();
-
-				drive.teleopDrive(newXVel, newYVel, rotateSpeed, true);
-			}
+		drive.teleopDrive(forwardSpeed, strafeSpeed, rotateSpeed, true);
 	}
 
   public void testTeleopDrive() {

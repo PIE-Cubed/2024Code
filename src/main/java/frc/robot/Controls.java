@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 
 /**
@@ -53,7 +54,11 @@ public class Controls {
 		power = Math.pow(power, 7);
 
 		// Turns the power into a speed
-		speed = power * Drive.POWER_SPEED_RATIO_MPS;
+		if(enablePrecisionDrive()){
+			speed = power * Drive.POWER_SPEED_RATIO_MPS_PREICISION;	// Use precision mode curve
+		} else {
+			speed = power * Drive.POWER_SPEED_RATIO_MPS;	// Use regular curve
+		}
 
 		// Limits the acceleration when under driver control
 		//speed = xLimiter.calculate(speed);
@@ -74,7 +79,11 @@ public class Controls {
 		power = Math.pow(power, 7);
 
 		// Turns the power into a speed
-		speed = power * Drive.POWER_SPEED_RATIO_MPS;
+		if(enablePrecisionDrive()){
+			speed = power * Drive.POWER_SPEED_RATIO_MPS_PREICISION;	// Use precision mode curve
+		} else {
+			speed = power * Drive.POWER_SPEED_RATIO_MPS;	// Use regular curve
+		}
 
 		// Limits the acceleration when under driver control
 		//speed = yLimiter.calculate(speed);
@@ -95,8 +104,8 @@ public class Controls {
 		power = Math.pow(power, 7);
 
 		// Turns the power into a speed
-		speed = power * Drive.MAX_ROTATE_SPEED;
-
+		speed = power * Drive.MAX_ROTATE_SPEED;	// Use regular curve in radians per second
+		
 		// Limits the acceleration when under driver control
 		//speed = rotateLimiter.calculate(speed);
 

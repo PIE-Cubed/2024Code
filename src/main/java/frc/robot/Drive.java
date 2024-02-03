@@ -25,9 +25,11 @@ public class Drive {
     private final Translation2d BACK_LEFT_LOCATION;
     private final Translation2d BACK_RIGHT_LOCATION;
 
-    public  static final double POWER_SPEED_RATIO_MPS   = 5.45;    // m/s / power
-    public  static final double MAX_ROTATE_SPEED        = 4 * Math.PI; // Radians per second
-    private static final double MAX_WHEEL_SPEED         = 1;
+	// When testing, 0.05 is the best max power for precision mode, Ausitn Approved!!
+    public  static final double POWER_SPEED_RATIO_MPS   		 = 5.45;    // m/s / power
+	public  static final double POWER_SPEED_RATIO_MPS_PREICISION = 0.45;	// m/s / power for precision mode
+    public  static final double MAX_ROTATE_SPEED        		 = 1.5 * (2 * Math.PI); // Radians per second
+    private static final double MAX_WHEEL_SPEED         		 = 1;
 
     private final double AUTO_DRIVE_TOLERANCE        = 0.05;
     private final double AUTO_DRIVE_ROTATE_TOLERANCE = 0.05;
