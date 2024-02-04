@@ -178,21 +178,36 @@ public class Robot extends TimedRobot {
     double distance = 9;
     // TODO Check or fix this to make sure it zero wheels and continues to drive test
     // Are all wheels at 0 radians and driveDistance is true
-    if(driveDistance == false){
-      // Rotate all wheels to 0 radians
-      if(status == Robot.CONT){
-        status = drive.rotateWheels(0.0, 0.0, 0.0);
-      } else if(status == Robot.DONE){
-        status = Robot.CONT;  // Continue test
-        driveDistance = true; // Start the test
-      }
+    if(driveDistance == false)  {
+        // Rotate all wheels to 0 radians
+        if (status == Robot.CONT)  {
+          /*  TJM
+           *   I don't think this is what you want.  I think you are trying to rotate the wheels only
+           *   and not provide power to drive wheels.  rotateWheels() calls SetDesiredState() which will 
+           *   rotate the wheels and provide drive power.  If you want to go to 0 degrees for instance you
+           *   could set x=0 and z=0 and make y(forward power) small like .01.  
+           *   if x = 0 and y = .01 the angle would be 0 and wheel power would be small.
+           *   Perhaps a better way is  to 
+           *        use a rotate program like we did earlier OR
+           *        make a rotate program similar to teleop drive that only gives power to rotate motor
+           *            You could pass in a Rotation2d(angleRadians) and then directly set the SwerveModuleStates()
+           *            with forward power = 0 and all wheels getting the angle passed in
+           *   We can talk over on Tuesday or before if this doesn't make sense.
+           * 
+           */
+            status = drive.rotateWheels(0.0, 0.0, 0.0);
+        }
+        else if (status == Robot.DONE)  {
+            status = Robot.CONT;  // Continue test
+            driveDistance = true; // Start the test
+        }
     } 
     else {
-      // At 0 radians, start/continue the test
-      if(status == Robot.CONT){
-        //status = drive.driveDistance((Math.PI * 2.875) / 12, 0.05);  // ~0.75ft
-        status = drive.driveDistance(distance, 0.35);
-      }
+        // At 0 radians, start/continue the test
+        if (status == Robot.CONT)  {
+            //status = drive.driveDistance((Math.PI * 2.875) / 12, 0.05);  // ~0.75ft
+            status = drive.driveDistance(distance, 0.35);
+        }
     }
 
     // Test shooter

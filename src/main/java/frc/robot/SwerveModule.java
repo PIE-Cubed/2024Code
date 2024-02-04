@@ -101,6 +101,11 @@ public class SwerveModule {
      */
     public void setDesiredState(SwerveModuleState desiredState) {
         // Optimizes the wheel movements
+        /* When you optimize the swerve module state you minimize the wheel rotation.
+         * For instance instead of rotating 180 degrees and driving forward you can 
+         * just drive in reverse and not rotate.  The optimized state will figure this 
+         * out for you.
+         */
         SwerveModuleState optimizedState = SwerveModuleState.optimize(desiredState, new Rotation2d( getAbsPosition() ));
 
         // Calculates the rotate power
@@ -109,6 +114,14 @@ public class SwerveModule {
         double rotatePower  = rotateMotorController.calculate(currentAngle, targetAngle);
 
         // Sets motor powers
+        /*  TJM  can we print values to drive and rotate motor.
+         *   The rotate motor PID may give us values between -1.0 to 1.0.  
+         *   We should clamp at minimum.
+         *   these should be -1.0 to 1.0. 
+         *  We may need to translate speed to motor power -1.0 to 1.0 using power_speed_ratio
+         *  If this is correct we'd need to check for precision mode as well.
+         *  This could change our teleop drive results from Saturday 2-3-2024
+         */
         driveMotor.set(optimizedState.speedMetersPerSecond);
         rotateMotor.set(rotatePower);
     }
@@ -169,6 +182,7 @@ public class SwerveModule {
      * @return The absolute encoder's position in radians
      */
     private double getAbsPosition() {
+        /* angle is in radians and using -pi to +pi for modulus */
         return MathUtil.angleModulus( absoluteEncoder.getPosition() );
     }
 
