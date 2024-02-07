@@ -116,14 +116,12 @@ public class SwerveModule {
         // Sets motor powers
         /*  TJM  can we print values to drive and rotate motor.
          *   The rotate motor PID may give us values between -1.0 to 1.0.  
-         *   We should clamp at minimum.
-         *   these should be -1.0 to 1.0. 
          *  We may need to translate speed to motor power -1.0 to 1.0 using power_speed_ratio
          *  If this is correct we'd need to check for precision mode as well.
          *  This could change our teleop drive results from Saturday 2-3-2024
          */
-        driveMotor.set(optimizedState.speedMetersPerSecond);
-        rotateMotor.set(rotatePower);
+        driveMotor.set(MathUtil.clamp(optimizedState.speedMetersPerSecond, -1.0, 1.0));
+        rotateMotor.set(MathUtil.clamp(rotatePower, -1.0, 1.0));
     }
 
     /**
@@ -136,8 +134,8 @@ public class SwerveModule {
         double targetAngle  = MathUtil.angleModulus( desiredState.angle.getRadians() );
         double rotatePower  = rotateMotorController.calculate(currentAngle, targetAngle);
 
-        driveMotor.set(desiredState.speedMetersPerSecond);
-        rotateMotor.set(rotatePower);
+        driveMotor.set(MathUtil.clamp(desiredState.speedMetersPerSecond, -1.0, 1.0));
+        rotateMotor.set(MathUtil.clamp(rotatePower, -1.0, 1.0));
     }
 
     /****************************************************************************************** 

@@ -234,10 +234,7 @@ public class Drive {
         backLeft.setDriveMotorPower(clampedPower);
         backRight.setDriveMotorPower(clampedPower);
 
-        /* TJM
-         * may want to print getDrivePositionFeet() here???
-         */
-        System.out.println(backRight.getDrivePosition());
+        System.out.println(backRight.getDrivePositionFeet());
         return Robot.CONT;
     }
 
@@ -329,14 +326,14 @@ public class Drive {
     }
 
     /**
-     * Rotates wheels based on a drive command without giving the drive motors full power
+     * <p>Rotates wheels based on a drive command without giving the drive motors full power
+     * <p>Uses wheel optimizations
      * @param driveX
      * @param driveY
      * @param driveZ
-     * @return
+     * @return Robot status, CONT or DONE
      */
-    public int rotateWheels(double driveX, double driveY, double driveZ) 
-    {
+    public int rotateWheels(double driveX, double driveY, double driveZ) {
         /* TJM
          * We are always using field oriented information even if we are not in field oriented mode.
          * See teleop drive...
@@ -364,11 +361,11 @@ public class Drive {
 
     /**
      * <p>Rotates wheels based on a drive command without giving the drive motors full power
-     * <p>Does not use optimizations when driving
+     * <p>Does not use wheel optimizations
      * @param driveX
      * @param driveY
      * @param driveZ
-     * @return
+     * @return Robot status, CONT or DONE
      */
     public int rotateWheelsNoOpt(double driveX, double driveY, double driveZ) {
         SwerveModuleState[] swerveModuleStates = 
@@ -397,8 +394,8 @@ public class Drive {
     * 
     ******************************************************************************************/
     /**
-     * Sets the swerve ModuleStates.
-     *
+     * <p>Sets the swerve ModuleStates.
+     * <p>Uses optimizations
      * @param desiredStates
      */
     public void setModuleStates(SwerveModuleState[] desiredStates) {
@@ -617,19 +614,6 @@ public class Drive {
 			frontRight.rotateControllerAtSetpoint() && 
 			backLeft.rotateControllerAtSetpoint() && 
 			backRight.rotateControllerAtSetpoint();
-	}
-		
-	/**
-	 * Checks if the value is within the tolerance of the desired value
-	 * 
-	 * @param value The value to be checked
-	 * @param setValue The desired value
-	 * @param tolerance The tolerance for the desired value
-	 * 
-	 * @return Whether the value is withing tolerance or not
-	 */
-	public boolean inTolerance(double value, double setValue, double tolerance) {
-		return (value <= (setValue + tolerance) && value >= (setValue - tolerance));
 	}
 
 }

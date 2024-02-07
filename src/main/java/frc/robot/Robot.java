@@ -173,11 +173,8 @@ public class Robot extends TimedRobot {
     drive.printPowerandVelocity();*/
 
     // Test distance
-
-    /// Encoders passed the 1ft test
-
     double distance = 5;
-    // TODO Check or fix this to make sure it zero wheels and continues to drive test
+
     // Are all wheels at 0 radians and driveDistance is true
     if(driveDistance == false)  {
         // Rotate all wheels to 0 radians
@@ -196,28 +193,25 @@ public class Robot extends TimedRobot {
            *   We can talk over on Tuesday or before if this doesn't make sense.
            * 
            */
-            Measure<Angle> angleMeasurement = Units.Degrees.of(0); // For degrees
-            Rotation2d angle = new Rotation2d(angleMeasurement);
-            Translation2d vect = new Translation2d(0.0, angle);
-            status = drive.rotateWheelsNoOpt(vect.getX(), vect.getY(), 0.0);
+          Measure<Angle> angleMeasurement = Units.Radians.of(0);  // Get the desired angle as a Measure<Angle> 
+          Translation2d vect = new Translation2d(0.0, new Rotation2d(angleMeasurement));  // Create Translation2d for rotateWheels
+          status = drive.rotateWheelsNoOpt(vect.getX(), vect.getY(), 0.0);  // Rotate wheels to 0 radians
       }
       else if (status == Robot.DONE)  {
-            status = Robot.CONT;  // Continue test
-            driveDistance = true; // Start the test
+            status = Robot.CONT;  // Reset status
+            driveDistance = true; // Start the distance test
         }
     } 
     else {
         // At 0 radians, start/continue the test
         if (status == Robot.CONT)  {
-            //status = drive.driveDistance((Math.PI * 2.875) / 12, 0.05);  // ~0.75ft
+            //status = drive.driveDistance((Math.PI * 2.875) / 12, 0.05);  // ~0.75ft for wheel rotation tests
             status = drive.driveDistance(distance, 0.075);
         }
     }
 
     // Test shooter
     //shooter.startShooting(power);
-
-  
   }
 
   /** This function is called once when the robot is first started up. */
@@ -247,12 +241,15 @@ public class Robot extends TimedRobot {
 		// Calculated line of best fit for relationship between rotate speed and drift angle
     // Think its used to travel straight when rotating
     // Will allegedly revisit later to adjust to new motors 
-		// double angleTransform = ROTATE_SPEED_OFFSET * rotateSpeed;
-		// Translation2d velocity = new Translation2d(forwardSpeed, strafeSpeed);
-		// Translation2d newVelocity = velocity.rotateBy(new Rotation2d(angleTransform));
-
-		// double newXVel = newVelocity.getX();
-		// double newYVel = newVelocity.getY();
+		/**
+     *  double angleTransform = ROTATE_SPEED_OFFSET * rotateSpeed;
+     * Translation2d velocity = new Translation2d(forwardSpeed, strafeSpeed);
+     * Translation2d newVelocity = velocity.rotateBy(new Rotation2d(angleTransform));
+     * double newXVel = newVelocity.getX();
+     * double newYVel = newVelocity.getY();
+     * 
+     * drive.teleopDrive(newXVel, newYVel, rotateSpeed, true);
+     */
 
 		drive.teleopDrive(forwardSpeed, strafeSpeed, rotateSpeed, true);
 	}
@@ -261,7 +258,6 @@ public class Robot extends TimedRobot {
     double rotateSpeed = controls.getRotateSpeed();
     double strafeSpeed = controls.getStrafeSpeed();
     double forwardSpeed = controls.getForwardSpeed();
-   // double precisionDrive = controls.enablePrecisionDrive();
 
     drive.teleopDrive(forwardSpeed, strafeSpeed, rotateSpeed, false);
 
@@ -291,5 +287,4 @@ public class Robot extends TimedRobot {
     */
 
   }
-
 }
