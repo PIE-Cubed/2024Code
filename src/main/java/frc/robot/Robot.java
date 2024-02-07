@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.units.*;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -163,7 +164,7 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
-    testTeleopDrive();
+    //testTeleopDrive();
     //double power = SmartDashboard.getNumber("Power", 0.0);
 
     // Test power and velocity
@@ -175,7 +176,7 @@ public class Robot extends TimedRobot {
 
     /// Encoders passed the 1ft test
 
-    double distance = 9;
+    double distance = 5;
     // TODO Check or fix this to make sure it zero wheels and continues to drive test
     // Are all wheels at 0 radians and driveDistance is true
     if(driveDistance == false)  {
@@ -195,9 +196,12 @@ public class Robot extends TimedRobot {
            *   We can talk over on Tuesday or before if this doesn't make sense.
            * 
            */
-            status = drive.rotateWheels(0.0, 0.0, 0.0);
-        }
-        else if (status == Robot.DONE)  {
+            Measure<Angle> angleMeasurement = Units.Degrees.of(0); // For degrees
+            Rotation2d angle = new Rotation2d(angleMeasurement);
+            Translation2d vect = new Translation2d(0.0, angle);
+            status = drive.rotateWheelsNoOpt(vect.getX(), vect.getY(), 0.0);
+      }
+      else if (status == Robot.DONE)  {
             status = Robot.CONT;  // Continue test
             driveDistance = true; // Start the test
         }
@@ -206,7 +210,7 @@ public class Robot extends TimedRobot {
         // At 0 radians, start/continue the test
         if (status == Robot.CONT)  {
             //status = drive.driveDistance((Math.PI * 2.875) / 12, 0.05);  // ~0.75ft
-            status = drive.driveDistance(distance, 0.35);
+            status = drive.driveDistance(distance, 0.075);
         }
     }
 

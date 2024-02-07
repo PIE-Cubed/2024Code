@@ -28,7 +28,7 @@ public class Drive {
 	// When testing, 0.05 is the best max power for precision mode, Ausitn Approved!!
     public  static final double POWER_SPEED_RATIO_MPS   		 = 5.45;    // m/s / power
 	public  static final double POWER_SPEED_RATIO_MPS_PREICISION = 0.45;	// m/s / power for precision mode
-    public  static final double MAX_ROTATE_SPEED        		 = 1.5 * (2 * Math.PI); // Radians per second
+    public  static final double MAX_ROTATE_SPEED        		 = 1.5 * (2 * Math.PI); // Radians per second  (1.5 rotations/sec)
     private static final double MAX_WHEEL_SPEED         		 = 1;
 
     private final double AUTO_DRIVE_TOLERANCE        = 0.05;
@@ -124,10 +124,10 @@ public class Drive {
         );
 
         // Creates the swerve modules. Encoders should be zeroed with the block
-        frontLeft  = new SwerveModule(14, 15, false);
-        frontRight = new SwerveModule(16, 17, true);
+        frontLeft  = new SwerveModule(14, 15, true);
+        frontRight = new SwerveModule(16, 17, false);
         backLeft   = new SwerveModule(12, 13, true);
-        backRight  = new SwerveModule(10, 11, true);
+        backRight  = new SwerveModule(10, 11, false);
 
         // PID instantiation
         autoDriveXController = new PIDController(adp, adi, add);
@@ -160,6 +160,10 @@ public class Drive {
                 : new ChassisSpeeds(forwardSpeed, strafeSpeed * -1, rotationSpeed * -1));
 
         // Limits the max speed of the wheels
+        /* When adding the drive vector to the rotate vector the amplitude of the resulting vector
+         * could be greater than 1.0 (max wheel speed).  When you desaturate you reduce the power of all
+         * the wheels by the same amount so that no wheel power is saturated.
+         */
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, MAX_WHEEL_SPEED);
 
         // Only moves wheels when given command
@@ -186,6 +190,14 @@ public class Drive {
         // tick value (Current encoder tick + Number of ticks in the distance parameter)
         if (driveDistanceFirstTime) {
             driveDistanceFirstTime = false;
+
+            /*   TJM
+             * I think this will cause problems in the future.
+             * When you use odometry to get you position on the field is uses the encoders.
+             * I suspect when we 0 out the encoder it will mess up the odometry.
+             * I'd suggest creating an instance variable that contains the target distance and 
+             * not zero the encoder.
+             */
             backRight.zeroDriveEncoder();
             
             System.out.println("Current position: " + backRight.getDrivePositionFeet() + "ft");
@@ -203,12 +215,28 @@ public class Drive {
         // Clamp the motor power to any number between -1 and 1
         double clampedPower = MathUtil.clamp(power, -1, 1);      
 
+        /* TJM
+         *  If we set swerveModulesStates we can power the rotate motor in case it moves while driving
+         * 
+         * Do something like this for all 4 wheels
+         * swerveModuleStates[0].speedMetersPerSecond = power
+         * swerveModuleStates[0].angle = new Rotatation2d(angle)  use the same angle as we rotated to
+         * 
+         *  frontLeft.setDesiredState(swerveModuleStates[0]);
+            frontRight.setDesiredState(swerveModuleStates[1]);
+            backLeft.setDesiredState(swerveModuleStates[2]);
+            backRight.setDesiredState(swerveModuleStates[3]);
+         */
+
         // Set the motor power
         frontLeft.setDriveMotorPower(clampedPower);
         frontRight.setDriveMotorPower(clampedPower);
         backLeft.setDriveMotorPower(clampedPower);
         backRight.setDriveMotorPower(clampedPower);
 
+        /* TJM
+         * may want to print getDrivePositionFeet() here???
+         */
         System.out.println(backRight.getDrivePosition());
         return Robot.CONT;
     }
@@ -307,16 +335,53 @@ public class Drive {
      * @param driveZ
      * @return
      */
-    public int rotateWheels(double driveX, double driveY, double driveZ) {
+    public int rotateWheels(double driveX, double driveY, double driveZ) 
+    {
+        /* TJM
+         * We are always using field oriented information even if we are not in field oriented mode.
+         * See teleop drive...
+         * 
+         * I added notes in Robot where you were calling this....
+         */
         SwerveModuleState[] swerveModuleStates = 
             swerveDriveKinematics.toSwerveModuleStates( ChassisSpeeds.fromFieldRelativeSpeeds(driveX, driveY, driveZ, new Rotation2d( getYawAdjusted() )));
-            
+        
+        // Makes sure the wheels only rotate, not drive forward(zeros forward speed)
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, 0);
         
         frontLeft.setDesiredState(swerveModuleStates[0]);
         frontRight.setDesiredState(swerveModuleStates[1]);
         backLeft.setDesiredState(swerveModuleStates[2]);
         backRight.setDesiredState(swerveModuleStates[3]);
+
+        if (frontLeft.rotateControllerAtSetpoint() && frontRight.rotateControllerAtSetpoint() &&
+            backLeft.rotateControllerAtSetpoint() && backRight.rotateControllerAtSetpoint()) {
+                return Robot.DONE;
+        }
+
+        return Robot.CONT;
+    }
+
+    /**
+     * <p>Rotates wheels based on a drive command without giving the drive motors full power
+     * <p>Does not use optimizations when driving
+     * @param driveX
+     * @param driveY
+     * @param driveZ
+     * @return
+     */
+    public int rotateWheelsNoOpt(double driveX, double driveY, double driveZ) {
+        SwerveModuleState[] swerveModuleStates = 
+            swerveDriveKinematics.toSwerveModuleStates( ChassisSpeeds.fromFieldRelativeSpeeds(driveX, driveY, driveZ, new Rotation2d( getYawAdjusted() )));
+        
+        // Makes sure the wheels only rotate, not drive forward(zeros forward speed)
+        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, 0);
+        
+        // Do not use optimizate to make wheels rotate to absolute angle instead of optimized angle
+        frontLeft.setDesiredStateNoOpt(swerveModuleStates[0]);
+        frontRight.setDesiredStateNoOpt(swerveModuleStates[1]);
+        backLeft.setDesiredStateNoOpt(swerveModuleStates[2]);
+        backRight.setDesiredStateNoOpt(swerveModuleStates[3]);
 
         if (frontLeft.rotateControllerAtSetpoint() && frontRight.rotateControllerAtSetpoint() &&
             backLeft.rotateControllerAtSetpoint() && backRight.rotateControllerAtSetpoint()) {

@@ -126,6 +126,20 @@ public class SwerveModule {
         rotateMotor.set(rotatePower);
     }
 
+    /**
+     * Sets the desired state for the module without optimizations.
+     * @param desiredState Desired state with speed and angle.
+     */
+    public void setDesiredStateNoOpt(SwerveModuleState desiredState) {
+        // Calculates the rotate power
+        double currentAngle = getAbsPosition();
+        double targetAngle  = MathUtil.angleModulus( desiredState.angle.getRadians() );
+        double rotatePower  = rotateMotorController.calculate(currentAngle, targetAngle);
+
+        driveMotor.set(desiredState.speedMetersPerSecond);
+        rotateMotor.set(rotatePower);
+    }
+
     /****************************************************************************************** 
     *
     *    GETTER FUNCTIONS
