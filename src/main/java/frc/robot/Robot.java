@@ -158,7 +158,8 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit() {
     //SmartDashboard.putNumber("Power", 0.0);     // Power input through shuffleboard
-    driveDistance = false;
+    //driveDistance = false;
+    SmartDashboard.putNumber("Angle(Radians)", 0);
   }
 
   /** This function is called periodically during test mode. */
@@ -173,7 +174,7 @@ public class Robot extends TimedRobot {
     drive.printPowerandVelocity();*/
 
     // Test distance
-    double distance = 5;
+    /*double distance = 5;
 
     // Are all wheels at 0 radians and driveDistance is true
     if(driveDistance == false)  {
@@ -193,7 +194,7 @@ public class Robot extends TimedRobot {
            *   We can talk over on Tuesday or before if this doesn't make sense.
            * 
            */
-          Measure<Angle> angleMeasurement = Units.Radians.of(0);  // Get the desired angle as a Measure<Angle> 
+          /*Measure<Angle> angleMeasurement = Units.Radians.of(0);  // Get the desired angle as a Measure<Angle> 
           Translation2d vect = new Translation2d(0.0, new Rotation2d(angleMeasurement));  // Create Translation2d for rotateWheels
           status = drive.rotateWheelsNoOpt(vect.getX(), vect.getY(), 0.0);  // Rotate wheels to 0 radians
       }
@@ -208,7 +209,11 @@ public class Robot extends TimedRobot {
             //status = drive.driveDistance((Math.PI * 2.875) / 12, 0.05);  // ~0.75ft for wheel rotation tests
             status = drive.driveDistance(distance, 0.075);
         }
-    }
+    }*/
+
+    // Test rotation
+    double radians = SmartDashboard.getNumber("Angle(Radians)", 0);
+    drive.rotateRobot(radians);
 
     // Test shooter
     //shooter.startShooting(power);

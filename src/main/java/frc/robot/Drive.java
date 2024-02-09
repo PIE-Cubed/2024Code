@@ -1,5 +1,6 @@
 package frc.robot;
 
+import com.fasterxml.jackson.annotation.ObjectIdGenerator.IdKey;
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -12,6 +13,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -69,6 +72,10 @@ public class Drive {
     private SwerveModule backLeft;
     private SwerveModule backRight;
     public  SwerveDriveKinematics swerveDriveKinematics;
+
+    // Rotate variables
+    int setpointCounter = 0;
+    boolean firstTime = true;
 
     // NavX
     public static AHRS ahrs;
@@ -139,6 +146,7 @@ public class Drive {
         autoDriveRotateController = new PIDController(adrp, adri, adrd);
         autoDriveRotateController.setTolerance(AUTO_DRIVE_ROTATE_TOLERANCE);
         autoDriveRotateController.enableContinuousInput(Math.PI, -Math.PI);
+
     }
 
     /**
@@ -386,6 +394,79 @@ public class Drive {
         }
 
         return Robot.CONT;
+    }
+
+    /**
+     * <p>Rotates the robot in place to the desired angle
+     * <p>Uses the PID controller for auto(autoDriveRotateController)
+     * @param radians The desired angle to rotate to
+     * @return Robot status
+     */
+    public int rotateRobot(double radians) {
+        if(firstTime){
+            // Reset control variables
+            firstTime = false;
+            setpointCounter = 0;
+
+            // Reset PID Controller
+            autoDriveRotateController.reset();
+            autoDriveRotateController.setSetpoint(radians);
+            autoDriveRotateController.setTolerance(2 * AUTO_DRIVE_ROTATE_TOLERANCE);
+        }
+        // Increment setpointCounter if the robot is at the setpoint
+        if(autoDriveRotateController.atSetpoint()){
+            setpointCounter++;
+            // Robot has finished its rotation
+            if(setpointCounter >= 5){
+                firstTime = true;
+                return Robot.DONE;
+            }
+        }
+        else {
+            // Get rotate velocity and rotate with teleopDrive()
+            double rotateVelocity = autoDriveRotateController.calculate(getYawAdjusted(), radians);
+            teleopDrive(0, 0, rotateVelocity, true);
+        }
+        return Robot.CONT;
+    }
+
+    /**
+     * <p>Sort of wrapper function which uses an AprilTag as a target angle
+     * <p>If the desired AprilTag is not found, it returns Robot.FAIL
+     * @param id The ID of the AprilTag to focus on
+     * @return Robot status
+     */
+    public int alignWithAprilTag(int id) {
+        // Get the NetworkTable for the limelight
+        NetworkTable aprilTagTable = NetworkTableInstance.getDefault().getTable("limelight");
+        
+        /* Check if there's a valid AprilTag in vision and
+         * if the target AprilTag is the one we're looking for
+         *  tv is a boolean for if an AprilTag is in view
+         *  tid is a double for the id of the target AprilTag, 
+         *      ie. the AprilTag in the best view of the camera
+         */
+        if(aprilTagTable.getEntry("tv").getBoolean(false) &&
+            aprilTagTable.getEntry("tid").getDouble(0.0) == id){
+            
+            // Get the target AprilTag's pose in robot space, {x, y, z, rx, ry, rz}
+            double[] targetPoseRobotSpace = aprilTagTable.getEntry("targetpose_robotspace").getDoubleArray(new double[0]);
+            double targetAngle = targetPoseRobotSpace[5];   // Get the z angle of the AprilTag relative to the robot
+                
+            // Rotate to the angle and return its status
+            return rotateRobot(targetAngle);
+        }
+        else {  // Target AprilTag not found, start search pattern, rotate +-90 degrees
+            // TODO Please go over this, it doesn't look right
+            if(getYawAdjusted() >= Math.PI / 2){    // If rotated 90 degrees clockwise, rotate counter-clockwise
+                teleopDrive(0, 0, -1, true);
+            }
+            else if(getYawAdjusted() <= -Math.PI / 2){  // Rotated 90 degrees counter-clockwise, rotate clockwise
+                teleopDrive(0, 0, 1, true);
+            }
+            return Robot.CONT;
+        }
+        //return Robot.FAIL;  // No AprilTag in sight, fail
     }
 
     /****************************************************************************************** 
