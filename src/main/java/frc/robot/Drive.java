@@ -14,7 +14,10 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTableType;
+import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -35,7 +38,7 @@ public class Drive {
     private static final double MAX_WHEEL_SPEED         		 = 1;
 
     private final double AUTO_DRIVE_TOLERANCE        = 0.05;
-    private final double AUTO_DRIVE_ROTATE_TOLERANCE = 0.05;
+    private final double AUTO_DRIVE_ROTATE_TOLERANCE = 0.05;    // Radians
 
     // Instance Variables
     private int     printCount             = 0;
@@ -409,52 +412,60 @@ public class Drive {
             setpointCounter = 0;
 
             // Reset PID Controller
-            autoDriveRotateController.reset();
             autoDriveRotateController.setSetpoint(radians);
-            autoDriveRotateController.setTolerance(2 * AUTO_DRIVE_ROTATE_TOLERANCE);
         }
+        double rotateVelocity = autoDriveRotateController.calculate(getYawAdjusted(), radians);
+        
         // Increment setpointCounter if the robot is at the setpoint
         if(autoDriveRotateController.atSetpoint()){
             setpointCounter++;
             // Robot has finished its rotation
             if(setpointCounter >= 5){
                 firstTime = true;
+                teleopDrive(0, 0, 0, true);
                 return Robot.DONE;
             }
         }
         else {
-            // Get rotate velocity and rotate with teleopDrive()
-            double rotateVelocity = autoDriveRotateController.calculate(getYawAdjusted(), radians);
-            teleopDrive(0, 0, rotateVelocity, true);
+            setpointCounter = 0;    // Reset setpoint counter
         }
+        
+        // Get rotate velocity and rotate with teleopDrive()
+        teleopDrive(0, 0, MathUtil.clamp(rotateVelocity, -1.0, 1.0), true);
+        
         return Robot.CONT;
     }
 
     /**
      * <p>Sort of wrapper function which uses an AprilTag as a target angle
-     * <p>If the desired AprilTag is not found, it returns Robot.FAIL
-     * @param id The ID of the AprilTag to focus on
+     * <p>If the pipeline is out of range, it returns Robot.FAIL
+     * <p>The id param is only used to ensure the correct AprilTag is found
+     * @param pipeline The limelight pipeline to searchfor the AprilTag
+     * @param id The ID of the target AprilTag
      * @return Robot status
      */
-    public int alignWithAprilTag(int id) {
+    public int alignWithAprilTag(int pipeline, int id) {
         // Get the NetworkTable for the limelight
         NetworkTable aprilTagTable = NetworkTableInstance.getDefault().getTable("limelight");
+
+        // Set the pipeline
+        aprilTagTable.getEntry("pipeline").setNumber(pipeline);
         
         /* Check if there's a valid AprilTag in vision and
          * if the target AprilTag is the one we're looking for
          *  tv is a boolean for if an AprilTag is in view
-         *  tid is a double for the id of the target AprilTag, 
-         *      ie. the AprilTag in the best view of the camera
+         *  tid is a double for the id of the target AprilTag
          */
         if(aprilTagTable.getEntry("tv").getBoolean(false) &&
             aprilTagTable.getEntry("tid").getDouble(0.0) == id){
             
-            // Get the target AprilTag's pose in robot space, {x, y, z, rx, ry, rz}
-            double[] targetPoseRobotSpace = aprilTagTable.getEntry("targetpose_robotspace").getDoubleArray(new double[0]);
-            double targetAngle = targetPoseRobotSpace[5];   // Get the z angle of the AprilTag relative to the robot
-                
-            // Rotate to the angle and return its status
-            return rotateRobot(targetAngle);
+            // Get the horizontal offset of the AprilTag to the crosshair, in degrees
+            // Then apply the offset angle to the robot's current angle
+            double targetOffset = aprilTagTable.getEntry("tx").getDouble(0.0);
+            double targetAngle = targetOffset + getYawAdjusted();
+
+            // Rotate to the angle converted to radians
+            return rotateRobot(Math.toRadians(targetAngle));
         }
         else {  // Target AprilTag not found, start search pattern, rotate +-90 degrees
             // TODO Please go over this, it doesn't look right
@@ -469,7 +480,7 @@ public class Drive {
         //return Robot.FAIL;  // No AprilTag in sight, fail
     }
 
-    /****************************************************************************************** 
+    /******************************************************************************************
     *
     *    SETTING FUNCTIONS
     * 
@@ -696,6 +707,49 @@ public class Drive {
 			backLeft.rotateControllerAtSetpoint() && 
 			backRight.rotateControllerAtSetpoint();
 	}
+
+    public void testAprilTagID() {
+        NetworkTable aprilTagTable = NetworkTableInstance.getDefault().getTable("limelight");
+
+        double tid = aprilTagTable.getEntry("tid").getDouble(0.0);
+
+        SmartDashboard.putNumber("LimelightID", tid);
+    }
+
+    public void testAprilTagXY() {
+        NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
+
+        /*
+         * tx:
+         *  Horizontal offset from crosshair to target
+         *  Positive is to the right relative to the camera
+         *  LL1: -27 degrees to 27 degrees / LL2: -29.8 to 29.8 degrees
+         * ty:
+         *  Vertical offset from crosshair to target
+         *  Positive is downwards relative to the camera
+         *  LL1: -20.5 degrees to 20.5 degrees / LL2: -24.85 to 24.85 degrees
+         * ta:
+         *  Target area percent, 0% - 100% of image
+         */
+        double tx = table.getEntry("tx").getDouble(0.0);    // Target x
+        double ty = table.getEntry("ty").getDouble(0.0);    // Target y
+        double ta = table.getEntry("ta").getDouble(0.0);    // Target area
+
+        //post to smart dashboard periodically
+        SmartDashboard.putNumber("LimelightX", tx);
+        SmartDashboard.putNumber("LimelightY", ty);
+        SmartDashboard.putNumber("LimelightArea", ta);
+    }
+
+    public void testAprilTagPipeline(int pipeline) {
+        NetworkTable aprilTagTable = NetworkTableInstance.getDefault().getTable("limelight");
+        
+        aprilTagTable.getEntry("pipeline").setNumber(pipeline); // Set the new pipeline
+        
+        double pipelineNT = aprilTagTable.getEntry("pipeline").getDouble(0);    // Check if the change is reflected in NetworkTables
+        SmartDashboard.putNumber("LimelightPipeline", pipelineNT);  // Display current pipeline from NetworkTables
+    }
+
 
 }
 

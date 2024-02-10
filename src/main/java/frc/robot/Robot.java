@@ -211,9 +211,14 @@ public class Robot extends TimedRobot {
         }
     }*/
 
+    // Test AprilTags
+    drive.testAprilTagID();
+    drive.testAprilTagXY();
+    drive.testAprilTagPipeline(0);
+
     // Test rotation
-    double radians = SmartDashboard.getNumber("Angle(Radians)", 0);
-    drive.rotateRobot(radians);
+    //double radians = SmartDashboard.getNumber("Angle(Radians)", 0);
+    //drive.rotateRobot(radians);
 
     // Test shooter
     //shooter.startShooting(power);
