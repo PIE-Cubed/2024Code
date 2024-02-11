@@ -159,7 +159,7 @@ public class Robot extends TimedRobot {
   public void testInit() {
     //SmartDashboard.putNumber("Power", 0.0);     // Power input through shuffleboard
     //driveDistance = false;
-    SmartDashboard.putNumber("Angle(Radians)", 0);
+    SmartDashboard.putNumber("Angle(Deg)", 0);
   }
 
   /** This function is called periodically during test mode. */
@@ -212,13 +212,16 @@ public class Robot extends TimedRobot {
     }*/
 
     // Test AprilTags
-    drive.testAprilTagID();
-    drive.testAprilTagXY();
-    drive.testAprilTagPipeline(0);
+    //drive.testAprilTagID();
+    //drive.testAprilTagXY();
+    //drive.testAprilTagPipeline(0);
+    //drive.testMegaTagPose(0);
+    drive.alignWithAprilTag(1, 4);  // Pipeline 1 has a mask for ID 4
 
     // Test rotation
-    //double radians = SmartDashboard.getNumber("Angle(Radians)", 0);
-    //drive.rotateRobot(radians);
+    //double deg = SmartDashboard.getNumber("Angle(Deg)", 0);
+    //int status = drive.rotateRobot(Math.toRadians(deg));
+    //if(status == DONE) System.out.println("Done");
 
     // Test shooter
     //shooter.startShooting(power);

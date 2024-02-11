@@ -38,7 +38,7 @@ public class Drive {
     private static final double MAX_WHEEL_SPEED         		 = 1;
 
     private final double AUTO_DRIVE_TOLERANCE        = 0.05;
-    private final double AUTO_DRIVE_ROTATE_TOLERANCE = 0.05;    // Radians
+    private final double AUTO_DRIVE_ROTATE_TOLERANCE = 0.05;    // Radians, ~3 degrees
 
     // Instance Variables
     private int     printCount             = 0;
@@ -77,8 +77,13 @@ public class Drive {
     public  SwerveDriveKinematics swerveDriveKinematics;
 
     // Rotate variables
-    int setpointCounter = 0;
-    boolean firstTime = true;
+    private int setpointCounter = 0;
+    private boolean firstTime = true;
+    private PIDController rotatePidController;
+    private final double ROTATE_TOLERANCE_RADIANS = 0.05;
+    private PIDController aprilTagRotatePidController;
+
+
 
     // NavX
     public static AHRS ahrs;
@@ -149,21 +154,30 @@ public class Drive {
         autoDriveRotateController = new PIDController(adrp, adri, adrd);
         autoDriveRotateController.setTolerance(AUTO_DRIVE_ROTATE_TOLERANCE);
         autoDriveRotateController.enableContinuousInput(Math.PI, -Math.PI);
-
+        
+        rotatePidController = new PIDController(1.65, 0, 0);
+        rotatePidController.setTolerance(ROTATE_TOLERANCE_RADIANS);
+        rotatePidController.enableContinuousInput(Math.PI, -Math.PI);
+        
+        // TODO Get PID snappier, 0.80 has a little wobble but isnt that fast
+        aprilTagRotatePidController = new PIDController(0.80, 0, 0);
+        aprilTagRotatePidController.setTolerance(ROTATE_TOLERANCE_RADIANS);
+        aprilTagRotatePidController.enableContinuousInput(Math.PI, -Math.PI);
     }
 
     /**
      * The function to drive the robot using a joystick.
-     * <p>Positive Forward Goes Forward, Positive Strafe Goes Left, and Positive Rotation Speed is Counter-Clockwise 
+     * <p>Positive Forward Goes Forward, Positive Strafe Goes Left, and Positive Rotation Speed is Clockwise 
      * @param forwardSpeed
      * @param strafeSpeed
-     * @param rotationSpeed
+     * @param rotationSpeed Positive is clockwise
      * @param fieldDrive
      */
     public void teleopDrive(double forwardSpeed, double strafeSpeed, double rotationSpeed, boolean fieldDrive) {
         // Calulates the SwerveModuleStates and determines if they are field relative
         // ChassisSpeeds uses positive values for going left(strafeSpeed)
         // ChassisSpeeds uses negative values for clockwise rotations(rotationSpeed)
+        // Multiply by -1 for rotationSpeed to change input(positive for clockwise) to ChassisSpeeds
         SwerveModuleState[] swerveModuleStates = 
             swerveDriveKinematics.toSwerveModuleStates(
                 fieldDrive
@@ -402,27 +416,27 @@ public class Drive {
     /**
      * <p>Rotates the robot in place to the desired angle
      * <p>Uses the PID controller for auto(autoDriveRotateController)
-     * @param radians The desired angle to rotate to
+     * @param targetRadians The desired angle to rotate to
      * @return Robot status
      */
-    public int rotateRobot(double radians) {
+    public int rotateRobot(double targetRadians) {
         if(firstTime){
             // Reset control variables
             firstTime = false;
             setpointCounter = 0;
 
             // Reset PID Controller
-            autoDriveRotateController.setSetpoint(radians);
+            rotatePidController.setSetpoint(targetRadians);
         }
-        double rotateVelocity = autoDriveRotateController.calculate(getYawAdjusted(), radians);
+        double rotateVelocity = rotatePidController.calculate(getYawAdjusted(), targetRadians);
         
         // Increment setpointCounter if the robot is at the setpoint
-        if(autoDriveRotateController.atSetpoint()){
+        if(rotatePidController.atSetpoint()){
             setpointCounter++;
             // Robot has finished its rotation
             if(setpointCounter >= 5){
                 firstTime = true;
-                teleopDrive(0, 0, 0, true);
+                teleopDrive(0, 0, 0, false); // Stop rotating
                 return Robot.DONE;
             }
         }
@@ -431,7 +445,7 @@ public class Drive {
         }
         
         // Get rotate velocity and rotate with teleopDrive()
-        teleopDrive(0, 0, MathUtil.clamp(rotateVelocity, -1.0, 1.0), true);
+        teleopDrive(0, 0, MathUtil.clamp(rotateVelocity, -1.0, 1.0), false);
         
         return Robot.CONT;
     }
@@ -448,36 +462,45 @@ public class Drive {
         // Get the NetworkTable for the limelight
         NetworkTable aprilTagTable = NetworkTableInstance.getDefault().getTable("limelight");
 
-        // Set the pipeline
-        aprilTagTable.getEntry("pipeline").setNumber(pipeline);
+        if(firstTime){
+            aprilTagTable.getEntry("pipeline").setNumber(pipeline); // Set the pipeline
+            setpointCounter = 0;
+            aprilTagRotatePidController.setSetpoint(0); // Reset PID Controller
+            firstTime = false;
+        }
         
         /* Check if there's a valid AprilTag in vision and
          * if the target AprilTag is the one we're looking for
-         *  tv is a boolean for if an AprilTag is in view
+         *  tv is a double for if an AprilTag is in view
          *  tid is a double for the id of the target AprilTag
          */
-        if(aprilTagTable.getEntry("tv").getBoolean(false) &&
+        if(aprilTagTable.getEntry("tv").getDouble(0.0) == 1 &&
             aprilTagTable.getEntry("tid").getDouble(0.0) == id){
             
-            // Get the horizontal offset of the AprilTag to the crosshair, in degrees
-            // Then apply the offset angle to the robot's current angle
-            double targetOffset = aprilTagTable.getEntry("tx").getDouble(0.0);
-            double targetAngle = targetOffset + getYawAdjusted();
+            // Get the horizontal offset of the AprilTag to the crosshair, convert to radians
+            double targetOffset = Math.toRadians(aprilTagTable.getEntry("tx").getDouble(0.0));
+            double rotateVelocity = -1 * aprilTagRotatePidController.calculate(targetOffset, 0);
 
-            // Rotate to the angle converted to radians
-            return rotateRobot(Math.toRadians(targetAngle));
-        }
-        else {  // Target AprilTag not found, start search pattern, rotate +-90 degrees
-            // TODO Please go over this, it doesn't look right
-            if(getYawAdjusted() >= Math.PI / 2){    // If rotated 90 degrees clockwise, rotate counter-clockwise
-                teleopDrive(0, 0, -1, true);
+            // Increment setpointCounter if the robot is at the setpoint
+            if(aprilTagRotatePidController.atSetpoint()){
+                setpointCounter++;
+                // Robot has finished its rotation
+                if(setpointCounter >= 5){
+                    firstTime = true;
+                    teleopDrive(0, 0, 0, false); // Stop rotating
+                    return Robot.DONE;
+                }
             }
-            else if(getYawAdjusted() <= -Math.PI / 2){  // Rotated 90 degrees counter-clockwise, rotate clockwise
-                teleopDrive(0, 0, 1, true);
+            else {
+                setpointCounter = 0;    // Reset setpoint counter
             }
+            
+            // Get rotate velocity and rotate with teleopDrive()
+            teleopDrive(0, 0, MathUtil.clamp(rotateVelocity, -1.0, 1.0), false);
+
             return Robot.CONT;
         }
-        //return Robot.FAIL;  // No AprilTag in sight, fail
+        return Robot.FAIL;  // No AprilTag in sight, fail
     }
 
     /******************************************************************************************
@@ -574,11 +597,12 @@ public class Drive {
         return backRight.getModulePosition();
     }
 
-    /*
-     * Adjusts for all autos starting facing backwards
+    /**
+     * Converts degrees to radians from NavX
+     * 
      */
     public double getYawAdjusted() {
-        return MathUtil.angleModulus(-Units.degreesToRadians( ahrs.getYaw() ));
+        return MathUtil.angleModulus(Units.degreesToRadians( ahrs.getYaw() ));
     }
 
 
@@ -712,8 +736,10 @@ public class Drive {
         NetworkTable aprilTagTable = NetworkTableInstance.getDefault().getTable("limelight");
 
         double tid = aprilTagTable.getEntry("tid").getDouble(0.0);
+        double tv = aprilTagTable.getEntry("tv").getDouble(0);
 
         SmartDashboard.putNumber("LimelightID", tid);
+        SmartDashboard.putNumber("LimelightValidTag", tv);
     }
 
     public void testAprilTagXY() {
