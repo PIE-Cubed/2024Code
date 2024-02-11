@@ -83,8 +83,6 @@ public class Drive {
     private final double ROTATE_TOLERANCE_RADIANS = 0.05;
     private PIDController aprilTagRotatePidController;
 
-
-
     // NavX
     public static AHRS ahrs;
 
@@ -207,7 +205,7 @@ public class Drive {
     /**
      * Drives N feet
      * @param distance -> The distance to drive in feet
-     * @param power -> The power to apply to the motor (controls speed, values should be between -1 and 1)
+     * @param power -> The power to apply to the motor(-1 - 1)
      * @return
      */
     public int driveDistance(double distanceFeet, double power) {
@@ -235,10 +233,7 @@ public class Drive {
             driveDistanceFirstTime = true;
             stopWheels();
             return Robot.DONE;
-        }
-
-        // Clamp the motor power to any number between -1 and 1
-        double clampedPower = MathUtil.clamp(power, -1, 1);      
+        }      
 
         /* TJM
          *  If we set swerveModulesStates we can power the rotate motor in case it moves while driving
@@ -248,16 +243,19 @@ public class Drive {
          * swerveModuleStates[0].angle = new Rotatation2d(angle)  use the same angle as we rotated to
          * 
          *  frontLeft.setDesiredState(swerveModuleStates[0]);
-            frontRight.setDesiredState(swerveModuleStates[1]);
-            backLeft.setDesiredState(swerveModuleStates[2]);
-            backRight.setDesiredState(swerveModuleStates[3]);
+         *  frontRight.setDesiredState(swerveModuleStates[1]);
+         *  backLeft.setDesiredState(swerveModuleStates[2]);
+         *  backRight.setDesiredState(swerveModuleStates[3]);
          */
+        // Sets drive power and module rotation in radians
+        SwerveModuleState state = new SwerveModuleState(power, new Rotation2d(0.0));
+        
 
-        // Set the motor power
-        frontLeft.setDriveMotorPower(clampedPower);
-        frontRight.setDriveMotorPower(clampedPower);
-        backLeft.setDriveMotorPower(clampedPower);
-        backRight.setDriveMotorPower(clampedPower);
+
+        frontLeft.setDesiredState(state);
+        frontRight.setDesiredState(state);
+        backLeft.setDesiredState(state);
+        backRight.setDesiredState(state);
 
         System.out.println(backRight.getDrivePositionFeet());
         return Robot.CONT;
@@ -353,9 +351,9 @@ public class Drive {
     /**
      * <p>Rotates wheels based on a drive command without giving the drive motors full power
      * <p>Uses wheel optimizations
-     * @param driveX
-     * @param driveY
-     * @param driveZ
+     * @param driveX The x velocity
+     * @param driveY The y velocity
+     * @param driveZ The rotational velocity
      * @return Robot status, CONT or DONE
      */
     public int rotateWheels(double driveX, double driveY, double driveZ) {
@@ -365,7 +363,7 @@ public class Drive {
          * 
          * I added notes in Robot where you were calling this....
          */
-        SwerveModuleState[] swerveModuleStates = 
+         SwerveModuleState[] swerveModuleStates = 
             swerveDriveKinematics.toSwerveModuleStates( ChassisSpeeds.fromFieldRelativeSpeeds(driveX, driveY, driveZ, new Rotation2d( getYawAdjusted() )));
         
         // Makes sure the wheels only rotate, not drive forward(zeros forward speed)
@@ -524,7 +522,6 @@ public class Drive {
         backRight .setDesiredState(desiredStates[3]);
     }
 
-
     /****************************************************************************************** 
     *
     *    HELPER FUNCTIONS
@@ -554,7 +551,6 @@ public class Drive {
     public boolean gyroConnected() {
         return ahrs.isConnected();
     }
-
 
     /****************************************************************************************** 
     *
@@ -604,7 +600,6 @@ public class Drive {
     public double getYawAdjusted() {
         return MathUtil.angleModulus(Units.degreesToRadians( ahrs.getYaw() ));
     }
-
 
     /****************************************************************************************** 
     *
