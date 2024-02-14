@@ -6,6 +6,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -21,6 +22,7 @@ import edu.wpi.first.networktables.NetworkTableType;
 import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.LimelightHelpers.LimelightResults;
 
 /**
  * Start of the Drive class
@@ -524,29 +526,28 @@ public class Drive {
      * <p>Gets the distance to the target AprilTag in meters
      * <p>The id param is only used to ensure the correct AprilTag is found
      * <p>Returns -1 if it fails to get the AprilTag
+     * <p>Using 'LimelightHelpers' as NetworkTables crashes when getting pose
      * @param pipeline The limelight pipeline to searchfor the AprilTag
      * @param id The ID of the target AprilTag
      * @return Distance to AprilTag in meters
      */
     public double getDistanceToAprilTagMeters(int pipeline, int id) {
         NetworkTable aprilTagTable = NetworkTableInstance.getDefault().getTable("limelight");
-        //aprilTagTable.getEntry("pipeline").setNumber(pipeline); // Set the pipeline
-
+        
+        LimelightHelpers.setPipelineIndex("limelight", pipeline);   // Set the pipeline
         if(aprilTagTable.getEntry("tv").getDouble(0.0) == 1 &&
            aprilTagTable.getEntry("tid").getDouble(0.0) == id){
-            /* x, y, z, rx, ry, rz, ct+cl
-             * meters and degrees
-             * x: forward, positive being forward
-             * y: horizontal, poitive being to the right
-             * z: vertical, positive being up
-             * ^ I THINK ^
-            */ 
-            Double[] targetPose = aprilTagTable.getEntry("targetpose_robotspace").getDoubleArray(new Double[6]);
-            double x = targetPose[0];   // Horizontal offset to center of robot
-            double y = targetPose[1];   // Forward offset to center of robot
+            /* Pose3d:
+             *  x: The horizontal offset
+             *  y: The vertical offset
+             *  z: The forward offset
+             */
+            Pose3d targetpose = LimelightHelpers.getTargetPose3d_RobotSpace("limelight");
+            double x = targetpose.getX();
+            double z = targetpose.getZ();
 
-            double distance = Math.sqrt((x*x) + (y*y)); // Calculate distance with pythagorean's formula
-            System.out.println("X: " + x + " Y: " + y);
+            double distance = Math.sqrt((x*x) + (z*z)); // Calculate distance with pythagorean's formula
+            System.out.println("X: " + x + " Z: " + z);
             return distance;
         }
         return -1;
