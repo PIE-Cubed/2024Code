@@ -12,6 +12,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics.SwerveDriveWheelStates;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
@@ -77,11 +78,14 @@ public class Drive {
     public  SwerveDriveKinematics swerveDriveKinematics;
 
     // Rotate variables
+    private double initialAngle;
     private int setpointCounter = 0;
     private boolean firstTime = true;
     private PIDController rotatePidController;
-    private final double ROTATE_TOLERANCE_RADIANS = 0.05;
     private PIDController aprilTagRotatePidController;
+    private PIDController rotationAdjustPidController;
+    private final double ROTATE_TOLERANCE_RADIANS = 0.05;
+    private final double ROTATE_ADJUST_TOLERANCE_RADIANS = 0.01745329;   // ~1 degree
 
     // NavX
     public static AHRS ahrs;
@@ -161,6 +165,11 @@ public class Drive {
         aprilTagRotatePidController = new PIDController(0.80, 0, 0);
         aprilTagRotatePidController.setTolerance(ROTATE_TOLERANCE_RADIANS);
         aprilTagRotatePidController.enableContinuousInput(Math.PI, -Math.PI);
+
+        // TODO Test and calibrate
+        rotationAdjustPidController = new PIDController(0.1, 0, 0);
+        rotationAdjustPidController.setTolerance(ROTATE_ADJUST_TOLERANCE_RADIANS);
+        rotationAdjustPidController.enableContinuousInput(Math.PI, -Math.PI);
     }
 
     /**
@@ -222,7 +231,8 @@ public class Drive {
              * not zero the encoder.
              */
             backRight.zeroDriveEncoder();
-            
+            initialAngle = getYawAdjusted();
+
             System.out.println("Current position: " + backRight.getDrivePositionFeet() + "ft");
             System.out.println("Target position: " + distanceFeet + "ft");
         }
@@ -248,14 +258,23 @@ public class Drive {
          *  backRight.setDesiredState(swerveModuleStates[3]);
          */
         // Sets drive power and module rotation in radians
-        SwerveModuleState state = new SwerveModuleState(power, new Rotation2d(0.0));
         
+        // TODO Implement rotationAdjustPidController to keep the robot in a straight line
+        double rotatePower = rotationAdjustPidController.calculate(getYawAdjusted(), initialAngle);
+        //rotateWheels(0, 0, rotatePower);
+        
+        /* Only forwards speed, as wheels should be rotated to point forward, 
+         * and rotation speed, to keep robot in a strait line */
+        SwerveModuleState[] states = swerveDriveKinematics.toSwerveModuleStates(
+            new ChassisSpeeds(power, 0.0, rotatePower));
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, MAX_WHEEL_SPEED);   // Desaturate
+        setModuleStates(states);
 
-
+        /*SwerveModuleState state = new SwerveModuleState(power, new Rotation2d(0.0));
         frontLeft.setDesiredState(state);
         frontRight.setDesiredState(state);
         backLeft.setDesiredState(state);
-        backRight.setDesiredState(state);
+        backRight.setDesiredState(state);*/
 
         System.out.println(backRight.getDrivePositionFeet());
         return Robot.CONT;
@@ -499,6 +518,38 @@ public class Drive {
             return Robot.CONT;
         }
         return Robot.FAIL;  // No AprilTag in sight, fail
+    }
+
+    /**
+     * <p>Gets the distance to the target AprilTag in meters
+     * <p>The id param is only used to ensure the correct AprilTag is found
+     * <p>Returns -1 if it fails to get the AprilTag
+     * @param pipeline The limelight pipeline to searchfor the AprilTag
+     * @param id The ID of the target AprilTag
+     * @return Distance to AprilTag in meters
+     */
+    public double getDistanceToAprilTagMeters(int pipeline, int id) {
+        NetworkTable aprilTagTable = NetworkTableInstance.getDefault().getTable("limelight");
+        //aprilTagTable.getEntry("pipeline").setNumber(pipeline); // Set the pipeline
+
+        if(aprilTagTable.getEntry("tv").getDouble(0.0) == 1 &&
+           aprilTagTable.getEntry("tid").getDouble(0.0) == id){
+            /* x, y, z, rx, ry, rz, ct+cl
+             * meters and degrees
+             * x: forward, positive being forward
+             * y: horizontal, poitive being to the right
+             * z: vertical, positive being up
+             * ^ I THINK ^
+            */ 
+            Double[] targetPose = aprilTagTable.getEntry("targetpose_robotspace").getDoubleArray(new Double[6]);
+            double x = targetPose[0];   // Horizontal offset to center of robot
+            double y = targetPose[1];   // Forward offset to center of robot
+
+            double distance = Math.sqrt((x*x) + (y*y)); // Calculate distance with pythagorean's formula
+            System.out.println("X: " + x + " Y: " + y);
+            return distance;
+        }
+        return -1;
     }
 
     /******************************************************************************************

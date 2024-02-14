@@ -216,7 +216,8 @@ public class Robot extends TimedRobot {
     //drive.testAprilTagXY();
     //drive.testAprilTagPipeline(0);
     //drive.testMegaTagPose(0);
-    drive.alignWithAprilTag(1, 4);  // Pipeline 1 has a mask for ID 4
+    System.out.println(drive.getDistanceToAprilTagMeters(0, 7));
+    //drive.alignWithAprilTag(1, 4);  // Pipeline 1 has a mask for ID 4
 
     // Test rotation
     //double deg = SmartDashboard.getNumber("Angle(Deg)", 0);
@@ -225,6 +226,9 @@ public class Robot extends TimedRobot {
 
     // Test shooter
     //shooter.startShooting(power);
+
+    // Test controller
+    //SmartDashboard.putNumber("Controller L", controls.getForwardSpeed());
   }
 
   /** This function is called once when the robot is first started up. */
