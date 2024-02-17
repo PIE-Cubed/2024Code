@@ -1,6 +1,5 @@
 package frc.robot;
 
-import com.fasterxml.jackson.annotation.ObjectIdGenerator.IdKey;
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -12,13 +11,9 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics.SwerveDriveWheelStates;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.NetworkTableType;
-import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -86,6 +81,7 @@ public class Drive {
     private PIDController rotationAdjustPidController;
     private final double ROTATE_TOLERANCE_RADIANS = 0.05;
     private final double ROTATE_ADJUST_TOLERANCE_RADIANS = 0.01745329;   // ~1 degree
+    private final double ANGLE_DIFFERENCE_POWER_MULTIPLIER = -4;
 
     // NavX
     public static AHRS ahrs;
@@ -98,22 +94,24 @@ public class Drive {
         try {
             ahrs = new AHRS(SPI.Port.kMXP);
         } catch (RuntimeException ex) {
-            System.out.println("[ERROR] >> Error Instantiating navX MXP: " + ex.getMessage() + "\n");
+            System.out.println("[ERROR] >> Failed to instantiate navX MXP: " + ex.getMessage() + "\n");
         }
 
         ahrs.reset();
+        System.out.println("[INFO] >> Connecting to navX...");
 
         while (ahrs.isConnected() == false) {
-            // System.out.println("Connecting navX");
+            System.out.print(".");
         }
 
-        System.out.println("[INFO] >> navX Connected...");
+        System.out.println("\n[INFO] >> navX Connected.");
+        System.out.println("[INFO] >> Calibrating navX...");
 
         while (ahrs.isCalibrating() == true) {
-            System.out.println("[INFO] >> Calibrating navX...");
+            System.out.print(".");
         }
 
-        System.out.println("[INFO] >> navX Ready");
+        System.out.println("\n[INFO] >> navX Ready!");
 
         ahrs.zeroYaw();
 
@@ -277,6 +275,65 @@ public class Drive {
         backRight.setDesiredState(state);*/
 
         System.out.println(backRight.getDrivePositionFeet());
+        return Robot.CONT;
+    }
+
+    /**
+     * Drives N feet
+     * @param angle -> The angle at which to drive forward at
+     * @param distanceFeet -> The distance to drive in feet
+     * @param power -> The power to apply to the motor(-1 - 1)
+     * @return
+     */
+    public int driveDistanceWithAngle(double angle, double distanceFeet, double power) {
+        // The difference between the current and target angle
+        double angleDifference = 0;
+
+        // If this function is being run for the first time, find the encoder 
+        // tick value (Current encoder tick + Number of ticks in the distance parameter)
+        if (driveDistanceFirstTime) {
+            driveDistanceFirstTime = false;
+
+            // Get the initial angle of the robot from th NavX
+            initialAngle = getYawAdjusted();
+            
+            // Calculate the angle difference between the current and target angle
+            angleDifference = rotationAdjustPidController.calculate(getYawAdjusted(), Math.toRadians(angle));
+
+            // Print some debug stuff
+            // Current values
+            System.out.println("Current position: " + backRight.getDrivePositionFeet() + "ft");
+            System.out.println("Current angle: " + initialAngle + " Radians (" + Math.toDegrees(initialAngle) + "°)");
+
+            // Target values
+            System.out.println("Target position: " + distanceFeet + "ft");
+            System.out.println("Target angle: " + angle + "° (" + angleDifference + " Radians)");
+        }
+
+        // Stop the robot if it has driven the correct distance
+        if (Math.abs(backRight.getDrivePositionFeet()) >= Math.abs(distanceFeet)){
+            System.out.println("Done, traveled " + backRight.getDrivePositionFeet() + "ft");
+            driveDistanceFirstTime = true;
+            stopWheels();
+            return Robot.DONE;
+        }
+
+        // Calculate the angle difference between the current and target angle
+        angleDifference = rotationAdjustPidController.calculate(getYawAdjusted(), initialAngle + Math.toRadians(angle)) * ANGLE_DIFFERENCE_POWER_MULTIPLIER;
+        
+        // Inverts power if moving backwards
+        if (distanceFeet < 0) {
+            power = power * -1;
+        }
+
+        /* Only forwards speed, as wheels should be rotated to point forward, 
+         * and rotation speed, to keep robot in a strait line */
+        SwerveModuleState[] states = swerveDriveKinematics.toSwerveModuleStates(
+            new ChassisSpeeds(power, 0.0, angleDifference));
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, MAX_WHEEL_SPEED);   // Desaturate
+        setModuleStates(states);
+
+        SmartDashboard.putNumber("Angle difference", angleDifference);
         return Robot.CONT;
     }
 
@@ -762,6 +819,17 @@ public class Drive {
         frontRight.setDriveMotorPower(power);
         backLeft.setDriveMotorPower(power);
         backRight.setDriveMotorPower(power);
+    }
+
+    /**
+     * Sets all rotate motors to the given power
+     * @param power
+     */
+    public void setAllRotateMotorPower(double power) {
+        frontLeft.setRotateMotorPower(power);
+        frontRight.setRotateMotorPower(power);
+        backLeft.setRotateMotorPower(power);
+        backRight.setRotateMotorPower(power);
     }
 
 	/**
