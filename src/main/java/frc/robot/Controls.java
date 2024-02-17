@@ -40,6 +40,8 @@ public class Controls {
 	private XboxController driveController;
 	private XboxController manipulatorController;
 
+	private boolean fieldDrive;
+
 	// Rate limiters
 	//private SlewRateLimiter xLimiter;
 	//private SlewRateLimiter yLimiter;
@@ -52,6 +54,8 @@ public class Controls {
 		// Instance Creation
 		driveController = new XboxController(DRIVE_ID);
 		manipulatorController = new XboxController(MANIPULATOR_ID);
+
+		fieldDrive = false;
 
 		// Create the rate limiters
 		//xLimiter      = new SlewRateLimiter(12); // -6 to 6 in two seconds
@@ -153,6 +157,13 @@ public class Controls {
 	 */
 	public boolean enablePrecisionDrive() {
 		return driveController.getRightTriggerAxis() > 0.05;
+	}
+
+	public boolean toggleFieldDrive() {
+		if(driveController.getLeftTriggerAxis() > 0.05) {
+			fieldDrive = !fieldDrive;
+		}
+		return fieldDrive;
 	}
 
 	// Targeting
