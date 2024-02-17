@@ -161,7 +161,6 @@ public class Robot extends TimedRobot {
   public void testInit() {
     //SmartDashboard.putNumber("Power", 0.0);     // Power input through shuffleboard
     //driveDistance = false;
-    SmartDashboard.putNumber("Angle(Deg)", 0);
   }
 
   /** This function is called periodically during test mode. */
@@ -170,10 +169,21 @@ public class Robot extends TimedRobot {
     //testTeleopDrive();
     //double power = SmartDashboard.getNumber("Power", 0.0);
 
+    // Test driving at an angle
+    if (status == Robot.CONT) {
+      status = drive.driveDistanceWithAngle(0, -2, 0.3);
+    }
+
     // Test power and velocity
     /*
     drive.setAllDriveMotorPower(MathUtil.clamp(power, -1, 1));
     drive.printPowerandVelocity();*/
+
+    // Rotate wheels to zero
+    /*Measure<Angle> angleMeasurement = Units.Radians.of(0);  // Get the desired angle as a Measure<Angle> 
+    Translation2d vect = new Translation2d(0.0, new Rotation2d(angleMeasurement));  // Create Translation2d for rotateWheels
+    status = drive.rotateWheelsNoOpt(vect.getX(), vect.getY(), 0.0);  // Rotate wheels to 0 radians
+    */
 
     // Test distance
     /*double distance = 5;
@@ -218,7 +228,7 @@ public class Robot extends TimedRobot {
     //drive.testAprilTagXY();
     //drive.testAprilTagPipeline(0);
     //drive.testMegaTagPose(0);
-    System.out.println(drive.getDistanceToAprilTagMeters(0, 7));
+    //System.out.println(drive.getDistanceToAprilTagMeters(0, 7));
     //drive.alignWithAprilTag(1, 4);  // Pipeline 1 has a mask for ID 4
 
     // Test rotation
