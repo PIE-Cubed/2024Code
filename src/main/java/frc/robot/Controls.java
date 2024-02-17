@@ -111,18 +111,6 @@ public class Controls {
 
 		return speed;
 	}
-
-	public boolean speakerTargeting() { return driveController.getAButtonPressed(); }
-
-	public boolean setupAMP() { return driveController.getBButtonPressed(); }
-
-	public boolean trapSequence() { return driveController.getXButtonPressed(); }
-
-	public boolean autoClimb() { return driveController.getYButtonPressed(); }
-
-	public boolean resetGyro() { return driveController.povUp(null).getAsBoolean(); }
-
-	public boolean lockWheels() { return driveController.povDown(null).getAsBoolean(); }
 	
 	/**
 	 * Pressing left joystick will zero yaw in case of emergency
@@ -155,13 +143,6 @@ public class Controls {
 	public boolean autoKill() {
 		return driveController.getStartButtonPressed();
 	}
-
-	/************************************************************
-	 *
-	 * 	MANIPULATOR FUNCTIONS
-	 * 
-	 ************************************************************/
-
 
 }
 // End of the Controls class

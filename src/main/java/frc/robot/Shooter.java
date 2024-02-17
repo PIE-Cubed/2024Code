@@ -44,4 +44,9 @@ import com.revrobotics.CANSparkFlex;
         shooterMotor2.set(0);
     }
 
+    public void spinup() {
+        shooterMotor1.set(0.75);
+        shooterMotor2.set(0.75);
+    }
+
 }

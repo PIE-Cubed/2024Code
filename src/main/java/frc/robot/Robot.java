@@ -43,6 +43,7 @@ public class Robot extends TimedRobot {
 	Drive          drive;
 	Auto           auto;
   Shooter        shooter;
+  Arm            arm;
 
 	// Constants
 	private final double ROTATE_SPEED_OFFSET = -0.16;
@@ -75,6 +76,7 @@ public class Robot extends TimedRobot {
 		position = new PoseEstimation(drive);
 		auto     = new Auto(drive, position);
     shooter  = new Shooter();
+    arm      = new Arm();
 
 		// Instance getters
 		nTables  = CustomTables.getInstance();
@@ -270,6 +272,14 @@ public class Robot extends TimedRobot {
 
 		drive.teleopDrive(forwardSpeed, strafeSpeed, rotateSpeed, true);
 	}
+
+  private void armControl() {
+    double extensionDistance = 0;
+    double elevationRadians = 0;
+
+    arm.extendArm(extensionDistance);
+    arm.rotateArm(elevationRadians);
+  }
 
   public void testTeleopDrive() {
     double rotateSpeed = controls.getRotateSpeed();
