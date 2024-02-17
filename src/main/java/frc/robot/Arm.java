@@ -83,7 +83,7 @@ public class Arm {
     /**
      * Extends the arm to the given distance
      * 
-     * @param distance
+     * @param distance The distance to extend to, in meters
      * @return Robot.CONT or Robot.DONE
      */
     public int extendArm(double distance) {
@@ -141,11 +141,34 @@ public class Arm {
      * <p>Rotates the arm to -27 degrees, from horizontal
      * <p>Retracts the arm fully
      * 
+     * TODO rotate and extend the arm in a way that it doesn't extend past 1ft during its rotation
+     * 
      * @return Robot.CONT or Robot.DONE
      */
     public int returnToRestingPosition() {
-        int rotateStatus = rotateArm(Math.toRadians(27));
+        int rotateStatus = rotateArm(Math.toRadians(-27));
         int extensionStatus = extendArm(0.0);
+
+        // Only return Robot.CONT when both are done
+        if(rotateStatus == Robot.DONE && extensionStatus == Robot.DONE) {
+            return Robot.DONE;
+        }
+        else {
+            return Robot.CONT;
+        }
+    }
+
+    /**
+     * <p>Rotates the arm to -33.5 degrees, from horizontal
+     * <p>Extends the arm to 5 inches or 0.127 meters
+     * 
+     * TODO rotate and extend the arm in a way that it doesn't extend past 1ft during its rotation
+     * 
+     * @return Robot.CONT or Robot.DONE
+     */
+    public int gotoGroundPickupPosition() {
+        int rotateStatus = rotateArm(Math.toRadians(-33.5));
+        int extensionStatus = extendArm(0.127);
 
         // Only return Robot.CONT when both are done
         if(rotateStatus == Robot.DONE && extensionStatus == Robot.DONE) {
