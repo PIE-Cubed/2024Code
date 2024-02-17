@@ -44,6 +44,7 @@ public class Robot extends TimedRobot {
 	Auto           auto;
   Shooter        shooter;
   Arm            arm;
+  Grabber        grabber;
 
 	// Constants
 	private final double ROTATE_SPEED_OFFSET = -0.16;
@@ -77,6 +78,7 @@ public class Robot extends TimedRobot {
 		auto     = new Auto(drive, position);
     shooter  = new Shooter();
     arm      = new Arm();
+    grabber  = new Grabber();
 
 		// Instance getters
 		nTables  = CustomTables.getInstance();
@@ -283,6 +285,13 @@ public class Robot extends TimedRobot {
 		drive.teleopDrive(forwardSpeed, strafeSpeed, rotateSpeed, true);
 	}
 
+  private void grabberControl() {
+    boolean intake = controls.runIntake();
+    boolean outtake = controls.ejectNote();
+    
+    grabber.intakeOutake(intake, outtake);
+  }
+
   private void armControl() {
     boolean rotateUp     = controls.moveArmUp();
     boolean rotateDown   = controls.moveArmDown();
@@ -290,7 +299,7 @@ public class Robot extends TimedRobot {
     boolean extendArm    = controls.extendArm();
     boolean retractArm   = controls.retractArm();
 
-    arm.rotateArmIncrement(rotateDown, rotateUp);
+    arm.rotateArmIncrement(rotateUp, rotateDown);
     arm.moveArmIncrement(extendArm, retractArm);
   }
 

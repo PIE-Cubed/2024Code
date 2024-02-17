@@ -104,7 +104,7 @@ public class Arm {
             extensionSetpointCounter = 0;
         }
 
-        distance = MathUtil.clamp(distance, 0.0, LOWER_EXTENSION_LIMIT);  // Limit extension
+        distance = MathUtil.clamp(distance, LOWER_EXTENSION_LIMIT, UPPER_EXTENSION_LIMIT);  // Limit extension
         
         double power = extenderMotorPidController.calculate(extenderEncoder.getPosition(), distance);
         extenderMotor.set(MathUtil.clamp(power, -1, 1));
@@ -161,14 +161,17 @@ public class Arm {
 
     /**
      * Rotates arm incrementaly up
+     * 
+     * @param rotateUp
+     * @param rotateDown
      */
-    public void rotateArmIncrement(boolean rotateDown, boolean rotateUp) {
-        if(rotateDown) {
-            elevationAngle -= 0.05;
-        }
-        else if(rotateUp){
+    public void rotateArmIncrement(boolean rotateUp, boolean rotateDown) {
+        if(rotateUp){
             elevationAngle += 0.05;
         }
+        else if(rotateDown) {
+            elevationAngle -= 0.05;
+        } 
         else {
             elevationAngle += 0;
         }
@@ -180,6 +183,9 @@ public class Arm {
 
     /**
      * Extends arm incrementaly up
+     * 
+     * @param extend
+     * @param retract
      */
     public void moveArmIncrement(boolean extend, boolean retract) {
         if(extend) {
