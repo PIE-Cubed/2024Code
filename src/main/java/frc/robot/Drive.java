@@ -184,8 +184,6 @@ public class Drive {
         // ChassisSpeeds uses positive values for going left(strafeSpeed)
         // ChassisSpeeds uses negative values for clockwise rotations(rotationSpeed)
         // Multiply by -1 for rotationSpeed to change input(positive for clockwise) to ChassisSpeeds
-        System.out.println("Yaw: " + getYawAdjusted() + " Field Drive: " + fieldDrive);
-
         SwerveModuleState[] swerveModuleStates = 
             swerveDriveKinematics.toSwerveModuleStates(
                 fieldDrive
