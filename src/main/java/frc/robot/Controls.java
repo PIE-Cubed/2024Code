@@ -26,8 +26,6 @@
 
 package frc.robot;
 
-import javax.swing.plaf.basic.BasicBorders.RadioButtonBorder;
-
 import edu.wpi.first.wpilibj.XboxController;
 
 /**

@@ -17,7 +17,6 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.LimelightHelpers.LimelightResults;
 
 /**
  * Start of the Drive class
