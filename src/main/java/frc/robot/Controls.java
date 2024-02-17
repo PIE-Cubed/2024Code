@@ -251,6 +251,14 @@ public class Controls {
 	public boolean ejectNote() {
 		return manipulatorController.getLeftBumperPressed();
 	}
+
+	/***
+	 * Pressing the right bumper will shoot the note softly
+	 * @return Manipulator controller right bumper pressed
+	 */
+	public boolean dumpShot() {
+		return manipulatorController.getRightBumper();
+	}
 	
 	// Shooting
 	/***
