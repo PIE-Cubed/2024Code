@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -77,7 +78,7 @@ public class Robot extends TimedRobot {
 		nTables  = CustomTables.getInstance();
 
     LimelightHelpers.setLEDMode_ForceOff("limelight");
-  	}
+  }
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -99,7 +100,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    position.updateOdometry();
+    position.updatePoseTrackers();
   }
 
   /**
@@ -250,15 +251,16 @@ public class Robot extends TimedRobot {
 	 * Controls the wheels in TeleOp
 	 */
 	private void wheelControl() {
-		// Variables
 		// Gets the Drive Values
 		double  rotateSpeed       = controls.getRotateSpeed();
 		double  strafeSpeed       = controls.getStrafeSpeed();
 		double  forwardSpeed      = controls.getForwardSpeed();
 
-		// Gets the Manipulator values
+		// Gets Manipulator values
 		boolean zeroYaw           = controls.zeroYaw();
+    boolean fieldDrive        = controls.toggleFieldDrive();
 
+    // Zeros the gyro
 		if (zeroYaw == true) {
 			drive.resetYaw();
 		}
@@ -275,9 +277,12 @@ public class Robot extends TimedRobot {
      * drive.teleopDrive(newXVel, newYVel, rotateSpeed, true);
      */
 
-		drive.teleopDrive(forwardSpeed, strafeSpeed, rotateSpeed, true);
+		drive.teleopDrive(forwardSpeed, strafeSpeed, rotateSpeed, fieldDrive);
 	}
 
+  /**
+   * 
+   */
   private void grabberControl() {
     boolean intake = controls.runIntake();
     boolean outtake = controls.ejectNote();
@@ -285,6 +290,9 @@ public class Robot extends TimedRobot {
     grabber.intakeOutake(intake, outtake);
   }
 
+  /**
+   * 
+   */
   private void armControl() {
     boolean rotateUp     = controls.moveArmUp();
     boolean rotateDown   = controls.moveArmDown();
@@ -296,6 +304,9 @@ public class Robot extends TimedRobot {
     arm.moveArmIncrement(extendArm, retractArm);
   }
 
+  /**
+   * 
+   */
   public void testTeleopDrive() {
     double rotateSpeed = controls.getRotateSpeed();
     double strafeSpeed = controls.getStrafeSpeed();
@@ -305,6 +316,9 @@ public class Robot extends TimedRobot {
 
   }
 
+  /**
+   * 
+   */
   private void testAprilTag() {
     // Using NetworkTables
     NetworkTable aprilTagTable = NetworkTableInstance.getDefault().getTable("limelight");
@@ -314,19 +328,10 @@ public class Robot extends TimedRobot {
     
       /* Print the AprilTag's pose in robotspace
        * Prints out as: x, y, z, rx, ry, rz
-      */
+       */
       for(double num : targetPoseRobotSpace) {
         System.out.print(num + ", ");
       }
     }
-        
-    /* Using LimelightResults
-     * LimelightResults llresults = LimelightHelpers.getLatestResults("limelight");
-     * System.out.println(
-     *  llresults.targetingResults.getBotPose3d().getRotation().getX() + " : " + 
-     *  llresults.targetingResults.getBotPose3d().getRotation().getY() + " : " + 
-     *  llresults.targetingResults.getBotPose3d().getRotation().getZ());
-    */
-
   }
 }
