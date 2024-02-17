@@ -284,11 +284,14 @@ public class Robot extends TimedRobot {
 	}
 
   private void armControl() {
-    double extensionDistance = 0;
-    double elevationRadians = 0;
+    boolean rotateUp     = controls.moveArmUp();
+    boolean rotateDown   = controls.moveArmDown();
 
-    arm.extendArm(extensionDistance);
-    arm.rotateArm(elevationRadians);
+    boolean extendArm    = controls.extendArm();
+    boolean retractArm   = controls.retractArm();
+
+    arm.rotateArmIncrement(rotateDown, rotateUp);
+    arm.moveArmIncrement(extendArm, retractArm);
   }
 
   public void testTeleopDrive() {

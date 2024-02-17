@@ -19,7 +19,8 @@ public class Arm {
     private final int ELEVATION_MOTOR_CAN = 0;
     private final int MOTOR_CURRENT_LIMIT = 70;
 
-    private final double EXTENSION_LIMIT = 0;
+    private final double LOWER_EXTENSION_LIMIT = 0;
+    private final double UPPER_EXTENSION_LIMIT = 0;
     private final double LOWER_ELEVATION_LIMIT = 0;
     private final double UPPER_ELEVATION_LIMIT = 0;
 
@@ -41,9 +42,11 @@ public class Arm {
     // Action variables
     private boolean extensionFirstTime;
     private int extensionSetpointCounter;
+    private double extensionDistance;
 
     private boolean elevationFirstTime;
     private int elevationSetpointCounter;
+    private double elevationAngle;
 
     public Arm() {
         // Setup extender motor
@@ -73,9 +76,11 @@ public class Arm {
         // Action variables
         extensionFirstTime = true;
         extensionSetpointCounter = 0;
+        extensionDistance = 0.0;
 
         elevationFirstTime = true;
         elevationSetpointCounter = 0;
+        elevationAngle = 0.0;
     }
 
     /**
@@ -99,7 +104,7 @@ public class Arm {
             extensionSetpointCounter = 0;
         }
 
-        distance = MathUtil.clamp(distance, 0.0, EXTENSION_LIMIT);  // Limit extension
+        distance = MathUtil.clamp(distance, 0.0, LOWER_EXTENSION_LIMIT);  // Limit extension
         
         double power = extenderMotorPidController.calculate(extenderEncoder.getPosition(), distance);
         extenderMotor.set(MathUtil.clamp(power, -1, 1));
@@ -152,6 +157,44 @@ public class Arm {
         else {
             return Robot.CONT;
         }
+    }
+
+    /**
+     * Rotates arm incrementaly up
+     */
+    public void rotateArmIncrement(boolean rotateDown, boolean rotateUp) {
+        if(rotateDown) {
+            elevationAngle -= 0.05;
+        }
+        else if(rotateUp){
+            elevationAngle += 0.05;
+        }
+        else {
+            elevationAngle += 0;
+        }
+
+        elevationAngle = MathUtil.clamp(elevationAngle, LOWER_ELEVATION_LIMIT, UPPER_ELEVATION_LIMIT);
+
+        rotateArm(elevationAngle);
+    }
+
+    /**
+     * Extends arm incrementaly up
+     */
+    public void moveArmIncrement(boolean extend, boolean retract) {
+        if(extend) {
+            extensionDistance += 0.01;
+        }
+        else if(retract){
+            extensionDistance -= 0.01;
+        }
+        else {
+            extensionDistance += 0;
+        }
+
+        extensionDistance = MathUtil.clamp(extensionDistance, LOWER_EXTENSION_LIMIT, UPPER_EXTENSION_LIMIT);
+
+        extendArm(extensionDistance);
     }
 
 }
