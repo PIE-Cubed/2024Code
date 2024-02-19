@@ -158,10 +158,15 @@ public class Robot extends TimedRobot {
   /** This function is called once when test mode is enabled. */
   @Override
   public void testInit() {
-    SmartDashboard.putNumber("Shooter Power", 0.0);     // Power input through shuffleboard
+    // Initialize Shuffleboard
+    SmartDashboard.putNumber("Shooter Power", 0.0);
     SmartDashboard.putNumber("Grabber Power", 0.0);
+
+    // Reset the robot status. This ensures that we don't need to restart the code after every time we
+    // run the robot.
+    status= Robot.CONT;
+
     //driveDistance = false;
-    System.out.println("Start test");
   }
 
   private static int increment = 0;
@@ -169,15 +174,25 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
+    // Read values from shuffleboard
+    double shooterPower = SmartDashboard.getNumber("Shooter Power", 0.0);
+    double grabberPower = SmartDashboard.getNumber("Grabber Power", 0.0);
+
     //testTeleopDrive();
-    //double shooterPower = SmartDashboard.getNumber("Shooter Power", 0.0);
-    //double grabberPower = SmartDashboard.getNumber("Grabber Power", 0.0);
   
     // Test shooter
     //shooter.startShooting(shooterPower);
+
     // Test grabber
-    //grabber.setPower(grabberPower);
-    grabber.testColorSensor();
+    // Does not automatically stop the grabber or check for a note
+    //grabber.setMotorPower(grabberPower);
+
+    // Automatically stops the grabber when a note is detected
+    /*if (status == Robot.CONT) {
+      status = grabber.intakeOutake(true, false);
+    }*/
+
+    //grabber.testColorSensor();
 
     //arm.rotateArm(Math.toDegrees(60));
     // 60 from horizontal, arm extends 4in
