@@ -17,22 +17,34 @@ import com.revrobotics.CANSparkFlex;
 
  public class Shooter {
 
-    private final int SHOOTER_MOTOR_1_CAN = 20;
-    private final int SHOOTER_MOTOR_2_CAN = 21;
+    private final int SHOOTER_MOTOR_1_CAN = 21;
+    private final int SHOOTER_MOTOR_2_CAN = 22;
     private final int MOTOR_CURRENT_LIMIT = 70;
+    private final double DUMP_SHOT_POWER  = 0.25;   // TODO tune power value
     private CANSparkFlex shooterMotor1;
     private CANSparkFlex shooterMotor2;
 
     public Shooter(){
         shooterMotor1 = new CANSparkFlex(SHOOTER_MOTOR_1_CAN, MotorType.kBrushless);
         shooterMotor1.setSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
-        shooterMotor1.setIdleMode(IdleMode.kBrake);
+        shooterMotor1.setIdleMode(IdleMode.kCoast);
         
         shooterMotor2 = new CANSparkFlex(SHOOTER_MOTOR_2_CAN, MotorType.kBrushless);
         shooterMotor2.setSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
-        shooterMotor2.setIdleMode(IdleMode.kBrake);
+        shooterMotor2.setIdleMode(IdleMode.kCoast);
     }
 
+    /**
+     * Shoots the note at low power
+     */
+    public void doDumpShot() {
+        startShooting(DUMP_SHOT_POWER);
+    }
+
+    /**
+     * Set power to spin motors, might not be needed if there's only two power values to use 
+     * @param shootPower The power to shoot at
+     */
     public void startShooting(double shootPower) {
         shooterMotor1.set(MathUtil.clamp(shootPower, -1.0, 1.0));
         shooterMotor2.set(MathUtil.clamp(shootPower, -1.0, 1.0));
@@ -43,9 +55,21 @@ import com.revrobotics.CANSparkFlex;
         shooterMotor2.set(0);
     }
 
+    /**
+     * Spinup motor, to be ready at all times
+     */
     public void spinup() {
         shooterMotor1.set(0.75);
         shooterMotor2.set(0.75);
+    }
+
+    /**********************************************************************
+     * 
+     *    TEST FUNCTIONS
+     * 
+     **********************************************************************/
+    public void testSpin() {
+        shooterMotor2.set(0.05);
     }
 
 }
