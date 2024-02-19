@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
@@ -58,6 +59,8 @@ public class Robot extends TimedRobot {
   // Distance test status
   private boolean driveDistance;  /// Whether the robot is at the drive step of the test
 
+  private int armStatus = CONT;
+
 	/**
 	 * Constructor
 	 */
@@ -69,10 +72,10 @@ public class Robot extends TimedRobot {
 		drive    = new Drive();
 		controls = new Controls();
 		position = new PoseEstimation(drive);
-		auto     = new Auto(drive, position);
     shooter  = new Shooter();
     arm      = new Arm();
     grabber  = new Grabber();
+		auto     = new Auto(drive, position, arm);
 
 		// Instance getters
 		nTables  = CustomTables.getInstance();
@@ -100,7 +103,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    position.updatePoseTrackers();
+    //position.updatePoseTrackers();
   }
 
   /**
@@ -155,20 +158,48 @@ public class Robot extends TimedRobot {
   /** This function is called once when test mode is enabled. */
   @Override
   public void testInit() {
-    //SmartDashboard.putNumber("Power", 0.0);     // Power input through shuffleboard
+    SmartDashboard.putNumber("Shooter Power", 0.0);     // Power input through shuffleboard
+    SmartDashboard.putNumber("Grabber Power", 0.0);
     //driveDistance = false;
+    System.out.println("Start test");
   }
+
+  private static int increment = 0;
 
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
     //testTeleopDrive();
-    //double power = SmartDashboard.getNumber("Power", 0.0);
+    //double shooterPower = SmartDashboard.getNumber("Shooter Power", 0.0);
+    //double grabberPower = SmartDashboard.getNumber("Grabber Power", 0.0);
+  
+    // Test shooter
+    //shooter.startShooting(shooterPower);
+    // Test grabber
+    //grabber.setPower(grabberPower);
+    grabber.testColorSensor();
+
+    //arm.rotateArm(Math.toDegrees(60));
+    // 60 from horizontal, arm extends 4in
+    
+    //System.out.println("Extension Encoder: " + Math.toDegrees(arm.getExtendPosition()));
+    //arm.testExtend(0.05);
+    //
+    //System.out.println("Elevation Encoder" + Math.toDegrees(arm.getElevationPosition()));
+    //if (increment == 0)
+    //  System.out.println("ArmStatus: " + armStatus);
+    //if(armStatus != DONE) {
+    //  armStatus = arm.rotateArm(Math.toRadians(45));  
+    //}
+    //increment++;
+    
+    //arm.testElevate();
+    //System.out.println("Elevation Encoder", Math.toDegrees(arm.getElevationPosition()));
 
     // Test driving at an angle
-    if (status == Robot.CONT) {
-      status = drive.driveDistanceWithAngle(0, -2, 0.3);
-    }
+    //if (status == Robot.CONT) {
+    //  status = drive.driveDistanceWithAngle(0, -2, 0.3);
+    //}
 
     // Test power and velocity
     /*
@@ -232,9 +263,6 @@ public class Robot extends TimedRobot {
     //int status = drive.rotateRobot(Math.toRadians(deg));
     //if(status == DONE) System.out.println("Done");
 
-    // Test shooter
-    //shooter.startShooting(power);
-
     // Test controller
     //SmartDashboard.putNumber("Controller L", controls.getForwardSpeed());
   }
@@ -283,26 +311,24 @@ public class Robot extends TimedRobot {
   /**
    * 
    */
-  private void grabberControl() {
-    boolean intake = controls.runIntake();
-    boolean outtake = controls.ejectNote();
-    
-    grabber.intakeOutake(intake, outtake);
-  }
-
-  /**
-   * 
-   */
-  private void armControl() {
-    boolean rotateUp     = controls.moveArmUp();
-    boolean rotateDown   = controls.moveArmDown();
-
-    boolean extendArm    = controls.extendArm();
-    boolean retractArm   = controls.retractArm();
-
-    arm.rotateArmIncrement(rotateUp, rotateDown);
-    arm.moveArmIncrement(extendArm, retractArm);
-  }
+ // private void grabberControl() {
+ //   boolean intake = controls.runIntake();
+ //   boolean outtake = controls.ejectNote();
+ //   
+ //   grabber.intakeOutake(intake, outtake);
+ // }
+//
+ // /**
+ // private void armControl() {
+ //   boolean rotateUp     = controls.moveArmUp();
+ //   boolean rotateDown   = controls.moveArmDown();
+//
+ //   boolean extendArm    = controls.extendArm();
+ //   boolean retractArm   = controls.retractArm();
+//
+ //   arm.rotateArmIncrement(rotateUp, rotateDown);
+ //   arm.moveArmIncrement(extendArm, retractArm);
+ // }
 
   /**
    * 
