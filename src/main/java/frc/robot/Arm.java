@@ -7,13 +7,14 @@ import com.revrobotics.SparkAbsoluteEncoder.Type;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 
 public class Arm {
     private final int EXTENDER_MOTOR_CAN = 3;
-    private final int ELEVATION_MOTOR_CAN = 1;
+    private final int ELEVATION_MOTOR_CAN = 23;
     private final int MOTOR_CURRENT_LIMIT = 70;
 
     // TODO Find and tune limits
@@ -24,10 +25,14 @@ public class Arm {
 
     // TODO Tune tolerances
     private final double EXTENSION_TOLERANCE_TICKS = 1;    // Currently ticks until conversion factor is made
-    private final double ELEVATION_TOLERANCE_RADIANS = 0.05;
+    private final double ELEVATION_TOLERANCE_DEGREES = 2;
 
     private final double EXTENDER_ENCODER_FACTOR = 1;  // TODO Find conversion factor
-    private final double ELEVATION_ENCODER_FACTOR = 2 * Math.PI;
+    private final double ELEVATION_ENCODER_FACTOR = 360;
+
+    private final double ARM_EXTENDER_PID_P = 0.016; // (0.5 / 30) # 0.027
+    private final double ARM_EXTENDER_PID_I= 0.0;
+
 
     private CANSparkMax extenderMotor;
     private CANSparkMax elevationMotor;
@@ -72,8 +77,10 @@ public class Arm {
         extenderMotorPidController = new PIDController(1.0, 0.0, 0.0);
         extenderMotorPidController.setTolerance(EXTENSION_TOLERANCE_TICKS);
 
-        elevationMotorPidController = new PIDController(0.75, 0.0, 0.0);
-        elevationMotorPidController.setTolerance(ELEVATION_TOLERANCE_RADIANS);
+        elevationMotorPidController = new PIDController(ARM_EXTENDER_PID_P, ARM_EXTENDER_PID_I, 0.0);
+        elevationMotorPidController.setIntegratorRange(-0.1, 0.1);
+        elevationMotorPidController.setTolerance(ELEVATION_TOLERANCE_DEGREES);
+        elevationMotorPidController.enableContinuousInput(0, 360);
         
 
         // Action variables
@@ -84,6 +91,7 @@ public class Arm {
         elevationAngle = 0.0;
 
         startPosition = elevationEncoder.getPosition();
+        System.out.println("[INFO] >> Arm start position: " + startPosition);
     }
 
     /**
@@ -119,40 +127,41 @@ public class Arm {
      * @param radians The angle to rotate to in radians
      * @return Robot.CONT or Robot.DONE
      */
-    public int rotateArm(double radians) {
+    public int rotateArm(double degrees) {
         // If greater than 360, bring back down to a range of 0-360
-        if(radians > 2*Math.PI) {
-            radians -= 2*Math.PI;
-        }
+        /*if(degrees > 360) {
+            degrees -= 360;
+        }*/
 
         if(elevationFirstTime) {
             elevationFirstTime = false;
-            elevationMotorPidController.setSetpoint(radians);
+            elevationMotorPidController.setSetpoint(degrees);
         }
 
-        /* Limit position, such that greater than 180deg is 0,
-           this is because the zero is at the bottom and can 
+        /* Limit position, such that greater than 180deg is 0.
+           This is because the zero is at the bottom and can 
            fluctuate from -1 - 359deg */
-        double pos = 0;
-        if(elevationEncoder.getPosition() > Math.PI){
+        /*double pos = 0;
+        if(elevationEncoder.getPosition() > 180){
             pos = 0.0;
         }
         else {
             pos = elevationEncoder.getPosition();
-        }
+        }*/
                 
         if(elevationMotorPidController.atSetpoint()) {
             elevationFirstTime = true;
             return Robot.DONE;
         }
         else {
-            System.out.println("From: " + Math.toDegrees(pos) + 
-                " To: " + Math.toDegrees(radians));
-            //radians = MathUtil.clamp(radians, LOWER_ELEVATION_LIMIT, UPPER_ELEVATION_LIMIT);    // Limit rotation
+            System.out.println("From: " + elevationEncoder.getPosition() + 
+                " To: " + degrees);
+            //double ClampedDegrees = MathUtil.clamp(ClampedDegrees, LOWER_ELEVATION_LIMIT, UPPER_ELEVATION_LIMIT);    // Limit rotation
     
-            /* Negate the power because the motor is inverted
-               but the PID will be positive to increase the angle */
-            double power = -elevationMotorPidController.calculate(pos);
+            /* Negative power moves the arm upward;
+               The PID value will be positive to increase the angle */
+            double power = -elevationMotorPidController.calculate(elevationEncoder.getPosition(), degrees);
+            SmartDashboard.putNumber("Arm power", power);
             elevationMotor.set(MathUtil.clamp(power, -1, 1));   // Clamp
         }
         
@@ -219,10 +228,17 @@ public class Arm {
 
     // Positive power goes down
     public void testElevate() {
-        if(elevationEncoder.getPosition() != Math.toRadians(5)){
-            elevationMotor.set(-0.1);
-        }
-        System.out.println(Math.toDegrees(elevationEncoder.getPosition()));
+        /*if(elevationEncoder.getPosition() != Math.toRadians(5)){
+            elevationMotor.set(-0.05);
+        }*/
+
+        elevationMotor.set(-0.1);
+        System.out.println(elevationEncoder.getPosition());
+    }
+
+    // Put the arm position on shuffleboard
+    public void testPosition() {
+        System.out.println(elevationEncoder.getPosition());
     }
 
     // Positive power extends the motor

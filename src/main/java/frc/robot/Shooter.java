@@ -23,8 +23,10 @@ import com.revrobotics.CANSparkFlex;
     private final double DUMP_SHOT_POWER  = 0.25;   // TODO tune power value
     private CANSparkFlex shooterMotor1;
     private CANSparkFlex shooterMotor2;
+    private Grabber instancedGrabber;
 
     public Shooter(){
+        // Instantiate shooter motors
         shooterMotor1 = new CANSparkFlex(SHOOTER_MOTOR_1_CAN, MotorType.kBrushless);
         shooterMotor1.setSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
         shooterMotor1.setIdleMode(IdleMode.kCoast);
@@ -32,6 +34,12 @@ import com.revrobotics.CANSparkFlex;
         shooterMotor2 = new CANSparkFlex(SHOOTER_MOTOR_2_CAN, MotorType.kBrushless);
         shooterMotor2.setSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
         shooterMotor2.setIdleMode(IdleMode.kCoast);
+
+        // Get the same grabber instance
+        instancedGrabber = Grabber.getInstance();
+
+        // Spin the motors
+        //spinup();
     }
 
     /**
@@ -48,19 +56,21 @@ import com.revrobotics.CANSparkFlex;
     public void startShooting(double shootPower) {
         shooterMotor1.set(MathUtil.clamp(shootPower, -1.0, 1.0));
         shooterMotor2.set(MathUtil.clamp(shootPower, -1.0, 1.0));
+        instancedGrabber.intakeOutake(true, false);
     }
 
     public void stopShooting() {
         shooterMotor1.set(0);
         shooterMotor2.set(0);
+        instancedGrabber.intakeOutake(false, false);
     }
 
     /**
      * Spinup motor, to be ready at all times
      */
     public void spinup() {
-        shooterMotor1.set(0.75);
-        shooterMotor2.set(0.75);
+        shooterMotor1.set(1);
+        shooterMotor2.set(1);
     }
 
     /**********************************************************************

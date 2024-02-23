@@ -47,6 +47,7 @@ public class Robot extends TimedRobot {
 	// Variables
 	private int status = CONT;
 	private boolean firstTime = true;
+  private boolean shooterState = false;
 
 	// Auto path
 	private static final String autoMode = "Wall";
@@ -58,7 +59,10 @@ public class Robot extends TimedRobot {
 
   // Distance test status
   private boolean driveDistance;  /// Whether the robot is at the drive step of the test
-
+  
+  // Statuses for each "module" 
+  private int grabberStatus = CONT;
+  private int moveStatus = CONT;
   private int armStatus = CONT;
 
 	/**
@@ -74,7 +78,7 @@ public class Robot extends TimedRobot {
 		position = new PoseEstimation(drive);
     shooter  = new Shooter();
     arm      = new Arm();
-    grabber  = new Grabber();
+    grabber  = Grabber.getInstance();
 		auto     = new Auto(drive, position, arm);
 
 		// Instance getters
@@ -139,12 +143,34 @@ public class Robot extends TimedRobot {
 
   /** This function is called once when teleop is enabled. */
   @Override
-  public void teleopInit() {}
+  public void teleopInit() {
+    // Reset the robot status. This ensures that we don't need to restart the code after every time we
+    // run the robot.
+    grabberStatus = Robot.CONT;
+    armStatus = Robot.CONT;
+    status = Robot.CONT;
+
+    // Turn on the shooter motors
+    shooter.spinup();    
+  }
 
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
+    // Allows for driving the robot
     wheelControl();
+
+    // Allows for controlling the arm
+    armControl();
+
+    // Allows for shooting notes
+    shooterControl();
+    
+    // Allows for controlling the grabber
+    grabberControl();
+
+    grabber.intakeOutake(true, false);
+    armStatus = arm.rotateArm(342);
   }
 
   /** This function is called once when the robot is disabled. */
@@ -164,7 +190,9 @@ public class Robot extends TimedRobot {
 
     // Reset the robot status. This ensures that we don't need to restart the code after every time we
     // run the robot.
-    status= Robot.CONT;
+    grabberStatus = Robot.CONT;
+    armStatus = Robot.CONT;
+    status = Robot.CONT;
 
     //driveDistance = false;
   }
@@ -188,13 +216,18 @@ public class Robot extends TimedRobot {
     //grabber.setMotorPower(grabberPower);
 
     // Automatically stops the grabber when a note is detected
-    /*if (status == Robot.CONT) {
-      status = grabber.intakeOutake(true, false);
+    /*if (grabberStatus == Robot.CONT) {
+      grabberStatus = grabber.intakeOutake(true, false);
     }*/
 
+    // Retrieve RGB, IR, and proximity values from the color sensor
     //grabber.testColorSensor();
 
-    //arm.rotateArm(Math.toDegrees(60));
+    // Move the arm to a certain degree
+    if (armStatus == Robot.CONT) {
+      armStatus = arm.rotateArm(60.5);
+    }
+
     // 60 from horizontal, arm extends 4in
     
     //System.out.println("Extension Encoder: " + Math.toDegrees(arm.getExtendPosition()));
@@ -307,6 +340,7 @@ public class Robot extends TimedRobot {
 		if (zeroYaw == true) {
 			drive.resetYaw();
 		}
+    
 		// Calculated line of best fit for relationship between rotate speed and drift angle
     // Think its used to travel straight when rotating
     // Will allegedly revisit later to adjust to new motors 
@@ -321,6 +355,59 @@ public class Robot extends TimedRobot {
      */
 
 		drive.teleopDrive(forwardSpeed, strafeSpeed, rotateSpeed, fieldDrive);
+	}
+
+  /**
+	 * Controls the arm in TeleOp
+	 */
+	private void armControl() {
+    // Move the arm up/down incrementally
+    if(controls.moveArmUp()) {
+      arm.rotateArmIncrement(true, false);
+    }
+    else if (controls.moveArmDown()) {
+      arm.rotateArmIncrement(false, true);
+    }
+
+
+	}
+
+  /**
+	 * Controls the shooter in TeleOp
+	 */
+	private void shooterControl() {
+    // Start the shooter wheels
+		/*if(controls.startShooterWheels()){
+      shooter.spinup();
+    }*/
+
+    // Shoot a note
+    if (controls.enableShooter() == true) {
+      shooterState = true;
+      shooter.startShooting(1);
+    }
+    else if (shooterState == true && controls.enableShooter() == false) {
+      shooterState = false;
+      shooter.stopShooting();
+    }
+	}
+
+  /**
+	 * Controls the grabber in TeleOp
+	 */
+	private void grabberControl() {
+    // Start the grabber in ground mode
+		if (controls.enableGroundIntake() == true && status == Robot.CONT) {
+      status = grabber.intakeOutake(true, false);
+    } 
+    else if(shooterState == false) {
+      grabber.intakeOutake(false, false);
+    }
+
+    // Eject a note from the grabber
+		if (controls.ejectNote() == true && shooterState == false) {
+      grabber.intakeOutake(false, true);
+    }
 	}
 
   /**

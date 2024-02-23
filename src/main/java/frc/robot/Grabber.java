@@ -22,16 +22,25 @@ public class Grabber {
     public final double INTAKE_POWER = 0.9
     ;
     public final double OUTTAKE_POWER = 0.75;
-    public final double FEED_POWER = 0.75;
-    
+    public final double FEED_POWER = 0.75;  
+    public final double PROXIMITY_THRESHOLD = 155; 
     public final double IR_THRESHOLD = 150;
     
     private CANSparkMax grabberMotor1;
     private CANSparkMax grabberMotor2;
     private ColorSensorV3 colorSensor;
+    private static Grabber instancedGrabber;
+
+    public static synchronized Grabber getInstance() {
+        if (instancedGrabber == null){
+            instancedGrabber = new Grabber();
+        }
+        
+        return instancedGrabber;
+    }
     
     // Constructor
-    public Grabber() {
+    private Grabber() {
         // Instantiate grabber motors & sensors
         grabberMotor1 = new CANSparkMax(GRABBER_MOTOR1_CAN, MotorType.kBrushed);
         grabberMotor1.setInverted(GRABBER_MOTOR1_IS_INVERTED);
@@ -94,7 +103,7 @@ public class Grabber {
      * @return whether a note is found
      */
     public boolean noteDetected() {
-        return colorSensor.getIR() > IR_THRESHOLD;
+        return colorSensor.getProximity() > PROXIMITY_THRESHOLD;
     }
 
     /**
@@ -108,9 +117,9 @@ public class Grabber {
     public void testColorSensor() {
         Color detectedColor = colorSensor.getColor();
         
-        double r = detectedColor.red;
-        double g = detectedColor.green;
-        double b = detectedColor.blue;
+        double r = 255 * detectedColor.red;
+        double g = 255 * detectedColor.green;
+        double b = 255 * detectedColor.blue;
         double ir = colorSensor.getIR();
         double proximity = colorSensor.getProximity();
         
