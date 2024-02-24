@@ -4,14 +4,16 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-
-import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
 
 /**
@@ -79,7 +81,7 @@ public class Robot extends TimedRobot {
     shooter  = new Shooter();
     arm      = new Arm();
     grabber  = Grabber.getInstance();
-		auto     = new Auto(drive, position, arm);
+		auto     = new Auto(drive, position, arm, grabber, shooter);
 
 		// Instance getters
 		nTables  = CustomTables.getInstance();
@@ -93,8 +95,9 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.addOption("My Auto", kCustomAuto);
+    m_chooser.setDefaultOption("Speaker Center", "Speaker Center");
+    m_chooser.addOption("Speaker Left", "Speaker Left");
+    m_chooser.addOption("Speaker Right", "Speaker Right");
     SmartDashboard.putData("Auto choices", m_chooser);
   }
 
@@ -123,22 +126,39 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     m_autoSelected = m_chooser.getSelected();
-    // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
+    auto.selectedAuto = m_autoSelected;
+    //m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
+
     System.out.println("Auto selected: " + m_autoSelected);
   }
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    switch (m_autoSelected) {
-      case kCustomAuto:
-        // Put custom auto code here
-        break;
-      case kDefaultAuto:
-      default:
-        // Put default auto code here
-        break;
+    if (status == Robot.CONT) {
+      status = auto.speakerPosition();
     }
+
+    if (moveStatus == Robot.CONT) {
+      switch (m_autoSelected) {
+        case "Speaker Center":
+          break;
+
+        case "Speaker Left":
+          //moveStatus = drive.driveDistanceWithAngle(-35, 3, 0.1);
+          break;
+        
+        case "Speaker Right":
+          break;
+
+        default:
+          // Put default auto code here
+          break;
+      }
+    }
+
+    SmartDashboard.putNumber("Extend position", arm.getExtendPosition());
+    SmartDashboard.putNumber("Arm angle", arm.getElevationPosition());
   }
 
   /** This function is called once when teleop is enabled. */
@@ -151,7 +171,7 @@ public class Robot extends TimedRobot {
     status = Robot.CONT;
 
     // Turn on the shooter motors
-    shooter.spinup();    
+    //shooter.spinup();    
   }
 
   /** This function is called periodically during operator control. */
@@ -169,8 +189,8 @@ public class Robot extends TimedRobot {
     // Allows for controlling the grabber
     grabberControl();
 
-    grabber.intakeOutake(true, false);
-    armStatus = arm.rotateArm(342);
+    //grabber.intakeOutake(true, false);
+    //armStatus = arm.rotateArm(342);
   }
 
   /** This function is called once when the robot is disabled. */
@@ -216,7 +236,8 @@ public class Robot extends TimedRobot {
     //grabber.setMotorPower(grabberPower);
 
     // Automatically stops the grabber when a note is detected
-    /*if (grabberStatus == Robot.CONT) {
+    /*
+    if (grabberStatus == Robot.CONT) {
       grabberStatus = grabber.intakeOutake(true, false);
     }*/
 
@@ -225,40 +246,49 @@ public class Robot extends TimedRobot {
 
     // Move the arm to a certain degree
     if (armStatus == Robot.CONT) {
-      armStatus = arm.rotateArm(60.5);
+      armStatus = arm.rotateArm(54);
+    }
+    else {
+      armStatus = arm.maintainPosition(54);
     }
 
     // 60 from horizontal, arm extends 4in
+    /*
+    System.out.println("Extension Encoder: " + Math.toDegrees(arm.getExtendPosition()));
+
+    arm.testExtend(0.05);    
+    System.out.println("Elevation Encoder" + Math.toDegrees(arm.getElevationPosition()));
+
+    if (increment == 0)
+      System.out.println("ArmStatus: " + armStatus);
+    if(armStatus != DONE) {
+      armStatus = arm.rotateArm(Math.toRadians(45));  
+    }
     
-    //System.out.println("Extension Encoder: " + Math.toDegrees(arm.getExtendPosition()));
-    //arm.testExtend(0.05);
-    //
-    //System.out.println("Elevation Encoder" + Math.toDegrees(arm.getElevationPosition()));
-    //if (increment == 0)
-    //  System.out.println("ArmStatus: " + armStatus);
-    //if(armStatus != DONE) {
-    //  armStatus = arm.rotateArm(Math.toRadians(45));  
-    //}
-    //increment++;
+    increment++;
+    */
     
+    // Test arm elevation
     //arm.testElevate();
     //System.out.println("Elevation Encoder", Math.toDegrees(arm.getElevationPosition()));
 
     // Test driving at an angle
-    //if (status == Robot.CONT) {
-    //  status = drive.driveDistanceWithAngle(0, -2, 0.3);
-    //}
+    /*
+    if (status == Robot.CONT) {
+      status = drive.driveDistanceWithAngle(0, -2, 0.3);
+    }*/
 
     // Test power and velocity
     /*
     drive.setAllDriveMotorPower(MathUtil.clamp(power, -1, 1));
     drive.printPowerandVelocity();*/
 
-    // Rotate wheels to zero
-    /*Measure<Angle> angleMeasurement = Units.Radians.of(0);  // Get the desired angle as a Measure<Angle> 
-    Translation2d vect = new Translation2d(0.0, new Rotation2d(angleMeasurement));  // Create Translation2d for rotateWheels
-    status = drive.rotateWheelsNoOpt(vect.getX(), vect.getY(), 0.0);  // Rotate wheels to 0 radians
-    */
+    // Rotate drive wheels to zero
+    if (status == Robot.CONT) {
+      Measure<Angle> angleMeasurement = Units.Radians.of(0);  // Get the desired angle as a Measure<Angle> 
+      Translation2d vect = new Translation2d(0.0, new Rotation2d(angleMeasurement));  // Create Translation2d for rotateWheels
+      status = drive.rotateWheelsNoOpt(vect.getX(), vect.getY(), 0.0);  // Rotate wheels to 0 radians
+    }    
 
     // Test distance
     /*double distance = 5;
@@ -363,13 +393,16 @@ public class Robot extends TimedRobot {
 	private void armControl() {
     // Move the arm up/down incrementally
     if(controls.moveArmUp()) {
-      arm.rotateArmIncrement(true, false);
+      //arm.rotateArmIncrement(true, false);
+      arm.testElevate(-0.5);
     }
     else if (controls.moveArmDown()) {
-      arm.rotateArmIncrement(false, true);
+      //arm.rotateArmIncrement(false, true);
+      arm.testElevate(0.5);
     }
-
-
+    else{
+      arm.testElevate(0);
+    }
 	}
 
   /**

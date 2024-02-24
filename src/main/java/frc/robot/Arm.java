@@ -30,8 +30,8 @@ public class Arm {
     private final double EXTENDER_ENCODER_FACTOR = 1;  // TODO Find conversion factor
     private final double ELEVATION_ENCODER_FACTOR = 360;
 
-    private final double ARM_EXTENDER_PID_P = 0.016; // (0.5 / 30) # 0.027
-    private final double ARM_EXTENDER_PID_I= 0.0;
+    private final double ARM_EXTENDER_PID_P = 0.035;
+    private final double ARM_EXTENDER_PID_I = ARM_EXTENDER_PID_P / 1.5;
 
 
     private CANSparkMax extenderMotor;
@@ -70,13 +70,13 @@ public class Arm {
         elevationEncoder = elevationMotor.getAbsoluteEncoder(Type.kDutyCycle);
         elevationEncoder.setPositionConversionFactor(ELEVATION_ENCODER_FACTOR);
         elevationEncoder.setVelocityConversionFactor(ELEVATION_ENCODER_FACTOR);
-        //elevationEncoder.setInverted(true);
-        //elevationEncoder.setZeroOffset(elevationEncoder.getPosition());
 
         // PID controllers
+        // Extender PID
         extenderMotorPidController = new PIDController(1.0, 0.0, 0.0);
         extenderMotorPidController.setTolerance(EXTENSION_TOLERANCE_TICKS);
 
+        // Elevation PID
         elevationMotorPidController = new PIDController(ARM_EXTENDER_PID_P, ARM_EXTENDER_PID_I, 0.0);
         elevationMotorPidController.setIntegratorRange(-0.1, 0.1);
         elevationMotorPidController.setTolerance(ELEVATION_TOLERANCE_DEGREES);
@@ -95,16 +95,17 @@ public class Arm {
     }
 
     /**
-     * Extends the arm to the given distance
+     * Extends the arm to the given distance with a PID
      * 
      * @param distance The distance to extend to, in encoder ticks
      * @return Robot.CONT or Robot.DONE
      */
-    public int extendArm(double distance) {
+    public int extendArmWintPID(double distance) {
         //distance = MathUtil.clamp(distance, LOWER_EXTENSION_LIMIT, UPPER_EXTENSION_LIMIT);  // Limit extension
 
         if(extensionFirstTime) {
             extensionFirstTime = false;
+            extenderEncoder.setPosition(0);
             extenderMotorPidController.setSetpoint(distance);
         }
 
@@ -121,50 +122,72 @@ public class Arm {
     }
 
     /**
-     * <p>Rotates the arm with the given radian value
-     * <p>0 radians is horizontal
+     * Extends the arm to the given distance
      * 
-     * @param radians The angle to rotate to in radians
+     * @param distance The distance to extend to, in encoder ticks
+     * @return Robot.CONT or Robot.DONE
+     */
+    public int extendArm(double distance, double power) {
+        //distance = MathUtil.clamp(distance, LOWER_EXTENSION_LIMIT, UPPER_EXTENSION_LIMIT);  // Limit extension
+
+        if(extensionFirstTime) {
+            extensionFirstTime = false;
+            extenderEncoder.setPosition(0);
+            extenderMotor.set(MathUtil.clamp(power, -1, 1));
+        }
+
+        if(extenderEncoder.getPosition() >= distance) {
+            extensionFirstTime = true;
+            extenderMotor.set(0);
+            return Robot.DONE;
+        }
+
+        return Robot.CONT;
+    }
+
+    /**
+     * <p>Rotates the arm with the given radian value
+     * <p>0 degrees is horizontal
+     * 
+     * @param degrees The angle to rotate to in degrees
      * @return Robot.CONT or Robot.DONE
      */
     public int rotateArm(double degrees) {
-        // If greater than 360, bring back down to a range of 0-360
-        /*if(degrees > 360) {
-            degrees -= 360;
-        }*/
-
         if(elevationFirstTime) {
             elevationFirstTime = false;
             elevationMotorPidController.setSetpoint(degrees);
         }
-
-        /* Limit position, such that greater than 180deg is 0.
-           This is because the zero is at the bottom and can 
-           fluctuate from -1 - 359deg */
-        /*double pos = 0;
-        if(elevationEncoder.getPosition() > 180){
-            pos = 0.0;
-        }
-        else {
-            pos = elevationEncoder.getPosition();
-        }*/
                 
         if(elevationMotorPidController.atSetpoint()) {
             elevationFirstTime = true;
+            elevationMotor.set(0.1);
             return Robot.DONE;
         }
         else {
-            System.out.println("From: " + elevationEncoder.getPosition() + 
-                " To: " + degrees);
-            //double ClampedDegrees = MathUtil.clamp(ClampedDegrees, LOWER_ELEVATION_LIMIT, UPPER_ELEVATION_LIMIT);    // Limit rotation
-    
+            System.out.println("From: " + elevationEncoder.getPosition() + " To: " + degrees);
+
             /* Negative power moves the arm upward;
                The PID value will be positive to increase the angle */
             double power = -elevationMotorPidController.calculate(elevationEncoder.getPosition(), degrees);
             SmartDashboard.putNumber("Arm power", power);
-            elevationMotor.set(MathUtil.clamp(power, -1, 1));   // Clamp
+            elevationMotor.set(MathUtil.clamp(power, -0.2, 0.2));   // Clamp
         }
         
+        return Robot.CONT;
+    }
+
+    /**
+     * <p>Keeps the arm at its current position
+     * <p>0 degrees is horizontal
+     * 
+     * @param degrees The angle to rotate to in degrees
+     * @return Robot.CONT or Robot.DONE
+     */
+    public int maintainPosition(double degrees) {                
+        /* Negative power moves the arm upward;
+            The PID value will be positive to increase the angle */
+        double power = -elevationMotorPidController.calculate(elevationEncoder.getPosition(), degrees);
+        elevationMotor.set(MathUtil.clamp(power, -0.4, 0.4));   // Clamp                
         return Robot.CONT;
     }
 
@@ -182,10 +205,10 @@ public class Arm {
      */
     public void rotateArmIncrement(boolean rotateUp, boolean rotateDown) {
         if(rotateUp){
-            elevationAngle += 0.05;
+            elevationAngle += 0.75;
         }
         else if(rotateDown) {
-            elevationAngle -= 0.05;
+            elevationAngle -= 0.75;
         } 
         else {
             elevationAngle += 0;
@@ -215,7 +238,7 @@ public class Arm {
 
         extensionDistance = MathUtil.clamp(extensionDistance, LOWER_EXTENSION_LIMIT, UPPER_EXTENSION_LIMIT);
 
-        extendArm(extensionDistance);
+        extendArm(extensionDistance, 0.1);
     }
 
     public double getElevationPosition() {
@@ -226,13 +249,15 @@ public class Arm {
         return extenderEncoder.getPosition();
     }
 
-    // Positive power goes down
-    public void testElevate() {
-        /*if(elevationEncoder.getPosition() != Math.toRadians(5)){
-            elevationMotor.set(-0.05);
-        }*/
+    /**************************************************************************
+     * 
+     *      TEST FUNCTIONS
+     * 
+     **************************************************************************/
 
-        elevationMotor.set(-0.1);
+    // Positive power goes down
+    public void testElevate(double power) {
+        elevationMotor.set(power);
         System.out.println(elevationEncoder.getPosition());
     }
 
@@ -246,4 +271,8 @@ public class Arm {
         extenderMotor.set(power);
     }
 
+    // Move the arm to its starting/balancing position (54 degrees)
+    public int testStartingPosition() {
+        return rotateArm(54);
+    }
 }

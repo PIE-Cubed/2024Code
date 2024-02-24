@@ -105,7 +105,7 @@ public class Drive {
             System.out.print(".");
         }
 
-        System.out.println("\n[INFO] >> navX Connected.");
+        System.out.println("\n\n[INFO] >> navX Connected.");
         System.out.println("[INFO] >> Calibrating navX...");
 
         while (ahrs.isCalibrating() == true) {
@@ -295,7 +295,7 @@ public class Drive {
         if (driveDistanceFirstTime) {
             driveDistanceFirstTime = false;
 
-            // Get the initial angle of the robot from th NavX
+            // Get the initial angle of the robot from the NavX
             initialAngle = getYawAdjusted();
             
             // Calculate the angle difference between the current and target angle
@@ -323,14 +323,14 @@ public class Drive {
         angleDifference = rotationAdjustPidController.calculate(getYawAdjusted(), initialAngle + Math.toRadians(angle)) * ANGLE_DIFFERENCE_POWER_MULTIPLIER;
         
         // Inverts power if moving backwards
-        if (distanceFeet < 0) {
+        /*if (distanceFeet < 0) {
             power = power * -1;
-        }
+        }*/
 
         /* Only forwards speed, as wheels should be rotated to point forward, 
          * and rotation speed, to keep robot in a strait line */
         SwerveModuleState[] states = swerveDriveKinematics.toSwerveModuleStates(
-            new ChassisSpeeds(power, 0.0, angleDifference));
+            new ChassisSpeeds(power, 0.0, 0));
         SwerveDriveKinematics.desaturateWheelSpeeds(states, MAX_WHEEL_SPEED);   // Desaturate
         setModuleStates(states);
 

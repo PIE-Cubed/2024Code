@@ -4,6 +4,12 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Units;
+
 public class Auto {
     // State tracking variables - each variable can only be used in one function at any time
     // All top level routines use firstTime and step, all helper routines have their own variables
@@ -13,18 +19,25 @@ public class Auto {
     private long delayEnd = 0; // Stores when delay() should return Robot.DONE
     private boolean delayFirstTime = true;
 
+    // Auto program selection
+    public String selectedAuto = "Speaker Center";
+
     // Object Creation
     private Drive          drive;
     private PoseEstimation position;
     private Arm            arm;
     private CustomTables   nTables;
+    private Grabber        grabber;
+    private Shooter        shooter;
 
     // Constructor
-    public Auto(Drive drive, PoseEstimation position, Arm arm) {
+    public Auto(Drive drive, PoseEstimation position, Arm arm, Grabber grabber, Shooter shooter) {
         this.drive    = drive;
+        this.grabber  = grabber;
         this.position = position;
         this.arm      = arm;
         this.nTables  = CustomTables.getInstance();
+        this.shooter  = shooter;
     }
 
     /****************************************************************************************** 
@@ -62,19 +75,24 @@ public class Auto {
         }
 
         switch(step) {
-            case 1:     // Rotate arm to -33.5 degrees from horizontal
+            // Rotate arm to -33.5 degrees from horizontal
+            case 1:
                 status = arm.rotateArm(Math.toDegrees(-33.5));
                 break;
-            case 2:     // Extend arm to 5in(current function takes encoder rotations right now)
-                status = arm.extendArm(1);  // TODO get actual distance
+
+            // Extend arm to 5in(current function takes encoder rotations right now)
+            case 2:
+                status = arm.extendArm(1, 0.1);  // TODO get actual distance
                 break;
-            default:    // Finished routine, reset variables and return done
+
+            // Finished routine, reset variables and return done
+            default:
                 step = 1;
                 firstTime = true;
                 return Robot.DONE;
         }
 
-        // Done current step, goto next one
+        // Done current step, go to next one
         if(status == Robot.DONE) {
             step++;
         }
@@ -98,13 +116,117 @@ public class Auto {
         }
 
         switch(step) {
-            case 1:     // Rotate arm to -27 degrees from horizontal
-                status = arm.rotateArm(Math.toDegrees(-27));
+            case 1:     // Rotate arm to -27 degrees from horizontal (359 - 27 = 332)
+                status = arm.rotateArm(332);
                 break;
             case 2:     // Fully retract arm
-                status = arm.extendArm(0);
+                status = arm.extendArm(0, 0.1);
                 break;
             default:    // Finished routine, reset variables and return done
+                step = 1;
+                firstTime = true;
+                return Robot.DONE;
+        }
+
+        // Done current step, goto next one
+        if(status == Robot.DONE) {
+            step++;
+        }
+
+        return Robot.CONT;
+    }
+
+    /**
+     * <p> Moves the arm so the shooter is aiming at the speaker
+     * <p> -27 degrees from horizontal
+     * <p> Fully retracts arm
+     * <p> First rotates, then retracts the arm
+     * @return Robot status, CONT or DONE
+     */
+    public int speakerPosition() {
+        int intakeStatus = Robot.CONT;
+        int driveStatus = Robot.CONT;
+        int status = Robot.CONT;
+
+        if(firstTime == true) {
+            firstTime = false;
+            step = 1;
+        }
+
+        switch(step) {            
+            // Start the shooter motors and Let them spin up for one second
+            case 1:
+                shooter.spinup();
+                status = autoDelay(1);
+                break;
+
+            // Rotate the arm to -23 (336) degrees from 54
+            case 2:
+                status = arm.rotateArm(336);
+                break;
+            
+            // Extend the arm so the wood holding block falls into the robot, and so the arm is in the shooting position
+            case 3:
+                status = arm.extendArm(14, 0.25);
+                arm.maintainPosition(336);
+                break;
+                        
+            // Shoot the note by running the grabber
+            case 4:
+                grabber.setMotorPower(grabber.INTAKE_POWER);
+                arm.maintainPosition(336);
+                status = Robot.DONE;
+                break;
+
+            // Assume the robot shot the note after 1 second(s)
+            case 5:
+                status = autoDelay(1);
+                arm.maintainPosition(336);
+                break;
+
+            // Rotate the arm to it's resting position and turn off the shooter and Switch the grabber to intake mode
+            case 6:
+                status = arm.rotateArm(322);
+                break;
+
+            // Drive backwards 5 feet
+            case 7:
+                if (intakeStatus == Robot.CONT) {
+                    intakeStatus = grabber.intakeOutake(true, false);
+                }
+                
+                if (driveStatus == Robot.CONT) {
+                    driveStatus = drive.driveDistanceWithAngle(0, 4, 0.3);
+                }
+                
+                if (intakeStatus == Robot.DONE && driveStatus == Robot.DONE) {
+                    status = Robot.DONE;
+                }
+                else {
+                    status = Robot.CONT;
+                }
+            
+                break;
+
+            // Drive back to the speaker
+            /*case 8:
+                status = drive.driveDistanceWithAngle(0, -3.5, 0.3);
+                break;*/
+
+            // Rotate the arm so it's in the shooting position
+            case 9:
+                status = arm.rotateArm(338); // Use 343 if not driving to speaker          
+                break;
+
+            // Shoot the note
+            case 10:
+                grabber.setMotorPower(grabber.INTAKE_POWER);
+                arm.maintainPosition(338);
+                status = autoDelay(2);
+                break;
+            
+            // Finished routine, reset variables and return done
+            default:
                 step = 1;
                 firstTime = true;
                 return Robot.DONE;
@@ -134,6 +256,41 @@ public class Auto {
 
         switch(step) {
             case 1:     // Rotate arm to position(need to get this angle)
+                break;
+            case 2:     // Fully retract arm(need to confirm with austin)
+                break;
+            default:    // Finished routine, reset variables and return done
+                step = 1;
+                firstTime = true;
+                return Robot.DONE;
+        }
+
+        // Done current step, goto next one
+        if(status == Robot.DONE) {
+            step++;
+        }
+
+        return Robot.CONT;
+    }
+
+    /**
+     * <p> Moves the arm to its starting position
+     * <p> 54 degrees from horizontal
+     * <p> Fully retracts arm
+     * <p> First rotates, then extends the arm
+     * @return Robot status, CONT or DONE
+     */
+    public int startingPosition() {
+        int status = Robot.CONT;
+
+        if(firstTime == true) {
+            firstTime = false;
+            step = 1;
+        }
+
+        switch(step) {
+            case 1:     // Rotate arm to position (54 degrees)
+                status = arm.rotateArm(54);
                 break;
             case 2:     // Fully retract arm(need to confirm with austin)
                 break;
