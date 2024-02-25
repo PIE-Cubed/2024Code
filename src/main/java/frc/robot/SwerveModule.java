@@ -17,7 +17,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.smartdashboard.*;
 
 /**
  * Start of the SwerveModule class
@@ -231,27 +231,27 @@ public class SwerveModule {
     }
 
     /**
-     * Inits the motor sliders on SmartDashboard.
+     * Inits the motor sliders on //SmartDashboard.
      */
     public void initMotorSliders() {
-        SmartDashboard.putNumber("Drive Motor Power", 0);
-        SmartDashboard.putNumber("Rotate Motor Power", 0);
+        //SmartDashboard.putNumber("Drive Motor Power", 0);
+        //SmartDashboard.putNumber("Rotate Motor Power", 0);
     }
 
     /**
-     * Displays the encoder values on SmartDashboard.
+     * Displays the encoder values on //SmartDashboard.
      */
     public void displayEncoderValues() {
-        SmartDashboard.putNumber(driveMotor.getDeviceId()  + "Drive Encoder", getDrivePosition());
-        SmartDashboard.putNumber(rotateMotor.getDeviceId() + "Rotation Absolute Encoder", getAbsPosition() );
+        //SmartDashboard.putNumber(driveMotor.getDeviceId()  + "Drive Encoder", getDrivePosition());
+        //SmartDashboard.putNumber(rotateMotor.getDeviceId() + "Rotation Absolute Encoder", getAbsPosition() );
     }
 
     /**
-     * Powers module through SmartDashboard sliders.
+     * Powers module through //SmartDashboard sliders.
      */
     public void updateMotorPowers() {
-        setDriveMotorPower(SmartDashboard.getNumber("Drive Motor Power", 0));
-        setRotateMotorPower(SmartDashboard.getNumber("Rotate Motor Power", 0));
+        //setDriveMotorPower(SmartDashboard.getNumber("Drive Motor Power", 0));
+        //setRotateMotorPower(SmartDashboard.getNumber("Rotate Motor Power", 0));
     }
 
     /**
@@ -259,6 +259,7 @@ public class SwerveModule {
      */
     public void zeroDriveEncoder() {
         driveEncoder.setPosition(0.00);
+        System.out.println("Encoder position: " + getDrivePositionFeet());
     }
 
     /**

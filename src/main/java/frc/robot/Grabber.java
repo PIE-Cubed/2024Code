@@ -20,7 +20,7 @@ public class Grabber {
 
     // TODO tune these power values
     public final double INTAKE_POWER = 0.9;
-    public final double OUTTAKE_POWER = 0.75;
+    public final double OUTTAKE_POWER = -0.75;
     public final double FEED_POWER = 0.75;  
     public final double PROXIMITY_THRESHOLD = 155; 
     public final double IR_THRESHOLD = 150;
@@ -73,8 +73,12 @@ public class Grabber {
      */
     // TODO test color sensor's ability to stop intake correctly
     public int intakeOutake(boolean intake, boolean outtake) {
+        if (intake && outtake) {
+            return Robot.CONT;
+        }
+
         if(intake) {
-            SmartDashboard.putBoolean("Note detected", noteDetected());
+            //SmartDashboard.putBoolean("Note detected", noteDetected());
 
             if(noteDetected()) {
                 setMotorPower(0.0);

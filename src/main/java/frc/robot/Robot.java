@@ -4,16 +4,11 @@
 
 package frc.robot;
 
-import edu.wpi.first.units.Angle;
-import edu.wpi.first.units.Units;
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
 
 /**
@@ -63,6 +58,7 @@ public class Robot extends TimedRobot {
   private boolean driveDistance;  /// Whether the robot is at the drive step of the test
   
   // Statuses for each "module" 
+  private int shooterStatus = CONT;
   private int grabberStatus = CONT;
   private int moveStatus = CONT;
   private int armStatus = CONT;
@@ -99,6 +95,12 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("Speaker Left", "Speaker Left");
     m_chooser.addOption("Speaker Right", "Speaker Right");
     SmartDashboard.putData("Auto choices", m_chooser);
+
+    // Reset the robot statuses. This ensures that we don't need to restart the code after every time we
+    // run the robot.
+    grabberStatus = Robot.CONT;
+    armStatus = Robot.CONT;
+    status = Robot.CONT;
   }
 
   /**
@@ -127,6 +129,13 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     m_autoSelected = m_chooser.getSelected();
     auto.selectedAuto = m_autoSelected;
+    
+    // Reset the robot statuses. This ensures that we don't need to restart the code after every time we
+    // run the robot.
+    grabberStatus = Robot.CONT;
+    armStatus = Robot.CONT;
+    status = Robot.CONT;
+
     //m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
 
     System.out.println("Auto selected: " + m_autoSelected);
@@ -157,14 +166,14 @@ public class Robot extends TimedRobot {
       }
     }
 
-    SmartDashboard.putNumber("Extend position", arm.getExtendPosition());
-    SmartDashboard.putNumber("Arm angle", arm.getElevationPosition());
+    //SmartDashboard.putNumber("Extend position", arm.getExtendPosition());
+    //SmartDashboard.putNumber("Arm angle", arm.getElevationPosition());
   }
 
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
-    // Reset the robot status. This ensures that we don't need to restart the code after every time we
+    // Reset the robot statuses. This ensures that we don't need to restart the code after every time we
     // run the robot.
     grabberStatus = Robot.CONT;
     armStatus = Robot.CONT;
@@ -205,10 +214,10 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit() {
     // Initialize Shuffleboard
-    SmartDashboard.putNumber("Shooter Power", 0.0);
-    SmartDashboard.putNumber("Grabber Power", 0.0);
+    //SmartDashboard.putNumber("Shooter Power", 0.0);
+    //SmartDashboard.putNumber("Grabber Power", 0.0);
 
-    // Reset the robot status. This ensures that we don't need to restart the code after every time we
+    // Reset the robot statuses. This ensures that we don't need to restart the code after every time we
     // run the robot.
     grabberStatus = Robot.CONT;
     armStatus = Robot.CONT;
@@ -223,8 +232,8 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic() {
     // Read values from shuffleboard
-    double shooterPower = SmartDashboard.getNumber("Shooter Power", 0.0);
-    double grabberPower = SmartDashboard.getNumber("Grabber Power", 0.0);
+    //double shooterPower = SmartDashboard.getNumber("Shooter Power", 0.0);
+    //double grabberPower = SmartDashboard.getNumber("Grabber Power", 0.0);
 
     //testTeleopDrive();
   
@@ -245,11 +254,16 @@ public class Robot extends TimedRobot {
     //grabber.testColorSensor();
 
     // Move the arm to a certain degree
-    if (armStatus == Robot.CONT) {
+    /*if (armStatus == Robot.CONT) {
       armStatus = arm.rotateArm(54);
     }
     else {
       armStatus = arm.maintainPosition(54);
+    }*/
+
+    // Test driving at an angle
+    if(status == Robot.CONT) {
+      status = drive.testAngleDrive(0, 3, 0.3);
     }
 
     // 60 from horizontal, arm extends 4in
@@ -284,11 +298,11 @@ public class Robot extends TimedRobot {
     drive.printPowerandVelocity();*/
 
     // Rotate drive wheels to zero
-    if (status == Robot.CONT) {
+    /*if (status == Robot.CONT) {
       Measure<Angle> angleMeasurement = Units.Radians.of(0);  // Get the desired angle as a Measure<Angle> 
       Translation2d vect = new Translation2d(0.0, new Rotation2d(angleMeasurement));  // Create Translation2d for rotateWheels
       status = drive.rotateWheelsNoOpt(vect.getX(), vect.getY(), 0.0);  // Rotate wheels to 0 radians
-    }    
+    }*/    
 
     // Test distance
     /*double distance = 5;
@@ -403,25 +417,36 @@ public class Robot extends TimedRobot {
     else{
       arm.testElevate(0);
     }
+
+    // Extend / retract the arm
+    if(controls.extendArm()){
+      arm.testExtend(0.2);
+    }
+    else if(controls.retractArm()) {
+      arm.testExtend(-0.2);
+    }
+    else {
+      arm.testExtend(0);
+    }
+
+
 	}
 
   /**
 	 * Controls the shooter in TeleOp
 	 */
 	private void shooterControl() {
-    // Start the shooter wheels
-		/*if(controls.startShooterWheels()){
-      shooter.spinup();
-    }*/
-
     // Shoot a note
     if (controls.enableShooter() == true) {
       shooterState = true;
-      shooter.startShooting(1);
+      auto.teleopShoot();
     }
-    else if (shooterState == true && controls.enableShooter() == false) {
+    
+    // If the divers have just stopped shooting, disable the shooter motors
+    if (shooterState == true && controls.enableShooter() == false) {
       shooterState = false;
       shooter.stopShooting();
+      auto.resetTeleopShoot();
     }
 	}
 
@@ -429,18 +454,17 @@ public class Robot extends TimedRobot {
 	 * Controls the grabber in TeleOp
 	 */
 	private void grabberControl() {
-    // Start the grabber in ground mode
-		if (controls.enableGroundIntake() == true && status == Robot.CONT) {
-      status = grabber.intakeOutake(true, false);
+    // Start the grabber in ground mode 
+    if(shooterState == false) {
+      grabber.intakeOutake(controls.runIntake(), controls.ejectNote());
     } 
-    else if(shooterState == false) {
-      grabber.intakeOutake(false, false);
-    }
 
-    // Eject a note from the grabber
-		if (controls.ejectNote() == true && shooterState == false) {
-      grabber.intakeOutake(false, true);
+    /*else if (controls.runIntake()){
+      grabber.setMotorPower(grabber.INTAKE_POWER);
     }
+    else {
+      grabber.setMotorPower(0);
+    }*/
 	}
 
   /**

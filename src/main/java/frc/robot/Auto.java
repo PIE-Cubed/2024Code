@@ -15,9 +15,15 @@ public class Auto {
     // All top level routines use firstTime and step, all helper routines have their own variables
     private int step;
     private boolean firstTime = true;
+    private boolean teleopShootFirstTime = true;
 
     private long delayEnd = 0; // Stores when delay() should return Robot.DONE
     private boolean delayFirstTime = true;
+
+    
+    private int intakeStatus = Robot.CONT;
+    private int driveStatus = Robot.CONT;
+    private int status = Robot.CONT;
 
     // Auto program selection
     public String selectedAuto = "Speaker Center";
@@ -144,44 +150,40 @@ public class Auto {
      * @return Robot status, CONT or DONE
      */
     public int speakerPosition() {
-        int intakeStatus = Robot.CONT;
-        int driveStatus = Robot.CONT;
-        int status = Robot.CONT;
-
         if(firstTime == true) {
             firstTime = false;
             step = 1;
         }
 
         switch(step) {            
-            // Start the shooter motors and Let them spin up for one second
+            // Start the shooter motors and Let them spin up for 2 seconds
             case 1:
                 shooter.spinup();
-                status = autoDelay(1);
+                status = autoDelay(2);
                 break;
 
             // Rotate the arm to -23 (336) degrees from 54
             case 2:
-                status = arm.rotateArm(336);
+                status = arm.rotateArm(333);
                 break;
             
             // Extend the arm so the wood holding block falls into the robot, and so the arm is in the shooting position
             case 3:
                 status = arm.extendArm(14, 0.25);
-                arm.maintainPosition(336);
+                arm.maintainPosition(333);
                 break;
                         
             // Shoot the note by running the grabber
             case 4:
                 grabber.setMotorPower(grabber.INTAKE_POWER);
-                arm.maintainPosition(336);
+                arm.maintainPosition(333);
                 status = Robot.DONE;
                 break;
 
             // Assume the robot shot the note after 1 second(s)
             case 5:
                 status = autoDelay(1);
-                arm.maintainPosition(336);
+                arm.maintainPosition(333);
                 break;
 
             // Rotate the arm to it's resting position and turn off the shooter and Switch the grabber to intake mode
@@ -198,8 +200,12 @@ public class Auto {
                 if (driveStatus == Robot.CONT) {
                     driveStatus = drive.driveDistanceWithAngle(0, 4, 0.3);
                 }
+                else {
+                    System.out.println("Robot has finished driving.");
+                }
                 
                 if (intakeStatus == Robot.DONE && driveStatus == Robot.DONE) {
+                    drive.resetDriveDistanceFirstTime();
                     status = Robot.DONE;
                 }
                 else {
@@ -209,9 +215,9 @@ public class Auto {
                 break;
 
             // Drive back to the speaker
-            /*case 8:
-                status = drive.driveDistanceWithAngle(0, -3.5, 0.3);
-                break;*/
+            case 8:
+                status = drive.driveDistanceWithAngle(0, -3, 0.3);
+                break;
 
             // Rotate the arm so it's in the shooting position
             case 9:
@@ -221,7 +227,7 @@ public class Auto {
             // Shoot the note
             case 10:
                 grabber.setMotorPower(grabber.INTAKE_POWER);
-                arm.maintainPosition(338);
+                arm.maintainPosition(335);
                 status = autoDelay(2);
                 break;
             
@@ -238,6 +244,56 @@ public class Auto {
         }
 
         return Robot.CONT;
+    }
+
+    /**
+     * <p> Moves the arm so the shooter is aiming at the speaker
+     * <p> -27 degrees from horizontal
+     * <p> Fully retracts arm
+     * <p> First rotates, then retracts the arm
+     * @return Robot status, CONT or DONE
+     */
+    public void teleopShoot() {
+        int intakeStatus = Robot.CONT;
+        int driveStatus = Robot.CONT;
+        int status = Robot.CONT;
+
+        if(teleopShootFirstTime == true) {
+            teleopShootFirstTime = false;
+            step = 1;
+        }
+
+        switch(step) {            
+            // Start the shooter motors and rotate the arm to -23 (336) degrees from 54
+            case 1:
+                shooter.spinup();
+                status = arm.rotateArm(333);
+                break;
+
+            // Wait for the thooter motors to spin up
+            case 2:                
+                arm.maintainPosition(333);
+                status = autoDelay(1);
+                break;
+            
+            // Start the grabber and keep the arm in shooting position
+            default:
+                grabber.setMotorPower(grabber.INTAKE_POWER);
+                arm.maintainPosition(333);
+                break;
+        }
+
+        // Done current step, goto next one
+        if(status == Robot.DONE) {
+            step++;
+        }
+    }
+
+    /*
+     * Set Teleop shooting first time to true
+     */
+    public void resetTeleopShoot() {
+        teleopShootFirstTime = true;
     }
 
     /**

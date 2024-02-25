@@ -164,12 +164,12 @@ public class Arm {
             return Robot.DONE;
         }
         else {
-            System.out.println("From: " + elevationEncoder.getPosition() + " To: " + degrees);
+            //System.out.println("From: " + elevationEncoder.getPosition() + " To: " + degrees);
 
             /* Negative power moves the arm upward;
                The PID value will be positive to increase the angle */
             double power = -elevationMotorPidController.calculate(elevationEncoder.getPosition(), degrees);
-            SmartDashboard.putNumber("Arm power", power);
+            //SmartDashboard.putNumber("Arm power", power);
             elevationMotor.set(MathUtil.clamp(power, -0.2, 0.2));   // Clamp
         }
         
@@ -258,7 +258,6 @@ public class Arm {
     // Positive power goes down
     public void testElevate(double power) {
         elevationMotor.set(power);
-        System.out.println(elevationEncoder.getPosition());
     }
 
     // Put the arm position on shuffleboard

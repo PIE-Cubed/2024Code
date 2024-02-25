@@ -11,21 +11,22 @@
 ******************************************************************************************/
 /***
  * The Xbox controller DPAD is known as "POV", and the input is retrieved from the getPOV function.
- * The getPOV function returns an integer from -1 to 7, going clockwise.
+ * The getPOV function returns an integer from -1 to 359, going clockwise.
  * The button assignments are as follows:
  * -1 = nothing pressed
  * 0 = top
- * 1 = top right
- * 2 = right
- * 3 = bottom right
- * 4 = bottom
- * 5 = bottom left
- * 6 = left
- * 7 = top left
+ * 45 = top right
+ * 90 = right
+ * 135 = bottom right
+ * 180 = bottom
+ * 225 = bottom left
+ * 270 = left
+ * 315 = top left
  */
 
 package frc.robot;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.XboxController;
 
 /**
@@ -40,7 +41,7 @@ public class Controls {
 	private XboxController driveController;
 	private XboxController manipulatorController;
 
-	private boolean fieldDrive;
+	private boolean fieldDrive = true;
 
 	// Rate limiters
 	//private SlewRateLimiter xLimiter;
@@ -80,7 +81,7 @@ public class Controls {
 	public double getForwardSpeed() {
 		double speed;
 		double power = -1 * driveController.getLeftY();
-		power = Math.pow(power, 7);
+		power = Math.pow(power, 5);
 
 		// Turns the power into a speed
 		if(enablePrecisionDrive()){
@@ -105,7 +106,7 @@ public class Controls {
 	public double getStrafeSpeed() {
 		double speed;
 		double power = driveController.getLeftX();
-		power = Math.pow(power, 7);
+		power = Math.pow(power, 5);
 
 		// Turns the power into a speed
 		if(enablePrecisionDrive()){
@@ -130,10 +131,10 @@ public class Controls {
 	public double getRotateSpeed() {
 		double speed;
 		double power = driveController.getRightX();
-		power = Math.pow(power, 7);
+		power = Math.pow(power, 5);
 
 		// Turns the power into a speed
-		speed = power * Drive.MAX_ROTATE_SPEED;	// Use regular curve in radians per second
+		speed = MathUtil.clamp(power, -0.5, 0.5) * Drive.MAX_ROTATE_SPEED; // Use regular curve in radians per second
 		
 		// Limits the acceleration when under driver control
 		//speed = rotateLimiter.calculate(speed);
@@ -160,10 +161,10 @@ public class Controls {
 	}
 
 	public boolean toggleFieldDrive() {
-		if(driveController.getLeftTriggerAxis() > 0.05) {
+		/*if(driveController.getLeftTriggerAxis() > 0.05) {
 			fieldDrive = !fieldDrive;
-		}
-		return fieldDrive;
+		}*/
+		return driveController.getLeftTriggerAxis() < 0.05;
 	}
 
 	// Targeting
@@ -209,7 +210,7 @@ public class Controls {
 	 * @return Drive controller DPAD DOWN button pressed
 	 */
 	public boolean lockDriveWheels() {
-		return driveController.getPOV() == 4;
+		return driveController.getPOV() == 180;
 	}
 
 	// Lights
@@ -238,19 +239,11 @@ public class Controls {
     ******************************************************************************************/
 	// Intake & outtake
 	/***
-	 * Holding the A button will make the intake move to the ground position
+	 * Holding the A button will run the intake motors
 	 * @return Manipulator controller A button held down
 	 */
-	public boolean enableGroundIntake() {
-		return manipulatorController.getAButton();
-	}
-
-	/***
-	 * Holding the left trigger will run the intake motors
-	 * @return Manipulator controller left trigger held in
-	 */
 	public boolean runIntake() {
-		return manipulatorController.getLeftTriggerAxis() > 0.05;
+		return manipulatorController.getAButton();
 	}
 
 	/***
@@ -258,7 +251,7 @@ public class Controls {
 	 * @return Manipulator controller left bumper pressed
 	 */
 	public boolean ejectNote() {
-		return manipulatorController.getLeftBumperPressed();
+		return manipulatorController.getLeftBumper();
 	}
 
 	/***
@@ -325,7 +318,7 @@ public class Controls {
 	 * @return Manipulator controller DPAD DOWN button pressed
 	 */
 	public boolean moveArmDown() {
-		return manipulatorController.getPOV() == 4;
+		return manipulatorController.getPOV() == 180;
 	}
 
 	/***
@@ -333,7 +326,7 @@ public class Controls {
 	 * @return Manipulator controller DPAD RIGHT button pressed
 	 */
 	public boolean retractArm() {
-		return manipulatorController.getPOV() == 2;
+		return manipulatorController.getPOV() == 90;
 	}
 
 	/***
@@ -341,7 +334,7 @@ public class Controls {
 	 * @return Manipulator controller DPAD LEFT button pressed
 	 */
 	 boolean extendArm() {
-		return manipulatorController.getPOV() == 6;
+		return manipulatorController.getPOV() == 270;
 	}
 
 

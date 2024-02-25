@@ -62,7 +62,7 @@ import com.revrobotics.CANSparkFlex;
     public void stopShooting() {
         shooterMotor1.set(0);
         shooterMotor2.set(0);
-        //instancedGrabber.intakeOutake(false, false);
+        instancedGrabber.intakeOutake(false, false);
     }
 
     /**
