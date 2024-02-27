@@ -136,7 +136,7 @@ public class Robot extends TimedRobot {
     armStatus = Robot.CONT;
     status = Robot.CONT;
 
-    //m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
+    m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
 
     System.out.println("Auto selected: " + m_autoSelected);
   }
@@ -145,26 +145,25 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     if (status == Robot.CONT) {
-      status = auto.speakerPosition();
-    }
-
-    if (moveStatus == Robot.CONT) {
       switch (m_autoSelected) {
         case "Speaker Center":
+          status = auto.speakerPositionCenter();
           break;
 
         case "Speaker Left":
-          //moveStatus = drive.driveDistanceWithAngle(-35, 3, 0.1);
+          status = auto.speakerPositionLeft();
           break;
         
         case "Speaker Right":
+          status = auto.speakerPositionRight();
           break;
 
         default:
+          status = auto.speakerPositionCenter();
           // Put default auto code here
           break;
       }
-    }
+    }    
 
     //SmartDashboard.putNumber("Extend position", arm.getExtendPosition());
     //SmartDashboard.putNumber("Arm angle", arm.getElevationPosition());
@@ -429,7 +428,15 @@ public class Robot extends TimedRobot {
       arm.testExtend(0);
     }
 
+    // Bring the arm to its resting position
+    if (controls.moveToRestPosition()) {
+      armStatus = arm.rotateArm(332.7);
+    }
 
+    // Bring the arm to its climbing position
+    if (controls.autoClimb()) {
+      armStatus = arm.rotateArm(90);
+    }
 	}
 
   /**

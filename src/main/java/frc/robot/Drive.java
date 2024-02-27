@@ -43,6 +43,7 @@ public class Drive {
     private boolean autoPointAngled        = false; // Tracks if wheels have been angled before driving
     private boolean autoPointFirstTime     = true;
     public  boolean driveDistanceFirstTime = true;
+    public  boolean driveReverseDistanceFirstTime = true;
     private double  initXVelocity          = 0;
     private double  initYVelocity          = 0;
     private double  targetPosition         = 0;
@@ -292,14 +293,14 @@ public class Drive {
      * @param power -> The power to apply to the motor(-1 - 1)
      * @return
      */
-    public int driveDistanceWithAngle(double driveAngle, double distanceFeet, double power) {
+    public int driveReverseDistanceWithAngle(double driveAngle, double distanceFeet, double power) {
         // The difference between the current and target angle
         double angleDifference = 0;
 
         // If this function is being run for the first time, find the encoder 
         // tick value (Current encoder tick + Number of ticks in the distance parameter)
-        if (driveDistanceFirstTime == true) {
-            driveDistanceFirstTime = false;
+        if (driveReverseDistanceFirstTime == true) {
+            driveReverseDistanceFirstTime = false;
 
             // Zero out the drive encoders
             zeroDriveEncoders();
@@ -323,7 +324,7 @@ public class Drive {
         // Stop the robot if it has driven the correct distance
         if (Math.abs(backRight.getDrivePositionFeet()) >= Math.abs(distanceFeet)) {
             System.out.println("Done, traveled " + backRight.getDrivePositionFeet() + "ft");
-            driveDistanceFirstTime = true;
+            driveReverseDistanceFirstTime = true;
             stopWheels();
             return Robot.DONE;
         }
@@ -331,7 +332,83 @@ public class Drive {
         // Calculate the angle difference between the current angle and 0
         angleDifference = rotationAdjustPidController.calculate(initialOrientation, getYawDegreesAdjusted());
         
-        // Inverts power if driving backwards
+        /* Only forwards speed, as wheels should be rotated to point forward, 
+         * and rotation speed, to keep robot in a straight line 
+         * 
+         * X velocity equation: Power * Cosine of drive angle
+         * Y velocity equation: Power * Sine of drive angle
+         * Positive angle difference power rotates 
+         * */
+        SwerveModuleState[] states = swerveDriveKinematics.toSwerveModuleStates(
+            new ChassisSpeeds(power * Math.cos(driveAngle), power * -1 * Math.sin(driveAngle), angleDifference * -1));
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, MAX_WHEEL_SPEED);   // Desaturate
+        setModuleStates(states);
+
+        //SmartDashboard.putNumber("Angle difference", angleDifference);
+        //System.out.println("Angle difference: " + angleDifference);
+        return Robot.CONT;
+    }
+
+    /**
+     * Drives N feet
+     * @param driveAngle -> The angle at which to drive forward at
+     * @param distanceFeet -> The distance to drive in feet
+     * @param power -> The power to apply to the motor(-1 - 1)
+     * @return
+     */
+    public int driveDistanceWithAngle(double driveAngle, double distanceFeet, double power) {
+        // The difference between the current and target angle
+        double angleDifference = 0;
+
+        // If this function is being run for the first time, find the encoder 
+        // tick value (Current encoder tick + Number of ticks in the distance parameter)
+        if (driveDistanceFirstTime == true) {
+            driveDistanceFirstTime = false;
+
+            // Zero out the drive encoders (this is in a for loop because it's behavior is WAY too inconsistent, unpredictable, and annoying)
+            for (int zeroCount = 0; zeroCount < 5; zeroCount++) {
+                zeroDriveEncoders();
+            }
+
+            // Get the initial angle of the robot from the NavX
+            initialOrientation = getYawAdjusted();
+            
+            // Calculate the angle difference between the current angle and 0
+            angleDifference = rotationAdjustPidController.calculate(initialOrientation, getYawDegreesAdjusted());
+
+            // Print some debug stuff
+            // Current values
+            /*System.out.println("Current position: " + backRight.getDrivePositionFeet() + "ft");
+            System.out.println("Current angle: " + initialOrientation + "°");
+
+            // Target values
+            System.out.println("Target position: " + distanceFeet + "ft");
+            System.out.println("Target angle: " + driveAngle + "°");*/
+        }
+
+        // Stop the robot if it has driven the correct distance
+        if (Math.abs(backRight.getDrivePositionFeet()) >= Math.abs(distanceFeet)) {
+            System.out.println("Done, traveled " + backRight.getDrivePositionFeet() + "ft");
+            driveDistanceFirstTime = true;
+            stopWheels();
+
+            // Zero out the drive encoders (this is in a for loop because it's behavior is WAY too inconsistent, unpredictable, and annoying)
+            for (int zeroCount = 0; zeroCount < 5; zeroCount++) {
+                zeroDriveEncoders();
+            }
+
+            return Robot.DONE;
+        }
+
+        // Calculate the angle difference between the current angle and 0
+        angleDifference = rotationAdjustPidController.calculate(initialOrientation, getYawDegreesAdjusted());
+        
+        // Negate yaw if driving forward
+        if (distanceFeet > 0) {
+            angleDifference *= -1;
+        }
+
+        // Invert power if driving backwards
         if (distanceFeet < 0) {
             power *= -1;
         }
@@ -344,12 +421,10 @@ public class Drive {
          * Positive angle difference power rotates 
          * */
         SwerveModuleState[] states = swerveDriveKinematics.toSwerveModuleStates(
-            new ChassisSpeeds(power * Math.cos(driveAngle), power * Math.sin(driveAngle), angleDifference * -1));
+            new ChassisSpeeds(power * Math.cos(driveAngle), power * Math.sin(driveAngle), angleDifference));
         SwerveDriveKinematics.desaturateWheelSpeeds(states, MAX_WHEEL_SPEED);   // Desaturate
         setModuleStates(states);
 
-        //SmartDashboard.putNumber("Angle difference", angleDifference);
-        //System.out.println("Angle difference: " + angleDifference);
         return Robot.CONT;
     }
 

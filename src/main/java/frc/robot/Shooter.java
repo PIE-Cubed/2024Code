@@ -21,6 +21,7 @@ import com.revrobotics.CANSparkFlex;
     private final int SHOOTER_MOTOR_2_CAN = 22;
     private final int MOTOR_CURRENT_LIMIT = 70;
     private final double DUMP_SHOT_POWER  = 0.25;   // TODO tune power value
+    private final double SHOT_POWER  = 0.87;   // TODO tune power value
     private CANSparkFlex shooterMotor1;
     private CANSparkFlex shooterMotor2;
     private Grabber instancedGrabber;
@@ -69,8 +70,8 @@ import com.revrobotics.CANSparkFlex;
      * Spinup motor, to be ready at all times
      */
     public void spinup() {
-        shooterMotor1.set(1);
-        shooterMotor2.set(1);
+        shooterMotor1.set(SHOT_POWER);
+        shooterMotor2.set(SHOT_POWER);
     }
 
     /**********************************************************************
