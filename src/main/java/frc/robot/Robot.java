@@ -54,6 +54,8 @@ public class Robot extends TimedRobot {
   private int moveStatus = CONT;
   private int armStatus = CONT;
 
+  private boolean shooterSpinning;
+
 	/**
 	 * Constructor
 	 */
@@ -95,6 +97,8 @@ public class Robot extends TimedRobot {
     grabberStatus = Robot.CONT;
     armStatus = Robot.CONT;
     status = Robot.CONT;
+
+    shooterSpinning = false;
   }
 
   /**
@@ -438,7 +442,19 @@ public class Robot extends TimedRobot {
     if (shooterState == true && controls.enableShooter() == false) {
       shooterState = false;
       shooter.stopShooting();
+      auto.restingPosition();
       auto.resetTeleopShoot();
+    }
+
+    // Start or stop the shooter wheels, the start button flips the current state
+    if(controls.startShooterWheels()) {
+      shooterSpinning = !shooterSpinning;
+      if(shooterSpinning) {
+        shooter.spinup();
+      }
+      else {
+        shooter.spindown();
+      }
     }
 	}
 
