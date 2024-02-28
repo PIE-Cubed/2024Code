@@ -465,7 +465,8 @@ public class Auto {
             // Wait for the thooter motors to spin up
             case 2:                
                 arm.maintainPosition(333);
-                status = autoDelay(1);
+                //status = autoDelay(1);
+                status = Robot.DONE;
                 break;
             
             // Start the grabber and keep the arm in shooting position

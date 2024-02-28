@@ -243,7 +243,7 @@ public class Controls {
 	 * @return Manipulator controller A button held down
 	 */
 	public boolean runIntake() {
-		return manipulatorController.getAButton();
+		return manipulatorController.getLeftTriggerAxis() > 0.05;
 	}
 
 	/***
