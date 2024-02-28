@@ -29,17 +29,15 @@ public class Robot extends TimedRobot {
 	public static final int CONT =  3;
 
 	// Object creation
-	PoseEstimation position;
-	CustomTables   nTables;
-	Controls       controls;
-	Drive          drive;
-	Auto           auto;
-  Shooter        shooter;
-  Arm            arm;
-  Grabber        grabber;
-
-	// Constants
-	private final double ROTATE_SPEED_OFFSET = -0.16;
+  NetworkTableInstance FCSInfo;
+	PoseEstimation       position;
+	CustomTables         nTables;
+	Controls             controls;
+  Shooter              shooter;
+  Grabber              grabber;
+	Drive                drive;
+	Auto                 auto;
+  Arm                  arm;
 
 	// Variables
 	private int status = CONT;
@@ -47,15 +45,8 @@ public class Robot extends TimedRobot {
   private boolean shooterState = false;
 
 	// Auto path
-	private static final String autoMode = "Wall";
-	private String m_autoSelected;
 	private SendableChooser<String> m_chooser = new SendableChooser<>();
-
-	// Auto Delay
-	private long delaySec = 0;
-
-  // Distance test status
-  private boolean driveDistance;  /// Whether the robot is at the drive step of the test
+	private String m_autoSelected = "Speaker Center";
   
   // Statuses for each "module" 
   private int shooterStatus = CONT;
@@ -71,17 +62,19 @@ public class Robot extends TimedRobot {
     Fiducial = new LimelightTarget_Fiducial();
 
 		// Instance creation
+    grabber  = Grabber.getInstance();
 		drive    = new Drive();
 		controls = new Controls();
 		position = new PoseEstimation(drive);
     shooter  = new Shooter();
     arm      = new Arm();
-    grabber  = Grabber.getInstance();
 		auto     = new Auto(drive, position, arm, grabber, shooter);
 
 		// Instance getters
 		nTables  = CustomTables.getInstance();
+    FCSInfo = NetworkTableInstance.getDefault();
 
+    // Turn off the limelight LEDs so they don't blind people
     LimelightHelpers.setLEDMode_ForceOff("limelight");
   }
 
@@ -91,6 +84,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    // Auto selection
     m_chooser.setDefaultOption("Speaker Center", "Speaker Center");
     m_chooser.addOption("Speaker Left", "Speaker Left");
     m_chooser.addOption("Speaker Right", "Speaker Right");
@@ -144,6 +138,8 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
+    SmartDashboard.putNumber("Current angle", drive.getYawDegreesAdjusted());
+
     if (status == Robot.CONT) {
       switch (m_autoSelected) {
         case "Speaker Center":
@@ -159,14 +155,10 @@ public class Robot extends TimedRobot {
           break;
 
         default:
-          status = auto.speakerPositionCenter();
-          // Put default auto code here
+          status = auto.speakerPositionLeft();
           break;
       }
-    }    
-
-    //SmartDashboard.putNumber("Extend position", arm.getExtendPosition());
-    //SmartDashboard.putNumber("Arm angle", arm.getElevationPosition());
+    } 
   }
 
   /** This function is called once when teleop is enabled. */
@@ -179,7 +171,7 @@ public class Robot extends TimedRobot {
     status = Robot.CONT;
 
     // Turn on the shooter motors
-    //shooter.spinup();    
+    //shooter.spinup();
   }
 
   /** This function is called periodically during operator control. */
@@ -196,9 +188,6 @@ public class Robot extends TimedRobot {
     
     // Allows for controlling the grabber
     grabberControl();
-
-    //grabber.intakeOutake(true, false);
-    //armStatus = arm.rotateArm(342);
   }
 
   /** This function is called once when the robot is disabled. */
@@ -213,8 +202,8 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit() {
     // Initialize Shuffleboard
-    //SmartDashboard.putNumber("Shooter Power", 0.0);
-    //SmartDashboard.putNumber("Grabber Power", 0.0);
+    SmartDashboard.putNumber("Shooter Power", 0.0);
+    SmartDashboard.putNumber("Grabber Power", 0.0);
 
     // Reset the robot statuses. This ensures that we don't need to restart the code after every time we
     // run the robot.
@@ -224,8 +213,6 @@ public class Robot extends TimedRobot {
 
     //driveDistance = false;
   }
-
-  private static int increment = 0;
 
   /** This function is called periodically during test mode. */
   @Override
@@ -406,11 +393,9 @@ public class Robot extends TimedRobot {
 	private void armControl() {
     // Move the arm up/down incrementally
     if(controls.moveArmUp()) {
-      //arm.rotateArmIncrement(true, false);
       arm.testElevate(-0.5);
     }
     else if (controls.moveArmDown()) {
-      //arm.rotateArmIncrement(false, true);
       arm.testElevate(0.5);
     }
     else{

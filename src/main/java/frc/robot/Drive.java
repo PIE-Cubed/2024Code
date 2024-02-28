@@ -157,7 +157,7 @@ public class Drive {
         autoDriveRotateController.setTolerance(AUTO_DRIVE_ROTATE_TOLERANCE);
         autoDriveRotateController.enableContinuousInput(Math.PI, -Math.PI);
         
-        rotatePidController = new PIDController(1.65, 0, 0);
+        rotatePidController = new PIDController(1.65 / 2, 0, 0);
         rotatePidController.setTolerance(ROTATE_TOLERANCE_RADIANS);
         rotatePidController.enableContinuousInput(Math.PI, -Math.PI);
         
@@ -351,7 +351,7 @@ public class Drive {
 
     /**
      * Drives N feet
-     * @param driveAngle -> The angle at which to drive forward at
+     * @param driveAngle -> The angle at which to drive forward at, relative to the robot
      * @param distanceFeet -> The distance to drive in feet
      * @param power -> The power to apply to the motor(-1 - 1)
      * @return

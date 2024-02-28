@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Auto {
     // State tracking variables - each variable can only be used in one function at any time
@@ -239,14 +240,14 @@ public class Auto {
     }
 
     /**
-     * <p> Moves the arm so the shooter is aiming at the speaker (located in the left position)
+     * <p> Moves the arm so the shooter is aiming at the speaker (located in the right position)
      * <p> -26 degrees from horizontal
      * <p> Fully retracts arm
      * <p> First rotates, then retracts the arm
      * <p> This currently takes 11 seconds for a full auto cycle
      * @return Robot status, CONT or DONE
      */
-    public int speakerPositionLeft() {
+    public int speakerPositionRight() {
         if(firstTime == true) {
             firstTime = false;
             step = 1;
@@ -335,14 +336,14 @@ public class Auto {
     }
 
     /**
-     * <p> Moves the arm so the shooter is aiming at the speaker (located in the right position)
+     * <p> Moves the arm so the shooter is aiming at the speaker (located in the left position)
      * <p> -26 degrees from horizontal
      * <p> Fully retracts arm
      * <p> First rotates, then retracts the arm
      * <p> This currently takes 11 seconds for a full auto cycle
      * @return Robot status, CONT or DONE
      */
-    public int speakerPositionRight() {
+    public int speakerPositionLeft() {
         if(firstTime == true) {
             firstTime = false;
             step = 1;
@@ -350,7 +351,7 @@ public class Auto {
 
         switch(step) {            
             // Start the shooter motors and rotate the arm to -26 (333) degrees from 54
-            case 1:
+            /*case 1:
                 shooter.spinup();
                 status = arm.rotateArm(333);
                 break;
@@ -376,16 +377,18 @@ public class Auto {
             // Extend the arm so the wood holding block falls into the robot, and so the arm is in the shooting position
             case 5:
                 status = arm.extendArm(8, 0.25);
-                break;
+                break;*/
 
-            // Drive backwards 4 feet
-            case 6:
-                if (intakeStatus == Robot.CONT) {
+            // Drive backwards 1 foot
+            case 999999999:
+                /*if (intakeStatus == Robot.CONT) {
                     intakeStatus = grabber.intakeOutake(true, false);
-                }
+                }*/
+
+                intakeStatus = Robot.DONE;
                 
                 if (driveStatus == Robot.CONT) {
-                    driveStatus = drive.driveDistanceWithAngle(0, 4, 0.3);
+                    driveStatus = drive.driveDistanceWithAngle(0, 1, 0.3);
                 }
                 
                 if (intakeStatus == Robot.DONE && driveStatus == Robot.DONE) {
@@ -397,8 +400,17 @@ public class Auto {
             
                 break;
 
+            // Rotate to zero degrees
+            case 1:
+                //status = drive.ro(Math.toRadians(-45));
+                //driveStatus = drive.driveDistanceWithAngle(-90, 2, 0.2);
+                Measure<Angle> angleMeasurement = Units.Radians.of(0);  // Get the desired angle as a Measure<Angle> 
+                Translation2d vect = new Translation2d(0.0, new Rotation2d(angleMeasurement));  // Create Translation2d for rotateWheels
+                status = drive.rotateWheelsNoOpt(vect.getX(), vect.getY(), 0.0);  // Rotate wheels to 0 radians
+                break;
+
             // Drive back to the speaker
-            case 7:
+            /*case 7:
                 status = drive.driveDistanceWithAngle(0, -4, 0.3);
                 break;
 
@@ -412,7 +424,7 @@ public class Auto {
                 grabber.setMotorPower(grabber.INTAKE_POWER);
                 arm.maintainPosition(335);
                 status = autoDelay(1);
-                break;
+                break;*/
             
             // Finished routine, reset variables, stop motors, and return done
             default:
