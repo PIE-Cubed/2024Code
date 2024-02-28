@@ -53,6 +53,7 @@ public class Robot extends TimedRobot {
   private int grabberStatus = CONT;
   private int moveStatus = CONT;
   private int armStatus = CONT;
+  private int restingStatus = CONT;
 
   private boolean shooterSpinning;
 
@@ -442,7 +443,7 @@ public class Robot extends TimedRobot {
     if (shooterState == true && controls.enableShooter() == false) {
       shooterState = false;
       shooter.stopShooting();
-      auto.restingPosition();
+      arm.testElevate(0); // Let arm fall to rest position(bumper)
       auto.resetTeleopShoot();
     }
 
