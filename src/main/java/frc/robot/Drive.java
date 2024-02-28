@@ -157,7 +157,7 @@ public class Drive {
         autoDriveRotateController.setTolerance(AUTO_DRIVE_ROTATE_TOLERANCE);
         autoDriveRotateController.enableContinuousInput(Math.PI, -Math.PI);
         
-        rotatePidController = new PIDController(1.65 / 2, 0, 0);
+        rotatePidController = new PIDController(0.2, 0, 0);
         rotatePidController.setTolerance(ROTATE_TOLERANCE_RADIANS);
         rotatePidController.enableContinuousInput(Math.PI, -Math.PI);
         
