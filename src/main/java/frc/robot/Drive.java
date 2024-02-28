@@ -157,7 +157,7 @@ public class Drive {
         autoDriveRotateController.setTolerance(AUTO_DRIVE_ROTATE_TOLERANCE);
         autoDriveRotateController.enableContinuousInput(Math.PI, -Math.PI);
         
-        rotatePidController = new PIDController(0.2, 0, 0);
+        rotatePidController = new PIDController(1.4, 0, 0);
         rotatePidController.setTolerance(ROTATE_TOLERANCE_RADIANS);
         rotatePidController.enableContinuousInput(Math.PI, -Math.PI);
         
@@ -598,7 +598,7 @@ public class Drive {
             rotatePidController.setSetpoint(targetRadians);
         }
         double rotateVelocity = rotatePidController.calculate(getYawAdjusted(), targetRadians);
-        
+
         // Increment setpointCounter if the robot is at the setpoint
         if(rotatePidController.atSetpoint()){
             setpointCounter++;
@@ -614,7 +614,7 @@ public class Drive {
         }
         
         // Get rotate velocity and rotate with teleopDrive()
-        teleopDrive(0, 0, MathUtil.clamp(rotateVelocity, -1.0, 1.0), false);
+        teleopDrive(0, 0, MathUtil.clamp(rotateVelocity * -1, -1.0, 1.0), false);
         
         return Robot.CONT;
     }

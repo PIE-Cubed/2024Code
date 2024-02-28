@@ -209,6 +209,7 @@ public class Robot extends TimedRobot {
     // Initialize Shuffleboard
     SmartDashboard.putNumber("Shooter Power", 0.0);
     SmartDashboard.putNumber("Grabber Power", 0.0);
+    SmartDashboard.putNumber("Angle(Deg)",0.0);
 
     // Reset the robot statuses. This ensures that we don't need to restart the code after every time we
     // run the robot.
@@ -253,9 +254,11 @@ public class Robot extends TimedRobot {
     }*/
 
     // Test driving at an angle
+    /* 
     if(status == Robot.CONT) {
       status = drive.testAngleDrive(0, 3, 0.3);
     }
+    */
 
     // 60 from horizontal, arm extends 4in
     /*
@@ -342,9 +345,11 @@ public class Robot extends TimedRobot {
     //drive.alignWithAprilTag(1, 4);  // Pipeline 1 has a mask for ID 4
 
     // Test rotation
-    //double deg = SmartDashboard.getNumber("Angle(Deg)", 0);
-    //int status = drive.rotateRobot(Math.toRadians(deg));
-    //if(status == DONE) System.out.println("Done");
+    if (status == CONT)  {
+        double deg = SmartDashboard.getNumber("Angle(Deg)", 0);
+        status = drive.rotateRobot(Math.toRadians(deg));
+    }
+    if(status == DONE) System.out.println("Done");
 
     // Test controller
     //SmartDashboard.putNumber("Controller L", controls.getForwardSpeed());
