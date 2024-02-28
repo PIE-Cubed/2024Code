@@ -272,7 +272,7 @@ public class Controls {
 	}
 
 	/***
-	 * Pressing the Start button will start the shooter wheels
+	 * Pressing the Start button will start the shooting processs
 	 * @return Manipulator controller Start button pressed
 	 */
 	public boolean startShooterWheels() {

@@ -109,8 +109,7 @@ public class Auto {
     /**
      * <p> Moves the arm back into resting position
      * <p> -27 degrees from horizontal
-     * <p> Fully retracts arm
-     * <p> First rotates, then retracts the arm
+     * <p> Doesnt retract arm(loses precision from string slack)
      * @return Robot status, CONT or DONE
      */
     public int restingPosition() {
@@ -124,9 +123,6 @@ public class Auto {
         switch(step) {
             case 1:     // Rotate arm to -27 degrees from horizontal (359 - 27 = 332)
                 status = arm.rotateArm(332);
-                break;
-            case 2:     // Fully retract arm
-                status = arm.extendArm(0, 0.1);
                 break;
             default:    // Finished routine, reset variables and return done
                 step = 1;
@@ -554,8 +550,6 @@ public class Auto {
      * @return Robot.CONT or Robot.DONE
      */
     public int autoClimb() {
-        System.err.println("Not implemented yet!");
-
         int status = Robot.CONT;
 
         if(firstTime == true) {
@@ -564,7 +558,7 @@ public class Auto {
         }
 
         switch(step) {
-            case 1:     // Rotate arm vertically
+            case 1:     // Rotate arm to 90 degrees
                 break;
             case 2:     // Extend arm to mount chain
                 break;
