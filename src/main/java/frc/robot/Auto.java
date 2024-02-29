@@ -26,6 +26,9 @@ public class Auto {
     private int driveStatus = Robot.CONT;
     private int status = Robot.CONT;
 
+    private final int SHOOT1_ANGLE = 327;
+    private final int SHOOT2_ANGLE = 327;
+
     // Auto program selection
     public String selectedAuto = "Speaker Center";
 
@@ -157,20 +160,20 @@ public class Auto {
             // Start the shooter motors and rotate the arm to -26 (333) degrees from 54
             case 1:
                 shooter.spinup();
-                status = arm.rotateArm(333);
+                status = arm.rotateArm(SHOOT1_ANGLE);
                 break;
                         
             // Shoot the note by running the grabber
             case 2:
                 grabber.setMotorPower(grabber.INTAKE_POWER);
-                arm.maintainPosition(333);
+                arm.maintainPosition(SHOOT1_ANGLE);
                 status = Robot.DONE;
                 break;
 
             // Assume the robot shot the note after 1 second(s)
             case 3:
                 status = autoDelay(1);
-                arm.maintainPosition(333);
+                arm.maintainPosition(SHOOT1_ANGLE);
                 break;
 
             // Rotate the arm to it's resting position and turn off the shooter and Switch the grabber to intake mode
@@ -204,18 +207,18 @@ public class Auto {
 
             // Drive back to the speaker
             case 7:
-                status = drive.driveDistanceWithAngle(0, -4, 0.3);
+                status = drive.driveDistanceWithAngle(0, -4.5, 0.3);
                 break;
 
             // Rotate the arm so it's in the shooting position
             case 8:
-                status = arm.rotateArm(335); // Use 343 if not driving to speaker          
+                status = arm.rotateArm(SHOOT2_ANGLE); // Use 343 if not driving to speaker          
                 break;
 
             // Shoot the note
             case 9:
                 grabber.setMotorPower(grabber.INTAKE_POWER);
-                arm.maintainPosition(335);
+                arm.maintainPosition(SHOOT2_ANGLE);
                 status = autoDelay(1);
                 break;
             

@@ -150,17 +150,14 @@ public class Robot extends TimedRobot {
         case "Speaker Center":
           status = auto.speakerPositionCenter();
           break;
-
         case "Speaker Left":
           status = auto.speakerPositionLeft();
           break;
-        
         case "Speaker Right":
           status = auto.speakerPositionRight();
           break;
-
         default:
-          status = auto.speakerPositionLeft();
+          status = auto.speakerPositionCenter();
           break;
       }
     } 
