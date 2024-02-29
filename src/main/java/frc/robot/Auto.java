@@ -462,12 +462,12 @@ public class Auto {
             // Start the shooter motors and rotate the arm to -23 (336) degrees from 54
             case 1:
                 shooter.spinup();
-                status = arm.rotateArm(333);
+                status = arm.rotateArm(327);
                 break;
 
             // Wait for the thooter motors to spin up
             case 2:                
-                arm.maintainPosition(333);
+                arm.maintainPosition(327);
                 //status = autoDelay(1);
                 status = Robot.DONE;
                 break;
@@ -475,7 +475,7 @@ public class Auto {
             // Start the grabber and keep the arm in shooting position
             default:
                 grabber.setMotorPower(grabber.INTAKE_POWER);
-                arm.maintainPosition(333);
+                arm.maintainPosition(327);
                 break;
         }
 

@@ -289,11 +289,11 @@ public class Controls {
 
 	// Positioning
 	/***
-	 * Pressing the B button will move the arm to the AMP position
-	 * @return Manipulator controller B button pressed
+	 * Holding the B button will move the arm to the AMP position
+	 * @return Manipulator controller B button state
 	 */
 	public boolean moveToAmpPosition() {
-		return manipulatorController.getBButtonPressed();
+		return manipulatorController.getBButton();
 	}
 
 	/***

@@ -190,6 +190,10 @@ public class Robot extends TimedRobot {
     
     // Allows for controlling the grabber
     grabberControl();
+
+    double angle = arm.getElevationPosition();
+    System.out.println("Arm Angle: " + angle);
+
   }
 
   /** This function is called once when the robot is disabled. */
@@ -418,6 +422,11 @@ public class Robot extends TimedRobot {
     }
     else {
       arm.testExtend(0);
+    }
+
+    // Rotate arm to 29 degrees for the amp(not dump shot)
+    if(controls.moveToAmpPosition()) {
+      arm.rotateArm(29);
     }
 
     // Bring the arm to its resting position
