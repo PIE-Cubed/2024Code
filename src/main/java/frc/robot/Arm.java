@@ -34,7 +34,7 @@ public class Arm {
     private final double ARM_EXTENDER_PID_I = ARM_EXTENDER_PID_P / 1.5;
 
     public final double ARM_REST_POSITION_DEGREES = 322;
-    public final double ARM_AMP_POSITION_DEGREES = 30;
+    public final double ARM_AMP_POSITION_DEGREES = 33;
 
 
     private CANSparkMax extenderMotor;
