@@ -81,12 +81,13 @@ public class Controls {
 	public double getForwardSpeed() {
 		double speed;
 		double power = -1 * driveController.getLeftY();
-		power = Math.pow(power, 5);
-
+		
 		// Turns the power into a speed
 		if(enablePrecisionDrive()){
+			power = Math.pow(power, 3);
 			speed = power * Drive.POWER_SPEED_RATIO_MPS_PREICISION;	// Use precision mode curve
 		} else {
+			power = Math.pow(power, 5);
 			speed = power * Drive.POWER_SPEED_RATIO_MPS;	// Use regular curve
 		}
 
@@ -106,12 +107,13 @@ public class Controls {
 	public double getStrafeSpeed() {
 		double speed;
 		double power = driveController.getLeftX();
-		power = Math.pow(power, 5);
 
 		// Turns the power into a speed
 		if(enablePrecisionDrive()){
+			power = Math.pow(power, 3);
 			speed = power * Drive.POWER_SPEED_RATIO_MPS_PREICISION;	// Use precision mode curve
 		} else {
+			power = Math.pow(power, 5);
 			speed = power * Drive.POWER_SPEED_RATIO_MPS;	// Use regular curve
 		}
 
