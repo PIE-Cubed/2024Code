@@ -57,6 +57,10 @@ public class Robot extends TimedRobot {
 
   private boolean shooterSpinning;
 
+  /* arm states */
+  enum ArmState {TELEOP, CLIMB, AMP, REST};
+  private ArmState armState = ArmState.TELEOP;
+
 	/**
 	 * Constructor
 	 */
@@ -190,10 +194,6 @@ public class Robot extends TimedRobot {
     
     // Allows for controlling the grabber
     grabberControl();
-
-    double angle = arm.getElevationPosition();
-    System.out.println("Arm Angle: " + angle);
-
   }
 
   /** This function is called once when the robot is disabled. */
@@ -401,7 +401,7 @@ public class Robot extends TimedRobot {
   /**
 	 * Controls the arm in TeleOp
 	 */
-	private void armControl() {
+	/*private void armControl() {
     // Move the arm up/down incrementally
     if(controls.moveArmUp()) {
       arm.testElevate(-0.5);
@@ -438,7 +438,79 @@ public class Robot extends TimedRobot {
     if (controls.autoClimb()) {
       armStatus = arm.rotateArm(90);
     }
-	}
+	}*/
+
+
+
+  private void armControl()
+  {
+      if (armState == ArmState.TELEOP)
+      {
+          // Move the arm up/down incrementally
+          if(controls.moveArmUp()) {
+              arm.testElevate(-0.5);
+          }
+          else if (controls.moveArmDown()) {
+            arm.testElevate(0.5);
+          }
+          else{
+            arm.testElevate(0);
+          }
+
+          // Move the arm out/in incrementally
+          if(controls.extendArm()) {
+            arm.testExtend(0.2);
+          } else if(controls.retractArm()) {
+            arm.testExtend(-0.2);
+          } else {
+            arm.testExtend(0.0);
+          }
+
+          // next state
+          if (controls.autoClimb())  {
+              armState = ArmState.CLIMB;
+          }
+          else if (controls.moveToAmpPosition())  {
+              armState = ArmState.AMP;
+          }
+          else if (controls.moveToRestPosition())  {
+              armState = ArmState.REST;
+          }
+
+      }
+      else if (armState == ArmState.CLIMB)
+      {
+          armStatus = arm.rotateArm(90);
+
+          // next state
+          if (armStatus == Robot.DONE)  {
+            armState = ArmState.TELEOP;
+          }
+          else  {
+              armState = ArmState.CLIMB;
+          }
+      }
+      else if (armState == ArmState.AMP)
+      {
+          armStatus = arm.rotateArm(arm.ARM_AMP_POSITION_DEGREES);
+          
+          if (controls.moveToAmpPosition() && armStatus == Robot.DONE) {
+              arm.maintainPosition(arm.ARM_AMP_POSITION_DEGREES);
+          } 
+          else {
+              armState = ArmState.TELEOP;
+          }
+      }
+      else if (armState == ArmState.REST)
+      {
+          armStatus = arm.rotateArm(arm.ARM_REST_POSITION_DEGREES);
+
+          if (armStatus == Robot.DONE) {
+              armState = ArmState.TELEOP;
+          }
+      }
+  }
+
 
   /**
 	 * Controls the shooter in TeleOp

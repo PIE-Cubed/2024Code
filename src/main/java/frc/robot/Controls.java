@@ -322,19 +322,19 @@ public class Controls {
 	}
 
 	/***
-	 * Pressing the DPAD RIGHT button will retract the arm
-	 * @return Manipulator controller DPAD RIGHT button pressed
+	 * Pressing RIGHT ANALOG DOWN will retract the arm
+	 * @return Manipulator controller RIGHT ANALOG DOWN pressed
 	 */
 	public boolean retractArm() {
-		return manipulatorController.getPOV() == 90;
+		return manipulatorController.getRightY() > 0.3;
 	}
 
 	/***
-	 * Pressing the DPAD LEFT button will extend the arm
-	 * @return Manipulator controller DPAD LEFT button pressed
+	 * Pressing RIGHT ANALOG UP will extend the arm
+	 * @return Manipulator controller RIGHT ANALOG UP pressed
 	 */
-	 boolean extendArm() {
-		return manipulatorController.getPOV() == 270;
+	public boolean extendArm() {
+		return manipulatorController.getRightY() < -0.3;
 	}
 
 

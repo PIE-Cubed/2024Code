@@ -33,6 +33,9 @@ public class Arm {
     private final double ARM_EXTENDER_PID_P = 0.035;
     private final double ARM_EXTENDER_PID_I = ARM_EXTENDER_PID_P / 1.5;
 
+    public final double ARM_REST_POSITION_DEGREES = 322;
+    public final double ARM_AMP_POSITION_DEGREES = 30;
+
 
     private CANSparkMax extenderMotor;
     private CANSparkMax elevationMotor;
@@ -255,22 +258,22 @@ public class Arm {
      * 
      **************************************************************************/
 
-    // Positive power goes down
+    /// Positive power goes down
     public void testElevate(double power) {
         elevationMotor.set(power);
     }
 
-    // Put the arm position on shuffleboard
+    /// Put the arm position on shuffleboard
     public void testPosition() {
         System.out.println(elevationEncoder.getPosition());
     }
 
-    // Positive power extends the motor
+    /// Positive power extends the motor
     public void testExtend(double power) {
         extenderMotor.set(power);
     }
 
-    // Move the arm to its starting/balancing position (54 degrees)
+    /// Move the arm to its starting/balancing position (54 degrees)
     public int testStartingPosition() {
         return rotateArm(54);
     }
