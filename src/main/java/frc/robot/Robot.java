@@ -93,8 +93,9 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     // Auto selection
     m_chooser.setDefaultOption("Speaker Center", "Speaker Center");
-    m_chooser.addOption("Speaker Left", "Speaker Left");
-    m_chooser.addOption("Speaker Right", "Speaker Right");
+    //m_chooser.addOption("Speaker Left", "Speaker Left");
+    //m_chooser.addOption("Speaker Right", "Speaker Right");
+    m_chooser.addOption("Speaker Side", "Speaker Side");
     SmartDashboard.putData("Auto choices", m_chooser);
 
     // Reset the robot statuses. This ensures that we don't need to restart the code after every time we
@@ -154,12 +155,17 @@ public class Robot extends TimedRobot {
         case "Speaker Center":
           status = auto.speakerPositionCenter();
           break;
-        case "Speaker Left":
+        /*case "Speaker Left":
           status = auto.speakerPositionLeft();
           break;
         case "Speaker Right":
           status = auto.speakerPositionRight();
+          break;*/
+
+        case "Speaker Side":
+          status = auto.speakerPositionRight();
           break;
+          
         default:
           status = auto.speakerPositionCenter();
           break;
