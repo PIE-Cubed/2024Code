@@ -253,7 +253,7 @@ public class Auto {
         }
 
         switch(step) {            
-            // Start the shooter motors and rotate the arm to -26 (333) degrees from 54
+            /*// Start the shooter motors and rotate the arm to -26 (333) degrees from 54
             case 1:
                 shooter.spinup();
                 status = arm.rotateArm(333);
@@ -318,6 +318,47 @@ public class Auto {
                 status = autoDelay(1);
                 break;
             
+            // Finished routine, reset variables, stop motors, and return done
+            default:
+                shooter.stopShooting();
+                step = 1;
+                firstTime = true;
+                return Robot.DONE;*/
+
+            // Start the shooter motors and rotate the arm to -26 (333) degrees from 54
+            case 1:
+                shooter.spinup();
+                status = arm.rotateArm(SHOOT1_ANGLE);
+                break;
+                        
+            // Shoot the note by running the grabber
+            case 2:
+                grabber.setMotorPower(grabber.INTAKE_POWER);
+                arm.maintainPosition(SHOOT1_ANGLE);
+                status = Robot.DONE;
+                break;
+
+            // Assume the robot shot the note after 1 second(s)
+            case 3:
+                status = autoDelay(1);
+                arm.maintainPosition(SHOOT1_ANGLE);
+                break;
+
+            // Rotate the arm to it's resting position and turn off the shooter and Switch the grabber to intake mode
+            case 4:
+                status = arm.rotateArm(322);
+                break;
+
+            // Extend the arm so the wood holding block falls into the robot, and so the arm is in the shooting position
+            case 5:
+                status = arm.extendArm(8, 0.25);
+                break;
+
+            // Drive backwards 7 feet
+            case 6:
+                status = drive.driveDistanceWithAngle(0, 7, 0.3);            
+                break;
+
             // Finished routine, reset variables, stop motors, and return done
             default:
                 shooter.stopShooting();
