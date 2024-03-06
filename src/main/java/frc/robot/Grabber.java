@@ -21,7 +21,7 @@ public class Grabber {
     // TODO tune these power values
     public final double INTAKE_POWER = 0.9;
     public final double OUTTAKE_POWER = -0.75;
-    public final double FEED_POWER = 0.75;  
+    public final double FEED_POWER = 0.9;  
     public final double PROXIMITY_THRESHOLD = 155; 
     public final double IR_THRESHOLD = 150;
     
@@ -82,6 +82,7 @@ public class Grabber {
 
             if(noteDetected()) {
                 setMotorPower(0.0);
+                
                 return Robot.DONE;
             } 
             else {

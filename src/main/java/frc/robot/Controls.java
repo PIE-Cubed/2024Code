@@ -215,8 +215,10 @@ public class Controls {
 		return driveController.getPOV() == 180;
 	}
 
-	// Lights
+	// Center of rotation evasion
+	
 
+	// Lights
 	/***
 	 * Pressing the Left Bumper button will amplify signal lights
 	 * @return Drive controller Left Bumper button pressed

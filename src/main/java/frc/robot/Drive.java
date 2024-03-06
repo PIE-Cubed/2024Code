@@ -43,6 +43,7 @@ public class Drive {
     private boolean autoPointAngled        = false; // Tracks if wheels have been angled before driving
     private boolean autoPointFirstTime     = true;
     public  boolean driveDistanceFirstTime = true;
+    public  boolean rotateWheelsFirstTime = true;
     public  boolean driveReverseDistanceFirstTime = true;
     private double  initXVelocity          = 0;
     private double  initYVelocity          = 0;
@@ -347,6 +348,39 @@ public class Drive {
         //SmartDashboard.putNumber("Angle difference", angleDifference);
         //System.out.println("Angle difference: " + angleDifference);
         return Robot.CONT;
+    }
+
+    /**
+     * Rotates the wheels to an angle, relative to the front of the robot
+     * @param driveAngle -> The angle at which to rotate to
+     * @return
+     */
+    public int rotateWheelsToAngle(double wheelAngle) {        
+        /* 
+         * X velocity equation: Power * Cosine of drive angle
+         * Y velocity equation: Power * Sine of drive angle
+         * Positive angle difference power rotates 
+        */
+        SwerveModuleState[] states = swerveDriveKinematics.toSwerveModuleStates(
+            new ChassisSpeeds(Math.cos(wheelAngle), -1 * Math.sin(wheelAngle), 0));
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, 0);   // Desaturate
+        setModuleStates(states);
+
+        // Calculate the angle difference between the current and target angles
+        double angleDifference = backRight.getRotateAngle() - wheelAngle;
+
+        // Stop the robot if it has rotated to the correct angle (within 2 degrees)
+        if (Math.abs(angleDifference) <= 2) {
+            System.out.println("Done, rotated to " + backRight.getRotateAngle() + " degrees");
+            rotateWheelsFirstTime = true;
+            return Robot.DONE;
+        }
+        else {
+            return Robot.CONT;
+        }
+
+        //SmartDashboard.putNumber("Angle difference", angleDifference);
+        //System.out.println("Angle difference: " + angleDifference);
     }
 
     /**
