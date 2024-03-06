@@ -94,9 +94,10 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     // Auto selection
-    m_chooser.setDefaultOption("Speaker Center", "Speaker Center");
-    m_chooser.addOption("Speaker Left", "Speaker Left");
-    m_chooser.addOption("Speaker Right", "Speaker Right");
+    m_chooser.setDefaultOption("Speaker Center Auto", "Speaker Center Auto");
+    m_chooser.addOption("Feed Side Auto", "Feed Side Auto");
+    //m_chooser.addOption("Amp Side Auto", "Amp Side Auto");
+    m_chooser.addOption("No Auto", "No Auto");
     SmartDashboard.putData("Auto choices", m_chooser);
 
     // Reset the robot statuses. This ensures that we don't need to restart the code after every time we
@@ -143,25 +144,30 @@ public class Robot extends TimedRobot {
 
     m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
 
-    System.out.println("Auto selected: " + m_autoSelected);
+    System.out.println("Auto selected: " + m_autoSelected);    
   }
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    SmartDashboard.putNumber("Current angle", drive.getYawDegreesAdjusted());
-
     if (status == Robot.CONT) {
       switch (m_autoSelected) {
-        case "Speaker Center":
+        case "Speaker Center Auto":
           status = auto.speakerPositionCenter();
           break;
-        case "Speaker Left":
-          status = auto.speakerPositionLeft();
-          break;
-        case "Speaker Right":
+
+        case "Feed Side Auto":
           status = auto.speakerPositionRight();
           break;
+
+        /*case "Amp Side Auto":
+          status = auto.speakerPositionLeft();
+          break;*/
+
+        case "No Auto":
+        status = Robot.DONE;
+          break;
+          
         default:
           status = auto.speakerPositionCenter();
           break;
@@ -196,6 +202,9 @@ public class Robot extends TimedRobot {
     
     // Allows for controlling the grabber
     grabberControl();
+
+    // Drivers check this to see if they grabbed a note
+    SmartDashboard.putBoolean("Grabber has Note", grabber.noteDetected());
 
     // Allows for controlling the LEDs
     ledControl();
@@ -253,10 +262,10 @@ public class Robot extends TimedRobot {
 
     // Move the arm to a certain degree
     /*if (armStatus == Robot.CONT) {
-      armStatus = arm.rotateArm(54);
+      armStatus = arm.rotateArm(0);
     }
     else {
-      armStatus = arm.maintainPosition(54);
+      armStatus = arm.maintainPosition(0);
     }*/
 
     // Test driving at an angle

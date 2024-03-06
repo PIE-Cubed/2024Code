@@ -26,8 +26,8 @@ public class Auto {
     private int driveStatus = Robot.CONT;
     private int status = Robot.CONT;
 
-    private final int SHOOT1_ANGLE = 327;
-    private final int SHOOT2_ANGLE = 327;
+    private final int SHOOT1_ANGLE = 325;
+    private final int SHOOT2_ANGLE = 325;
 
     // Auto program selection
     public String selectedAuto = "Speaker Center";
@@ -170,9 +170,9 @@ public class Auto {
                 status = Robot.DONE;
                 break;
 
-            // Assume the robot shot the note after 1 second(s)
+            // Assume the robot shot the note after 0.75 second(s)
             case 3:
-                status = autoDelay(1);
+                status = autoDelayMS(750);
                 arm.maintainPosition(SHOOT1_ANGLE);
                 break;
 
@@ -183,7 +183,7 @@ public class Auto {
 
             // Extend the arm so the wood holding block falls into the robot, and so the arm is in the shooting position
             case 5:
-                status = arm.extendArm(8, 0.25);
+                status = arm.extendArm(8, 0.3);
                 break;
 
             // Drive backwards 4 feet
@@ -193,7 +193,7 @@ public class Auto {
                 }
                 
                 if (driveStatus == Robot.CONT) {
-                    driveStatus = drive.driveDistanceWithAngle(0, 4, 0.3);
+                    driveStatus = drive.driveDistanceWithAngle(0, 4, 0.5);
                 }
                 
                 if (intakeStatus == Robot.DONE && driveStatus == Robot.DONE) {
@@ -207,7 +207,7 @@ public class Auto {
 
             // Drive back to the speaker
             case 7:
-                status = drive.driveDistanceWithAngle(0, -4.5, 0.3);
+                status = drive.driveDistanceWithAngle(0, -4.5, 0.5);
                 break;
 
             // Rotate the arm so it's in the shooting position
@@ -338,9 +338,9 @@ public class Auto {
                 status = Robot.DONE;
                 break;
 
-            // Assume the robot shot the note after 1 second(s)
+            // Assume the robot shot the note after 0.75 second(s)
             case 3:
-                status = autoDelay(1);
+                status = autoDelayMS(750);
                 arm.maintainPosition(SHOOT1_ANGLE);
                 break;
 
@@ -351,12 +351,13 @@ public class Auto {
 
             // Extend the arm so the wood holding block falls into the robot, and so the arm is in the shooting position
             case 5:
-                status = arm.extendArm(8, 0.25);
+                status = arm.extendArm(8, 0.3);
                 break;
 
-            // Drive backwards 7 feet
+            // Drive backwards 10 feet
             case 6:
-                status = drive.driveDistanceWithAngle(0, 7, 0.3);            
+                shooter.stopShooting();
+                status = drive.driveDistanceWithAngle(0, 7, 0.5);            
                 break;
 
             // Finished routine, reset variables, stop motors, and return done
@@ -483,6 +484,66 @@ public class Auto {
     }
 
     /**
+     * <p> Moves the arm so the shooter is aiming at the speaker (located in the center position)
+     * <p> -26 degrees from horizontal
+     * <p> Fully retracts arm
+     * <p> First rotates, then retracts the arm
+     * <p> This currently takes 11 seconds for a full auto cycle
+     * @return Robot status, CONT or DONE
+     */
+    public int speakerShootWithoutMoving() {
+        if(firstTime == true) {
+            firstTime = false;
+            step = 1;
+        }
+
+        switch(step) {            
+            // Start the shooter motors and rotate the arm to -26 (333) degrees from 54
+            case 1:
+                shooter.spinup();
+                status = arm.rotateArm(SHOOT1_ANGLE);
+                break;
+                        
+            // Shoot the note by running the grabber
+            case 2:
+                grabber.setMotorPower(grabber.INTAKE_POWER);
+                arm.maintainPosition(SHOOT1_ANGLE);
+                status = Robot.DONE;
+                break;
+
+            // Assume the robot shot the note after 1 second(s)
+            case 3:
+                status = autoDelay(1);
+                arm.maintainPosition(SHOOT1_ANGLE);
+                break;
+
+            // Rotate the arm to it's resting position and turn off the shooter and Switch the grabber to intake mode
+            case 4:
+                status = arm.rotateArm(322);
+                break;
+
+            // Extend the arm so the wood holding block falls into the robot, and so the arm is in the shooting position
+            case 5:
+                status = arm.extendArm(8, 0.25);
+                break;
+            
+            // Finished routine, reset variables, stop motors, and return done
+            default:
+                shooter.stopShooting();
+                step = 1;
+                firstTime = true;
+                return Robot.DONE;
+        }
+
+        // Done current step, goto next one
+        if(status == Robot.DONE) {
+            step++;
+        }
+
+        return Robot.CONT;
+    }
+
+    /**
      * <p> Moves the arm so the shooter is aiming at the speaker
      * <p> -27 degrees from horizontal
      * <p> Fully retracts arm
@@ -503,12 +564,12 @@ public class Auto {
             // Start the shooter motors and rotate the arm to -23 (336) degrees from 54
             case 1:
                 shooter.spinup();
-                status = arm.rotateArm(327);
+                status = arm.rotateArm(SHOOT1_ANGLE);
                 break;
 
             // Wait for the thooter motors to spin up
             case 2:                
-                arm.maintainPosition(327);
+                arm.maintainPosition(SHOOT1_ANGLE);
                 //status = autoDelay(1);
                 status = Robot.DONE;
                 break;
@@ -516,7 +577,7 @@ public class Auto {
             // Start the grabber and keep the arm in shooting position
             default:
                 grabber.setMotorPower(grabber.INTAKE_POWER);
-                arm.maintainPosition(327);
+                arm.maintainPosition(SHOOT1_ANGLE);
                 break;
         }
 

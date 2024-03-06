@@ -8,6 +8,9 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
+
+import org.opencv.core.RotatedRect;
+
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
@@ -187,6 +190,14 @@ public class SwerveModule {
      */
     public double getDriveVelocity() {
         return driveEncoder.getVelocity();
+    }
+
+    /**
+     * Gets the rotate motor angle (-180, 180), relative to the front of the robot.
+     * @return The rotate motor's angle in degrees
+     */
+    public double getRotateAngle() {
+        return rotateMotor.get();
     }
 
     /**
