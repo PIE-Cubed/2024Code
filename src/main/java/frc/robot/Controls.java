@@ -355,5 +355,14 @@ public class Controls {
 		return driveController.getStartButtonPressed();
 	}
 
+	/**
+	 * <p> Checks if the B button is pressed on the drive controller
+	 * <p> Sets the LEDs to party mode
+	 * @return Drive controller B button pressed
+	 */
+	public boolean partyMode() {
+		return driveController.getBButtonPressed();
+	}
+
 }
 // End of the Controls class

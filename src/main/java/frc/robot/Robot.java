@@ -38,6 +38,7 @@ public class Robot extends TimedRobot {
 	Drive                drive;
 	Auto                 auto;
   Arm                  arm;
+  LED                  led;
 
 	// Variables
 	private int status = CONT;
@@ -76,6 +77,7 @@ public class Robot extends TimedRobot {
     shooter  = new Shooter();
     arm      = new Arm();
 		auto     = new Auto(drive, position, arm, grabber, shooter);
+    led      = new LED();
 
 		// Instance getters
 		nTables  = CustomTables.getInstance();
@@ -194,6 +196,9 @@ public class Robot extends TimedRobot {
     
     // Allows for controlling the grabber
     grabberControl();
+
+    // Allows for controlling the LEDs
+    ledControl();
   }
 
   /** This function is called once when the robot is disabled. */
@@ -440,8 +445,26 @@ public class Robot extends TimedRobot {
     }
 	}*/
 
+  private void ledControl() {
+    boolean hasNote = grabber.noteDetected();
+    boolean runningIntake = controls.runIntake();
+    boolean partyMode = controls.partyMode();
 
+    if(partyMode) {             // If the robot is done climbing, top priority
+      led.partyColor();           // Sets the color to rainbow
+    } else if(hasNote) {        // If the grabber has a note, second priority
+      led.capturedNoteColor();    // Sets the color to green
+    } else if(runningIntake) {  // If the grabber is running(no note), third priority
+      led.gettingNoteColor();     // Sets the color to orange
+    } else {                    // Default state
+      led.robolionsColor();       // Sets the color to blue-gold
+    }
+    led.updateLED();  // Update LEDs
+  }
 
+  /**
+	 * Controls the arm in TeleOp
+	 */
   private void armControl()
   {
       if (armState == ArmState.TELEOP)
@@ -510,7 +533,6 @@ public class Robot extends TimedRobot {
           }
       }
   }
-
 
   /**
 	 * Controls the shooter in TeleOp
