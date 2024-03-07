@@ -49,6 +49,7 @@ public class Drive {
     private double  initYVelocity          = 0;
     private double  targetPosition         = 0;
     private double  initRotateVelocity     = 0;
+    private double  startTime = 0;
     
     // Rate limiters for auto drive
     private SlewRateLimiter xLimiter;
@@ -361,16 +362,25 @@ public class Drive {
          * Y velocity equation: Power * Sine of drive angle
          * Positive angle difference power rotates 
         */
+        if (rotateWheelsFirstTime == true) {
+            rotateWheelsFirstTime = false;
+            startTime = System.currentTimeMillis() + 1.5;
+        }
+
         SwerveModuleState[] states = swerveDriveKinematics.toSwerveModuleStates(
             new ChassisSpeeds(Math.cos(wheelAngle), -1 * Math.sin(wheelAngle), 0));
         SwerveDriveKinematics.desaturateWheelSpeeds(states, 0);   // Desaturate
         setModuleStates(states);
 
         // Calculate the angle difference between the current and target angles
-        double angleDifference = backRight.getRotateAngle() - wheelAngle;
+        double angleDifferenceFL = frontLeft.getRotateAngle() - wheelAngle;
+        double angleDifferenceFR = frontRight.getRotateAngle() - wheelAngle;
+        double angleDifferenceBL = backLeft.getRotateAngle() - wheelAngle;
+        double angleDifferenceBR = backRight.getRotateAngle() - wheelAngle;
+        boolean allWheelsDone = (Math.abs(angleDifferenceFL) <= 2 && Math.abs(angleDifferenceFR) <= 2 && Math.abs(angleDifferenceBL) <= 2 && Math.abs(angleDifferenceBR) <= 2);
 
         // Stop the robot if it has rotated to the correct angle (within 2 degrees)
-        if (Math.abs(angleDifference) <= 2) {
+        if (System.currentTimeMillis() > startTime || allWheelsDone) {
             System.out.println("Done, rotated to " + backRight.getRotateAngle() + " degrees");
             rotateWheelsFirstTime = true;
             return Robot.DONE;
