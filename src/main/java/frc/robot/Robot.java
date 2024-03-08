@@ -38,7 +38,7 @@ public class Robot extends TimedRobot {
 	Drive                drive;
 	Auto                 auto;
   Arm                  arm;
-  LED                  led;
+  //LED                  led;
 
 	// Variables
 	private int status = CONT;
@@ -47,7 +47,7 @@ public class Robot extends TimedRobot {
 
 	// Auto path
 	private SendableChooser<String> m_chooser = new SendableChooser<>();
-	private String m_autoSelected = "Speaker Center";
+	private String m_autoSelected = "Speaker Center Auto";
   
   // Statuses for each "module" 
   private int shooterStatus = CONT;
@@ -77,7 +77,7 @@ public class Robot extends TimedRobot {
     shooter  = new Shooter();
     arm      = new Arm();
 		auto     = new Auto(drive, position, arm, grabber, shooter);
-    led      = new LED();
+    //led      = new LED();
 
 		// Instance getters
 		nTables  = CustomTables.getInstance();
@@ -95,10 +95,10 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     // Auto selection
     m_chooser.setDefaultOption("Speaker Center Auto", "Speaker Center Auto");
-    m_chooser.addOption("Feed Side Auto", "Feed Side Auto");
-    //m_chooser.addOption("Amp Side Auto", "Amp Side Auto");
+    m_chooser.addOption("Amp Side Auto", "Amp Side Auto");
     m_chooser.addOption("No Auto", "No Auto");
-    SmartDashboard.putData("Auto choices", m_chooser);
+    //m_chooser.addOption("Feed Side Auto", "Feed Side Auto");
+    SmartDashboard.putData("Auto Selector", m_chooser);
 
     // Reset the robot statuses. This ensures that we don't need to restart the code after every time we
     // run the robot.
@@ -142,8 +142,6 @@ public class Robot extends TimedRobot {
     armStatus = Robot.CONT;
     status = Robot.CONT;
 
-    m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
-
     System.out.println("Auto selected: " + m_autoSelected);    
   }
 
@@ -151,27 +149,30 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     if (status == Robot.CONT) {
-      switch (m_autoSelected) {
+      /*switch (m_autoSelected) {
         case "Speaker Center Auto":
           status = auto.speakerPositionCenter();
           break;
 
-        case "Feed Side Auto":
+        case "Amp Side Auto":
           status = auto.speakerPositionRight();
           break;
 
-        /*case "Amp Side Auto":
+        /*case "Feed Side Auto":
           status = auto.speakerPositionLeft();
           break;*/
 
-        case "No Auto":
-        status = Robot.DONE;
+        /*case "No Auto":
+          status = Robot.DONE;
           break;
           
         default:
+          System.out.println("[INFO] >> Running default auto.");
           status = auto.speakerPositionCenter();
           break;
-      }
+      }*/
+
+      status = auto.speakerPositionRight();
     } 
   }
 
@@ -207,7 +208,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("Grabber has Note", grabber.noteDetected());
 
     // Allows for controlling the LEDs
-    ledControl();
+    //ledControl();
   }
 
   /** This function is called once when the robot is disabled. */
@@ -222,9 +223,7 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit() {
     // Initialize Shuffleboard
-    SmartDashboard.putNumber("Shooter Power", 0.0);
-    SmartDashboard.putNumber("Grabber Power", 0.0);
-    SmartDashboard.putNumber("Angle(Deg)",0.0);
+    SmartDashboard.putNumber("Rotation Angle", 0.0);
 
     // Reset the robot statuses. This ensures that we don't need to restart the code after every time we
     // run the robot.
@@ -241,15 +240,19 @@ public class Robot extends TimedRobot {
     // Read values from shuffleboard
     //double shooterPower = SmartDashboard.getNumber("Shooter Power", 0.0);
     //double grabberPower = SmartDashboard.getNumber("Grabber Power", 0.0);
+    //double rotateAngle = SmartDashboard.getNumber("Rotation Angle", 0.0);
 
     //testTeleopDrive();
+
+    // Rotate the robot without driving
+    //status = drive.rotateWheelsToAngle(rotateAngle);
   
     // Test shooter
     //shooter.startShooting(shooterPower);
 
     // Test grabber
     // Does not automatically stop the grabber or check for a note
-    //grabber.setMotorPower(grabberPower);
+    //grabber.setMotorPower(1);
 
     // Automatically stops the grabber when a note is detected
     /*
@@ -258,7 +261,7 @@ public class Robot extends TimedRobot {
     }*/
 
     // Retrieve RGB, IR, and proximity values from the color sensor
-    //grabber.testColorSensor();
+    grabber.testColorSensor();
 
     // Move the arm to a certain degree
     /*if (armStatus == Robot.CONT) {
@@ -360,11 +363,11 @@ public class Robot extends TimedRobot {
     //drive.alignWithAprilTag(1, 4);  // Pipeline 1 has a mask for ID 4
 
     // Test rotation
-    if (status == CONT)  {
-        double deg = SmartDashboard.getNumber("Angle(Deg)", 0);
-        status = drive.rotateRobot(Math.toRadians(deg));
-    }
-    if(status == DONE) System.out.println("Done");
+    //if (status == CONT)  {
+    //    double deg = SmartDashboard.getNumber("Angle(Deg)", 0);
+    //    status = drive.rotateRobot(Math.toRadians(deg));
+    //}
+    //if(status == DONE) System.out.println("Done");
 
     // Test controller
     //SmartDashboard.putNumber("Controller L", controls.getForwardSpeed());
@@ -457,18 +460,18 @@ public class Robot extends TimedRobot {
   private void ledControl() {
     boolean hasNote = grabber.noteDetected();
     boolean runningIntake = controls.runIntake();
-    boolean partyMode = controls.partyMode();
+    boolean partyMode = controls.enablePartyMode();
 
-    if(partyMode) {             // If the robot is done climbing, top priority
-      led.partyColor();           // Sets the color to rainbow
-    } else if(hasNote) {        // If the grabber has a note, second priority
-      led.capturedNoteColor();    // Sets the color to green
-    } else if(runningIntake) {  // If the grabber is running(no note), third priority
-      led.gettingNoteColor();     // Sets the color to orange
-    } else {                    // Default state
-      led.robolionsColor();       // Sets the color to blue-gold
-    }
-    led.updateLED();  // Update LEDs
+    //if(partyMode) {             // If the robot is done climbing, top priority
+    //  led.partyColor();           // Sets the color to rainbow
+    //} else if(hasNote) {        // If the grabber has a note, second priority
+    //  led.capturedNoteColor();    // Sets the color to green
+    //} else if(runningIntake) {  // If the grabber is running(no note), third priority
+    //  led.gettingNoteColor();     // Sets the color to orange
+    //} else {                    // Default state
+    //  led.robolionsColor();       // Sets the color to blue-gold
+    //}
+    //led.updateLED();  // Update LEDs
   }
 
   /**
@@ -491,9 +494,9 @@ public class Robot extends TimedRobot {
 
           // Move the arm out/in incrementally
           if(controls.extendArm()) {
-            arm.testExtend(0.2);
+            arm.testExtend(0.5);
           } else if(controls.retractArm()) {
-            arm.testExtend(-0.2);
+            arm.testExtend(-0.5);
           } else {
             arm.testExtend(0.0);
           }
@@ -580,10 +583,10 @@ public class Robot extends TimedRobot {
     // Start the grabber in ground mode 
     if(shooterState == false) {
       grabber.intakeOutake(controls.runIntake(), controls.ejectNote());
-    } 
-
+    }
+    
     /*else if (controls.runIntake()){
-      grabber.setMotorPower(grabber.INTAKE_POWER);
+      grabber.setMotorPower(grabber.FEED_POWER);
     }
     else {
       grabber.setMotorPower(0);

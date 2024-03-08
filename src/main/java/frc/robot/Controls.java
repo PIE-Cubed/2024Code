@@ -362,7 +362,7 @@ public class Controls {
 	 * <p> Sets the LEDs to party mode
 	 * @return Drive controller B button pressed
 	 */
-	public boolean partyMode() {
+	public boolean enablePartyMode() {
 		return driveController.getBButtonPressed();
 	}
 

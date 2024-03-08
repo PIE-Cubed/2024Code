@@ -57,7 +57,8 @@ import com.revrobotics.CANSparkFlex;
     public void startShooting(double shootPower) {
         shooterMotor1.set(MathUtil.clamp(shootPower, -1.0, 1.0));
         shooterMotor2.set(MathUtil.clamp(shootPower, -1.0, 1.0));
-        instancedGrabber.intakeOutake(true, false);
+        //instancedGrabber.intakeOutake(true, false);
+        instancedGrabber.setMotorPower(instancedGrabber.FEED_POWER);
     }
 
     public void stopShooting() {

@@ -22,7 +22,7 @@ public class LED {
     private double setColor = TEAM_COLORS;
 
     public LED() {
-        ledController = new Spark(ledID);
+       // ledController = new Spark(ledID);
         ledController.set(TEAM_COLORS);
     }
 

@@ -370,7 +370,7 @@ public class Drive {
         SwerveModuleState[] states = swerveDriveKinematics.toSwerveModuleStates(
             new ChassisSpeeds(Math.cos(wheelAngle), -1 * Math.sin(wheelAngle), 0));
         SwerveDriveKinematics.desaturateWheelSpeeds(states, 0);   // Desaturate
-        setModuleStates(states);
+        setModuleStatesNoOpt(states);
 
         // Calculate the angle difference between the current and target angles
         double angleDifferenceFL = frontLeft.getRotateAngle() - wheelAngle;
@@ -766,6 +766,22 @@ public class Drive {
         frontRight.setDesiredState(desiredStates[1]);
         backLeft  .setDesiredState(desiredStates[2]);
         backRight .setDesiredState(desiredStates[3]);
+    }
+
+    /**
+     * <p>Sets the swerve ModuleStates.
+     * <p>Uses optimizations
+     * @param desiredStates
+     */
+    public void setModuleStatesNoOpt(SwerveModuleState[] desiredStates) {
+        // Limits the wheel speeds
+        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, POWER_SPEED_RATIO_MPS);
+
+        // Sets the desired states
+        frontLeft .setDesiredStateNoOpt(desiredStates[0]);
+        frontRight.setDesiredStateNoOpt(desiredStates[1]);
+        backLeft  .setDesiredStateNoOpt(desiredStates[2]);
+        backRight .setDesiredStateNoOpt(desiredStates[3]);
     }
 
     /****************************************************************************************** 

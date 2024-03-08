@@ -252,112 +252,54 @@ public class Auto {
             step = 1;
         }
 
-        switch(step) {            
-            /*// Start the shooter motors and rotate the arm to -26 (333) degrees from 54
+        switch(step) {   
+            // Rotate the motors to zero
             case 1:
-                shooter.spinup();
-                status = arm.rotateArm(333);
+                status = drive.rotateWheelsToAngle(0);
                 break;
-                        
-            // Shoot the note by running the grabber
-            case 2:
-                grabber.setMotorPower(grabber.INTAKE_POWER);
-                arm.maintainPosition(333);
-                status = Robot.DONE;
-                break;
-
-            // Assume the robot shot the note after 1 second(s)
-            case 3:
-                status = autoDelay(1);
-                arm.maintainPosition(333);
-                break;
-
-            // Rotate the arm to it's resting position and turn off the shooter and Switch the grabber to intake mode
-            case 4:
-                status = arm.rotateArm(322);
-                break;
-
-            // Extend the arm so the wood holding block falls into the robot, and so the arm is in the shooting position
-            case 5:
-                status = arm.extendArm(8, 0.25);
-                break;
-
-            // Drive backwards 4 feet
-            case 6:
-                if (intakeStatus == Robot.CONT) {
-                    intakeStatus = grabber.intakeOutake(true, false);
-                }
-                
-                if (driveStatus == Robot.CONT) {
-                    driveStatus = drive.driveDistanceWithAngle(0, 4, 0.3);
-                }
-                
-                if (intakeStatus == Robot.DONE && driveStatus == Robot.DONE) {
-                    status = Robot.DONE;
-                }
-                else {
-                    status = Robot.CONT;
-                }
-            
-                break;
-
-            // Drive back to the speaker
-            case 7:
-                status = drive.driveDistanceWithAngle(0, -4, 0.3);
-                break;
-
-            // Rotate the arm so it's in the shooting position
-            case 8:
-                status = arm.rotateArm(335); // Use 343 if not driving to speaker          
-                break;
-
-            // Shoot the note
-            case 9:
-                grabber.setMotorPower(grabber.INTAKE_POWER);
-                arm.maintainPosition(335);
-                status = autoDelay(1);
-                break;
-            
-            // Finished routine, reset variables, stop motors, and return done
-            default:
-                shooter.stopShooting();
-                step = 1;
-                firstTime = true;
-                return Robot.DONE;*/
 
             // Start the shooter motors and rotate the arm to -26 (333) degrees from 54
-            case 1:
+            case 2:
                 shooter.spinup();
                 status = arm.rotateArm(SHOOT1_ANGLE);
                 break;
                         
             // Shoot the note by running the grabber
-            case 2:
+            case 3:
                 grabber.setMotorPower(grabber.INTAKE_POWER);
+                System.out.println(">:(");
                 arm.maintainPosition(SHOOT1_ANGLE);
                 status = Robot.DONE;
                 break;
 
             // Assume the robot shot the note after 0.75 second(s)
-            case 3:
+            case 4:
                 status = autoDelayMS(750);
+                System.out.println(">:( 2");
                 arm.maintainPosition(SHOOT1_ANGLE);
                 break;
 
-            // Rotate the arm to it's resting position and turn off the shooter and Switch the grabber to intake mode
-            case 4:
-                status = arm.rotateArm(322);
+            // Rotate the arm to its resting position, turn off the shooter & grabber
+            case 5:            
+                shooter.stopShooting();
+                System.out.println(">:( 3");
+                status = arm.rotateArm(327);
                 break;
 
             // Extend the arm so the wood holding block falls into the robot, and so the arm is in the shooting position
-            case 5:
-                status = arm.extendArm(8, 0.3);
+            case 6:
+                System.out.println(">:( 4");
+                status = arm.extendArm(8, 0.5);
                 break;
 
-            // Drive backwards 10 feet
-            case 6:
-                shooter.stopShooting();
-                status = drive.driveDistanceWithAngle(0, 7, 0.5);            
+            // Drive backwards 1 foot
+            case 7:
+                status = drive.driveDistanceWithAngle(0, 1, 0.5);            
+                break;
+
+            // Rotate the robot 30 degrees
+            case 8:
+                status = drive.rotateWheelsToAngle(30);            
                 break;
 
             // Finished routine, reset variables, stop motors, and return done

@@ -19,7 +19,8 @@ public class Grabber {
     private final boolean GRABBER_MOTOR2_IS_INVERTED = false;
 
     // TODO tune these power values
-    public final double INTAKE_POWER = 0.9;
+    public final int INTAKE_CURRENT_LIMIT = 50;
+    public final double INTAKE_POWER = 0.4;
     public final double OUTTAKE_POWER = -0.75;
     public final double FEED_POWER = 0.9;  
     public final double PROXIMITY_THRESHOLD = 155; 
@@ -43,9 +44,11 @@ public class Grabber {
         // Instantiate grabber motors & sensors
         grabberMotor1 = new CANSparkMax(GRABBER_MOTOR1_CAN, MotorType.kBrushed);
         grabberMotor1.setInverted(GRABBER_MOTOR1_IS_INVERTED);
+        grabberMotor1.setSmartCurrentLimit(INTAKE_CURRENT_LIMIT);
 
         grabberMotor2 = new CANSparkMax(GRABBER_MOTOR2_CAN, MotorType.kBrushed);
         grabberMotor2.setInverted(GRABBER_MOTOR2_IS_INVERTED);
+        grabberMotor2.setSmartCurrentLimit(INTAKE_CURRENT_LIMIT);
 
         colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
 
@@ -127,12 +130,12 @@ public class Grabber {
         double ir = colorSensor.getIR();
         double proximity = colorSensor.getProximity();
         
-        System.out.println( "COLOR SENSOR" +
-            " | R: "  + r  +
-            " | G: "  + g  +
-            " | B: "  + b  +
-            " | IR: " + ir +
-            " | Proximity: " + proximity
+        System.out.println( "[== COLOR SENSOR ==]" +
+            "\n | R: "  + r  +
+            "\n | G: "  + g  +
+            "\n | B: "  + b  +
+            "\n | IR: " + ir +
+            "\n | Proximity: " + proximity + "\n\n"
         );
     }
 
