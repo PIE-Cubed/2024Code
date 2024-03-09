@@ -795,7 +795,7 @@ public class Drive {
      */
     public void setModuleStatesNoOpt(SwerveModuleState[] desiredStates) {
         // Limits the wheel speeds
-        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, POWER_SPEED_RATIO_MPS);
+        //SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, POWER_SPEED_RATIO_MPS);
 
         // Sets the desired states
         frontLeft .setDesiredStateNoOpt(desiredStates[0]);
