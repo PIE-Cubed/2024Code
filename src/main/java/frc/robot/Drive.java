@@ -354,10 +354,10 @@ public class Drive {
 
     /**
      * Rotates the wheels to an angle, relative to the front of the robot
-     * @param driveAngle -> The angle at which to rotate to
+     * @param driveAngleDegrees -> The angle at which to rotate to
      * @return
      */
-    public int rotateWheelsToAngle(double wheelAngle) {        
+    public int rotateWheelsToAngle(double driveAngleDegrees) {        
         /* 
          * X velocity equation: Power * Cosine of drive angle
          * Y velocity equation: Power * Sine of drive angle
@@ -369,15 +369,19 @@ public class Drive {
         }
 
         SwerveModuleState[] states = swerveDriveKinematics.toSwerveModuleStates(
-            new ChassisSpeeds(Math.cos(wheelAngle), -1 * Math.sin(wheelAngle), 0));
+            new ChassisSpeeds(
+                Math.cos(Math.toRadians(driveAngleDegrees)), 
+                -1 * Math.sin(Math.toRadians(driveAngleDegrees)), // Chassis speeds is positive for left
+                0
+            ));
         SwerveDriveKinematics.desaturateWheelSpeeds(states, 0);   // Desaturate
         setModuleStatesNoOpt(states);
 
         // Calculate the angle difference between the current and target angles
-        double angleDifferenceFL = Math.abs(frontLeft.getRotateAngle() - wheelAngle);
-        double angleDifferenceFR = Math.abs(frontRight.getRotateAngle() - wheelAngle);
-        double angleDifferenceBL = Math.abs(backLeft.getRotateAngle() - wheelAngle);
-        double angleDifferenceBR = Math.abs(backRight.getRotateAngle() - wheelAngle);
+        double angleDifferenceFL = Math.abs(frontLeft.getRotateAngle() - driveAngleDegrees);
+        double angleDifferenceFR = Math.abs(frontRight.getRotateAngle() - driveAngleDegrees);
+        double angleDifferenceBL = Math.abs(backLeft.getRotateAngle() - driveAngleDegrees);
+        double angleDifferenceBR = Math.abs(backRight.getRotateAngle() - driveAngleDegrees);
         boolean allWheelsDone = (angleDifferenceFL <= ROTATE_TOLERANCE_DEGREES
          && angleDifferenceFR <= ROTATE_TOLERANCE_DEGREES
          && angleDifferenceBL <= ROTATE_TOLERANCE_DEGREES
