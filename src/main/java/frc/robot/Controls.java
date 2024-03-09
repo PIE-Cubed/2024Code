@@ -358,12 +358,12 @@ public class Controls {
 	}
 
 	/**
-	 * <p> Checks if the B button is pressed on the drive controller
+	 * <p> Checks if the B button is held down on the drive controller
 	 * <p> Sets the LEDs to party mode
-	 * @return Drive controller B button pressed
+	 * @return Drive controller B button held down
 	 */
 	public boolean enablePartyMode() {
-		return driveController.getBButtonPressed();
+		return driveController.getBButton();
 	}
 
 }

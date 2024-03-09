@@ -135,7 +135,8 @@ public class Arm {
 
         if(extensionFirstTime) {
             extensionFirstTime = false;
-            extenderEncoder.setPosition(0);
+            //extenderEncoder.setPosition(0);
+            distance = extenderEncoder.getPosition() + distance;
             extenderMotor.set(MathUtil.clamp(power, -1, 1));
         }
 

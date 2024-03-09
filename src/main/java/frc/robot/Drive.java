@@ -49,7 +49,7 @@ public class Drive {
     private double  initYVelocity          = 0;
     private double  targetPosition         = 0;
     private double  initRotateVelocity     = 0;
-    private double  startTime = 0;
+    private double  finishTime = 0;
     
     // Rate limiters for auto drive
     private SlewRateLimiter xLimiter;
@@ -85,8 +85,7 @@ public class Drive {
     private PIDController rotationAdjustPidController;
     private final double ROTATE_TOLERANCE_RADIANS = 0.05;
     private final double ROTATE_ADJUST_TOLERANCE_RADIANS = 0.01745329;   // ~1 degree
-    private final double ROTATE_TOLERANCE_DEGREES = 2;
-    private final double ANGLE_DIFFERENCE_POWER_MULTIPLIER = -4;
+    private final double ROTATE_TOLERANCE_DEGREES = 3;
 
     // NavX
     public static AHRS ahrs;
@@ -365,7 +364,7 @@ public class Drive {
         */
         if (rotateWheelsFirstTime == true) {
             rotateWheelsFirstTime = false;
-            startTime = System.currentTimeMillis() + 1.5;
+            finishTime = System.currentTimeMillis() + 1500;
         }
 
         SwerveModuleState[] states = swerveDriveKinematics.toSwerveModuleStates(
@@ -378,35 +377,20 @@ public class Drive {
         setModuleStatesNoOpt(states);
 
         // Calculate the angle difference between the current and target angles
-        double angleDifferenceFL = Math.abs(frontLeft.getRotateAngle() - driveAngleDegrees);
-        double angleDifferenceFR = Math.abs(frontRight.getRotateAngle() - driveAngleDegrees);
-        double angleDifferenceBL = Math.abs(backLeft.getRotateAngle() - driveAngleDegrees);
-        double angleDifferenceBR = Math.abs(backRight.getRotateAngle() - driveAngleDegrees);
+        double angleDifferenceFL = Math.abs(Math.toDegrees(frontLeft.getRotateAngleDegrees()) - driveAngleDegrees);
+        double angleDifferenceFR = Math.abs(Math.toDegrees(frontRight.getRotateAngleDegrees()) - driveAngleDegrees);
+        double angleDifferenceBL = Math.abs(Math.toDegrees(backLeft.getRotateAngleDegrees()) - driveAngleDegrees);
+        double angleDifferenceBR = Math.abs(Math.toDegrees(backRight.getRotateAngleDegrees()) - driveAngleDegrees);
         boolean allWheelsDone = (angleDifferenceFL <= ROTATE_TOLERANCE_DEGREES
          && angleDifferenceFR <= ROTATE_TOLERANCE_DEGREES
          && angleDifferenceBL <= ROTATE_TOLERANCE_DEGREES
          && angleDifferenceBR <= ROTATE_TOLERANCE_DEGREES);
 
-        if(angleDifferenceFL <= ROTATE_TOLERANCE_DEGREES) {
-            frontLeft.setRotateMotorPower(0);
-        }
-
-        if(angleDifferenceFR <= ROTATE_TOLERANCE_DEGREES) {
-            frontRight.setRotateMotorPower(0);
-        }
-
-        if(angleDifferenceBL <= ROTATE_TOLERANCE_DEGREES) {
-            backLeft.setRotateMotorPower(0);
-        }
-
-        if(angleDifferenceBR <= ROTATE_TOLERANCE_DEGREES) {
-            backRight.setRotateMotorPower(0);
-        }
-
         // Stop the robot if it has rotated to the correct angle (within 2 degrees)
-        if (System.currentTimeMillis() > startTime || allWheelsDone) {
-            System.out.println("Done, rotated to " + backRight.getRotateAngle() + " degrees");
+        if (System.currentTimeMillis() > finishTime || allWheelsDone) {
+            System.out.println("Done, rotated to " + backRight.getRotateAngleDegrees() + " degrees");
             rotateWheelsFirstTime = true;
+            stopWheels();
             return Robot.DONE;
         }
         else {

@@ -38,7 +38,7 @@ public class Robot extends TimedRobot {
 	Drive                drive;
 	Auto                 auto;
   Arm                  arm;
-  //LED                  led;
+  LED                  led;
 
 	// Variables
 	private int status = CONT;
@@ -77,7 +77,7 @@ public class Robot extends TimedRobot {
     shooter  = new Shooter();
     arm      = new Arm();
 		auto     = new Auto(drive, position, arm, grabber, shooter);
-    //led      = new LED();
+    led      = new LED();
 
 		// Instance getters
 		nTables  = CustomTables.getInstance();
@@ -172,7 +172,7 @@ public class Robot extends TimedRobot {
           break;
       }*/
 
-      status = auto.speakerPositionRight();
+      status = auto.speakerPositionCenter();
     } 
   }
 
@@ -208,7 +208,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("Grabber has Note", grabber.noteDetected());
 
     // Allows for controlling the LEDs
-    //ledControl();
+    ledControl();
   }
 
   /** This function is called once when the robot is disabled. */
@@ -240,12 +240,17 @@ public class Robot extends TimedRobot {
     // Read values from shuffleboard
     //double shooterPower = SmartDashboard.getNumber("Shooter Power", 0.0);
     //double grabberPower = SmartDashboard.getNumber("Grabber Power", 0.0);
-    //double rotateAngle = SmartDashboard.getNumber("Rotation Angle", 0.0);
+    double rotateAngle = SmartDashboard.getNumber("Rotation Angle", 0.0);
 
     //testTeleopDrive();
 
     // Read arm extension
-    System.out.println("Arm extension position: " + arm.getExtendPosition());
+    //System.out.println("Arm extension position: " + arm.getExtendPosition());
+
+    // Rotate the wheels to a specific degree (in degrees)
+    /*if (status == Robot.CONT) {
+      status = drive.rotateWheelsToAngle(rotateAngle);      
+    }*/
 
     // Rotate the robot without driving
     //status = drive.rotateWheelsToAngle(rotateAngle);
@@ -258,13 +263,15 @@ public class Robot extends TimedRobot {
     //grabber.setMotorPower(1);
 
     // Automatically stops the grabber when a note is detected
-    /*
-    if (grabberStatus == Robot.CONT) {
+    /*if (grabberStatus == Robot.CONT) {
       grabberStatus = grabber.intakeOutake(true, false);
     }*/
 
     // Retrieve RGB, IR, and proximity values from the color sensor
     //grabber.testColorSensor();
+
+    // Test LEDs
+    //ledControl();
 
     // Move the arm to a certain degree
     /*if (armStatus == Robot.CONT) {
@@ -282,12 +289,16 @@ public class Robot extends TimedRobot {
     */
 
     // 60 from horizontal, arm extends 4in
-    /*
-    System.out.println("Extension Encoder: " + Math.toDegrees(arm.getExtendPosition()));
+    
+    //System.out.println("Extension Encoder: " + Math.toDegrees(arm.getExtendPosition()));
 
-    arm.testExtend(0.05);    
-    System.out.println("Elevation Encoder" + Math.toDegrees(arm.getElevationPosition()));
-
+    if (armStatus == Robot.CONT) {
+      armStatus = arm.extendArm(0.04, -0.5);    
+      System.out.println("Extend Encoder: " + arm.getExtendPosition());
+      System.out.println("Elevation Encoder: " + arm.getElevationPosition());
+    }
+    
+/*
     if (increment == 0)
       System.out.println("ArmStatus: " + armStatus);
     if(armStatus != DONE) {
@@ -465,18 +476,19 @@ public class Robot extends TimedRobot {
     boolean runningIntake = controls.runIntake();
     boolean partyMode = controls.enablePartyMode();
 
-    //if(partyMode) {             // If the robot is done climbing, top priority
-    //  led.partyColor();           // Sets the color to rainbow
-    //} else if(hasNote) {        // If the grabber has a note, second priority
-    //  led.capturedNoteColor();    // Sets the color to green
-    //} else if(runningIntake) {  // If the grabber is running(no note), third priority
-    //  led.gettingNoteColor();     // Sets the color to orange
-    //} else {                    // Default state
-    //  led.robolionsColor();       // Sets the color to blue-gold
-    //}
-    //led.updateLED();  // Update LEDs
-  }
+    if(partyMode) {             // If the robot is done climbing, top priority
+      led.partyColor();           // Sets the color to rainbow
+    } else if(hasNote) {        // If the grabber has a note, second priority
+      led.capturedNoteColor();    // Sets the color to green
+    } else if(runningIntake) {  // If the grabber is running(no note), third priority
+      led.gettingNoteColor();     // Sets the color to orange
+    } else {                    // Default state
+      led.robolionsColor();       // Sets the color to blue-gold
+    }
+    
+    led.updateLED();  // Update LEDs
 
+  }
   /**
 	 * Controls the arm in TeleOp
 	 */

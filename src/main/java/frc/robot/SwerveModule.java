@@ -193,11 +193,19 @@ public class SwerveModule {
     }
 
     /**
+     * Gets the rotate motor angle, relative to the front of the robot.
+     * @return The rotate motor's angle in radians
+     */
+    public double getRotateAngleRadians() {
+        return rotateMotor.get();
+    }
+
+    /**
      * Gets the rotate motor angle (-180, 180), relative to the front of the robot.
      * @return The rotate motor's angle in degrees
      */
-    public double getRotateAngle() {
-        return rotateMotor.get();
+    public double getRotateAngleDegrees() {
+        return Math.toDegrees(rotateMotor.get());
     }
 
     /**

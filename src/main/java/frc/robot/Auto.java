@@ -153,41 +153,49 @@ public class Auto {
     public int speakerPositionCenter() {
         if(firstTime == true) {
             firstTime = false;
+            intakeStatus = Robot.CONT;
+            driveStatus = Robot.CONT;
             step = 1;
         }
 
         switch(step) {            
-            // Start the shooter motors and rotate the arm to -26 (333) degrees from 54
+            // Rotate the drive motors to zero
             case 1:
+                status = drive.rotateWheelsToAngle(0);
+                break;
+            
+            // Start the shooter motors and rotate the arm to -26 (333) degrees from 54
+            case 2:
                 shooter.spinup();
                 status = arm.rotateArm(SHOOT1_ANGLE);
                 break;
                         
             // Shoot the note by running the grabber
-            case 2:
+            case 3:
                 grabber.setMotorPower(grabber.INTAKE_POWER);
                 arm.maintainPosition(SHOOT1_ANGLE);
                 status = Robot.DONE;
                 break;
 
             // Assume the robot shot the note after 0.75 second(s)
-            case 3:
+            case 4:
                 status = autoDelayMS(750);
                 arm.maintainPosition(SHOOT1_ANGLE);
                 break;
 
             // Rotate the arm to it's resting position and turn off the shooter and Switch the grabber to intake mode
-            case 4:
-                status = arm.rotateArm(322);
+            case 5:
+                status = arm.rotateArm(SHOOT1_ANGLE);
                 break;
 
             // Extend the arm so the wood holding block falls into the robot, and so the arm is in the shooting position
-            case 5:
-                status = arm.extendArm(8, 0.3);
+            case 6:
+                status = Robot.DONE;
+                //status = arm.extendArm(8, 0.3);
                 break;
 
             // Drive backwards 4 feet
-            case 6:
+            case 7:
                 if (intakeStatus == Robot.CONT) {
                     intakeStatus = grabber.intakeOutake(true, false);
                 }
@@ -206,17 +214,17 @@ public class Auto {
                 break;
 
             // Drive back to the speaker
-            case 7:
+            case 8:
                 status = drive.driveDistanceWithAngle(0, -4.5, 0.5);
                 break;
 
             // Rotate the arm so it's in the shooting position
-            case 8:
+            case 9:
                 status = arm.rotateArm(SHOOT2_ANGLE); // Use 343 if not driving to speaker          
                 break;
 
             // Shoot the note
-            case 9:
+            case 10:
                 grabber.setMotorPower(grabber.INTAKE_POWER);
                 arm.maintainPosition(SHOOT2_ANGLE);
                 status = autoDelay(1);
@@ -249,14 +257,15 @@ public class Auto {
     public int speakerPositionRight() {
         if(firstTime == true) {
             firstTime = false;
+            intakeStatus = Robot.CONT;
+            driveStatus = Robot.CONT;
             step = 1;
         }
 
         switch(step) {   
             // Rotate the drive motors to zero
             case 1:
-                status = Robot.DONE;
-                //status = drive.rotateWheelsToAngle(0);
+                status = drive.rotateWheelsToAngle(0);
                 break;
 
             // Start the shooter motors and rotate the arm to -26 (333) degrees from 54
@@ -294,9 +303,34 @@ public class Auto {
                 status = drive.driveDistanceWithAngle(0, 1, 0.5);            
                 break;
 
-            // Rotate the robot 30 degrees
+            // Rotate the robot 43 degrees
             case 7:
-                status = drive.rotateRobot(Math.toRadians(30));            
+                status = drive.rotateRobot(Math.toRadians(43));            
+                break;
+
+            // Rotate the wheels back to zero before driving forward
+            case 8:
+                status = drive.rotateWheelsToAngle(0);            
+                grabber.intakeOutake(true, false);
+                break;
+
+            // Drive back 4 feet and pick up a note
+            case 9:
+                if (intakeStatus == Robot.CONT) {
+                    intakeStatus = grabber.intakeOutake(true, false);
+                }
+                
+                if (driveStatus == Robot.CONT) {
+                    driveStatus = drive.driveDistanceWithAngle(0, 4, 0.5);
+                }
+                
+                if (intakeStatus == Robot.DONE && driveStatus == Robot.DONE) {
+                    status = Robot.DONE;
+                }
+                else {
+                    status = Robot.CONT;
+                }
+            
                 break;
 
             // Finished routine, reset variables, stop motors, and return done
@@ -326,6 +360,8 @@ public class Auto {
     public int speakerPositionLeft() {
         if(firstTime == true) {
             firstTime = false;
+            intakeStatus = Robot.CONT;
+            driveStatus = Robot.CONT;
             step = 1;
         }
 
