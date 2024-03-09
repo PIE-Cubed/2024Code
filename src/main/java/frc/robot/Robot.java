@@ -244,6 +244,9 @@ public class Robot extends TimedRobot {
 
     //testTeleopDrive();
 
+    // Read arm extension
+    System.out.println("Arm extension position: " + arm.getExtendPosition());
+
     // Rotate the robot without driving
     //status = drive.rotateWheelsToAngle(rotateAngle);
   
@@ -261,7 +264,7 @@ public class Robot extends TimedRobot {
     }*/
 
     // Retrieve RGB, IR, and proximity values from the color sensor
-    grabber.testColorSensor();
+    //grabber.testColorSensor();
 
     // Move the arm to a certain degree
     /*if (armStatus == Robot.CONT) {

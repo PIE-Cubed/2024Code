@@ -11,8 +11,8 @@ public class LED {
      *  https://www.revrobotics.com/content/docs/REV-11-1105-UM.pdf
      *  Pages 14-17
     */
-    private double TEAM_COLORS = 0.41;      // Color gradient between color 1 and 2(set on controller physically)
-    private double PARTY_COLORS = -0.97;    // Rainbow party
+    private double TEAM_COLORS = 0.41;      // Color gradient between color 1 and 2 (set on controller physically)
+    private double PARTY_COLORS = -0.97;    // Rainbow party 😁😍😎😃😀😊🪅🎉🎈🥳
     private double PRECISION_MODE = 0.93;   // White
     private double GREEN = 0.77;            // Green
     private double ORANGE = 0.65;           // Orange

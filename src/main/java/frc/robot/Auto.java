@@ -4,12 +4,12 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Auto {
     // State tracking variables - each variable can only be used in one function at any time
@@ -26,8 +26,8 @@ public class Auto {
     private int driveStatus = Robot.CONT;
     private int status = Robot.CONT;
 
-    private final int SHOOT1_ANGLE = 325;
-    private final int SHOOT2_ANGLE = 325;
+    private final int SHOOT1_ANGLE = 331;
+    private final int SHOOT2_ANGLE = 331;
 
     // Auto program selection
     public String selectedAuto = "Speaker Center";
@@ -253,9 +253,10 @@ public class Auto {
         }
 
         switch(step) {   
-            // Rotate the motors to zero
+            // Rotate the drive motors to zero
             case 1:
-                status = drive.rotateWheelsToAngle(0);
+                status = Robot.DONE;
+                //status = drive.rotateWheelsToAngle(0);
                 break;
 
             // Start the shooter motors and rotate the arm to -26 (333) degrees from 54
@@ -267,7 +268,6 @@ public class Auto {
             // Shoot the note by running the grabber
             case 3:
                 grabber.setMotorPower(grabber.INTAKE_POWER);
-                System.out.println(">:(");
                 arm.maintainPosition(SHOOT1_ANGLE);
                 status = Robot.DONE;
                 break;
@@ -275,31 +275,28 @@ public class Auto {
             // Assume the robot shot the note after 0.75 second(s)
             case 4:
                 status = autoDelayMS(750);
-                System.out.println(">:( 2");
                 arm.maintainPosition(SHOOT1_ANGLE);
                 break;
 
-            // Rotate the arm to its resting position, turn off the shooter & grabber
+            // Rotate the arm to its resting position, and turn off the shooter & grabber
             case 5:            
                 shooter.stopShooting();
-                System.out.println(">:( 3");
                 status = arm.rotateArm(327);
                 break;
 
-            // Extend the arm so the wood holding block falls into the robot, and so the arm is in the shooting position
-            case 6:
-                System.out.println(">:( 4");
-                status = arm.extendArm(8, 0.5);
-                break;
+            // Extend the arm so the wood block falls into the robot
+            /*case 6:
+                status = arm.extendArm(14, 0.2);
+                break;*/
 
             // Drive backwards 1 foot
-            case 7:
+            case 6:
                 status = drive.driveDistanceWithAngle(0, 1, 0.5);            
                 break;
 
             // Rotate the robot 30 degrees
-            case 8:
-                status = drive.rotateWheelsToAngle(30);            
+            case 7:
+                status = drive.rotateRobot(Math.toRadians(30));            
                 break;
 
             // Finished routine, reset variables, stop motors, and return done

@@ -20,7 +20,7 @@ public class Grabber {
 
     // TODO tune these power values
     public final int INTAKE_CURRENT_LIMIT = 50;
-    public final double INTAKE_POWER = 0.4;
+    public final double INTAKE_POWER = 0.6;
     public final double OUTTAKE_POWER = -0.75;
     public final double FEED_POWER = 0.9;  
     public final double PROXIMITY_THRESHOLD = 155; 

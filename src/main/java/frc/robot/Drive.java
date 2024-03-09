@@ -85,6 +85,7 @@ public class Drive {
     private PIDController rotationAdjustPidController;
     private final double ROTATE_TOLERANCE_RADIANS = 0.05;
     private final double ROTATE_ADJUST_TOLERANCE_RADIANS = 0.01745329;   // ~1 degree
+    private final double ROTATE_TOLERANCE_DEGREES = 2;
     private final double ANGLE_DIFFERENCE_POWER_MULTIPLIER = -4;
 
     // NavX
@@ -373,11 +374,30 @@ public class Drive {
         setModuleStatesNoOpt(states);
 
         // Calculate the angle difference between the current and target angles
-        double angleDifferenceFL = frontLeft.getRotateAngle() - wheelAngle;
-        double angleDifferenceFR = frontRight.getRotateAngle() - wheelAngle;
-        double angleDifferenceBL = backLeft.getRotateAngle() - wheelAngle;
-        double angleDifferenceBR = backRight.getRotateAngle() - wheelAngle;
-        boolean allWheelsDone = (Math.abs(angleDifferenceFL) <= 2 && Math.abs(angleDifferenceFR) <= 2 && Math.abs(angleDifferenceBL) <= 2 && Math.abs(angleDifferenceBR) <= 2);
+        double angleDifferenceFL = Math.abs(frontLeft.getRotateAngle() - wheelAngle);
+        double angleDifferenceFR = Math.abs(frontRight.getRotateAngle() - wheelAngle);
+        double angleDifferenceBL = Math.abs(backLeft.getRotateAngle() - wheelAngle);
+        double angleDifferenceBR = Math.abs(backRight.getRotateAngle() - wheelAngle);
+        boolean allWheelsDone = (angleDifferenceFL <= ROTATE_TOLERANCE_DEGREES
+         && angleDifferenceFR <= ROTATE_TOLERANCE_DEGREES
+         && angleDifferenceBL <= ROTATE_TOLERANCE_DEGREES
+         && angleDifferenceBR <= ROTATE_TOLERANCE_DEGREES);
+
+        if(angleDifferenceFL <= ROTATE_TOLERANCE_DEGREES) {
+            frontLeft.setRotateMotorPower(0);
+        }
+
+        if(angleDifferenceFR <= ROTATE_TOLERANCE_DEGREES) {
+            frontRight.setRotateMotorPower(0);
+        }
+
+        if(angleDifferenceBL <= ROTATE_TOLERANCE_DEGREES) {
+            backLeft.setRotateMotorPower(0);
+        }
+
+        if(angleDifferenceBR <= ROTATE_TOLERANCE_DEGREES) {
+            backRight.setRotateMotorPower(0);
+        }
 
         // Stop the robot if it has rotated to the correct angle (within 2 degrees)
         if (System.currentTimeMillis() > startTime || allWheelsDone) {
