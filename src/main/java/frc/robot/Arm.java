@@ -33,7 +33,7 @@ public class Arm {
     private final double ARM_EXTENDER_PID_P = 0.035;
     private final double ARM_EXTENDER_PID_I = ARM_EXTENDER_PID_P / 1.5;
 
-    public final double ARM_REST_POSITION_DEGREES = 322;
+    public final double ARM_REST_POSITION_DEGREES = 329;
     public final double ARM_AMP_POSITION_DEGREES = 33;
 
 
