@@ -161,23 +161,23 @@ public class Arm {
             elevationFirstTime = false;
             elevationMotorPidController.setSetpoint(degrees);
         }
+
+        //System.out.println("From: " + elevationEncoder.getPosition() + " To: " + degrees);
+        /* Negative power moves the arm upward;
+            The PID value will be positive to increase the angle */
+        double power = -elevationMotorPidController.calculate(elevationEncoder.getPosition(), degrees);
+        //SmartDashboard.putNumber("Arm power", power);
+        elevationMotor.set(MathUtil.clamp(power, -0.2, 0.2));   // Clamp
+
                 
         if(elevationMotorPidController.atSetpoint()) {
             elevationFirstTime = true;
             elevationMotor.set(0.1);
             return Robot.DONE;
         }
-        else {
-            //System.out.println("From: " + elevationEncoder.getPosition() + " To: " + degrees);
-
-            /* Negative power moves the arm upward;
-               The PID value will be positive to increase the angle */
-            double power = -elevationMotorPidController.calculate(elevationEncoder.getPosition(), degrees);
-            //SmartDashboard.putNumber("Arm power", power);
-            elevationMotor.set(MathUtil.clamp(power, -0.2, 0.2));   // Clamp
+        else{
+            return Robot.CONT;
         }
-        
-        return Robot.CONT;
     }
 
     /**
