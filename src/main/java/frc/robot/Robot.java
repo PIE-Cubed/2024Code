@@ -268,7 +268,7 @@ public class Robot extends TimedRobot {
     }*/
 
     // Retrieve RGB, IR, and proximity values from the color sensor
-    //grabber.testColorSensor();
+    grabber.testColorSensor();
 
     // Test LEDs
     //ledControl();
@@ -291,13 +291,13 @@ public class Robot extends TimedRobot {
     // 60 from horizontal, arm extends 4in
     
     //System.out.println("Extension Encoder: " + Math.toDegrees(arm.getExtendPosition()));
-
+/* 
     if (armStatus == Robot.CONT) {
       armStatus = arm.extendArm(0.04, -0.5);    
       System.out.println("Extend Encoder: " + arm.getExtendPosition());
       System.out.println("Elevation Encoder: " + arm.getElevationPosition());
     }
-    
+  */
 /*
     if (increment == 0)
       System.out.println("ArmStatus: " + armStatus);

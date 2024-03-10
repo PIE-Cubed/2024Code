@@ -136,7 +136,7 @@ public class Controls {
 		power = Math.pow(power, 5);
 
 		// Turns the power into a speed
-		speed = MathUtil.clamp(power, -0.5, 0.5) * Drive.MAX_ROTATE_SPEED; // Use regular curve in radians per second
+		speed = MathUtil.clamp(power, -0.2, 0.2) * Drive.MAX_ROTATE_SPEED; // Use regular curve in radians per second
 		
 		// Limits the acceleration when under driver control
 		//speed = rotateLimiter.calculate(speed);
