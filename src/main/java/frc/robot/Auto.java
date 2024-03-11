@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Angle;
@@ -30,13 +29,13 @@ public class Auto {
     private final int SHOOT2_ANGLE = 331;
 
     // Auto program selection
-    public String selectedAuto = "Speaker Center";
+    //public String selectedAuto = "Speaker Center";
 
     // Object Creation
     private Drive          drive;
-    private PoseEstimation position;
+    //private PoseEstimation position;
+    //private CustomTables   nTables;
     private Arm            arm;
-    private CustomTables   nTables;
     private Grabber        grabber;
     private Shooter        shooter;
 
@@ -44,9 +43,9 @@ public class Auto {
     public Auto(Drive drive, PoseEstimation position, Arm arm, Grabber grabber, Shooter shooter) {
         this.drive    = drive;
         this.grabber  = grabber;
-        this.position = position;
+        //this.position = position;
         this.arm      = arm;
-        this.nTables  = CustomTables.getInstance();
+        //this.nTables  = CustomTables.getInstance();
         this.shooter  = shooter;
     }
 
@@ -526,8 +525,8 @@ public class Auto {
      * @return Robot status, CONT or DONE
      */
     public void teleopShoot() {
-        int intakeStatus = Robot.CONT;
-        int driveStatus = Robot.CONT;
+        //int intakeStatus = Robot.CONT;
+        //int driveStatus = Robot.CONT;
         int status = Robot.CONT;
 
         if(teleopShootFirstTime == true) {

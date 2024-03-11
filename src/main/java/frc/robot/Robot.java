@@ -18,11 +18,9 @@ import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
  * project.
  */
 public class Robot extends TimedRobot {
-  private static final String kDefaultAuto = "Default";
-  private static final String kCustomAuto = "My Auto";
   public LimelightTarget_Fiducial Fiducial;
 
-  // ERROR CODES
+  // STATUS CODES
 	public static final int FAIL = -1;
 	public static final int PASS =  1;
 	public static final int DONE =  2;
@@ -47,7 +45,7 @@ public class Robot extends TimedRobot {
 
 	// Auto path
 	private SendableChooser<String> m_chooser = new SendableChooser<>();
-	private String m_autoSelected = "Speaker Center Auto";
+	private String m_autoSelected;
   
   // Statuses for each "module" 
   private int shooterStatus = CONT;
@@ -134,7 +132,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     m_autoSelected = m_chooser.getSelected();
-    auto.selectedAuto = m_autoSelected;
+    //auto.selectedAuto = m_autoSelected;
     
     // Reset the robot statuses. This ensures that we don't need to restart the code after every time we
     // run the robot.
@@ -149,7 +147,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     if (status == Robot.CONT) {
-      /*switch (m_autoSelected) {
+      switch (m_autoSelected) {
         case "Speaker Center Auto":
           status = auto.speakerPositionCenter();
           break;
@@ -162,17 +160,17 @@ public class Robot extends TimedRobot {
           status = auto.speakerPositionLeft();
           break;*/
 
-        /*case "No Auto":
+        case "No Auto":
           status = Robot.DONE;
           break;
           
         default:
           System.out.println("[INFO] >> Running default auto.");
-          status = auto.speakerPositionCenter();
+          //status = auto.speakerPositionCenter();
           break;
-      }*/
+      }
 
-      status = auto.speakerPositionCenter();
+      //status = auto.speakerPositionCenter();
     } 
   }
 
@@ -268,7 +266,10 @@ public class Robot extends TimedRobot {
     }*/
 
     // Retrieve RGB, IR, and proximity values from the color sensor
-    grabber.testColorSensor();
+    //grabber.testColorSensor();
+
+    // Test the auto selection
+    System.out.println("Selected auto: " + m_chooser.getSelected());
 
     // Test LEDs
     //ledControl();
