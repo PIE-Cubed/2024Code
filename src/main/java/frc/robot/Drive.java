@@ -597,9 +597,8 @@ public class Drive {
         backLeft.setDesiredState(swerveModuleStates[2]);
         backRight.setDesiredState(swerveModuleStates[3]);
 
-        if (frontLeft.rotateControllerAtSetpoint() && frontRight.rotateControllerAtSetpoint() &&
-            backLeft.rotateControllerAtSetpoint() && backRight.rotateControllerAtSetpoint()) {
-                return Robot.DONE;
+        if (allEncodersAtSetpoint()) {
+            return Robot.DONE;
         }
 
         return Robot.CONT;
@@ -626,9 +625,8 @@ public class Drive {
         backLeft.setDesiredStateNoOpt(swerveModuleStates[2]);
         backRight.setDesiredStateNoOpt(swerveModuleStates[3]);
 
-        if (frontLeft.rotateControllerAtSetpoint() && frontRight.rotateControllerAtSetpoint() &&
-            backLeft.rotateControllerAtSetpoint() && backRight.rotateControllerAtSetpoint()) {
-                return Robot.DONE;
+        if (allEncodersAtSetpoint()) {
+            return Robot.DONE;
         }
 
         return Robot.CONT;
@@ -650,7 +648,7 @@ public class Drive {
             rotatePidController.setSetpoint(targetRadians);
         }
         double rotateVelocity = rotatePidController.calculate(getYawAdjusted(), targetRadians);
-
+        
         // Increment setpointCounter if the robot is at the setpoint
         if(rotatePidController.atSetpoint()){
             setpointCounter++;
@@ -664,10 +662,10 @@ public class Drive {
         else {
             setpointCounter = 0;    // Reset setpoint counter
         }
-        
+
         // Get rotate velocity and rotate with teleopDrive()
         teleopDrive(0, 0, MathUtil.clamp(rotateVelocity * -1, -1.0, 1.0), false);
-        
+                
         return Robot.CONT;
     }
 

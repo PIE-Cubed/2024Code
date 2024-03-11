@@ -112,16 +112,16 @@ public class Arm {
             extenderMotorPidController.setSetpoint(distance);
         }
 
+        double power = extenderMotorPidController.calculate(extenderEncoder.getPosition());
+        extenderMotor.set(MathUtil.clamp(power, -1, 1));
+
         if(extenderMotorPidController.atSetpoint()) {
             extensionFirstTime = true;
             return Robot.DONE;
         }
         else {
-            double power = extenderMotorPidController.calculate(extenderEncoder.getPosition());
-            extenderMotor.set(MathUtil.clamp(power, -1, 1));
+            return Robot.CONT;
         }
-
-        return Robot.CONT;
     }
 
     /**
@@ -168,7 +168,6 @@ public class Arm {
         double power = -elevationMotorPidController.calculate(elevationEncoder.getPosition(), degrees);
         //SmartDashboard.putNumber("Arm power", power);
         elevationMotor.set(MathUtil.clamp(power, -0.2, 0.2));   // Clamp
-
                 
         if(elevationMotorPidController.atSetpoint()) {
             elevationFirstTime = true;
