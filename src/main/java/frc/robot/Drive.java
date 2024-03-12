@@ -403,12 +403,12 @@ public class Drive {
 
     /**
      * Drives N feet
-     * @param driveAngle -> The angle at which to drive forward at, relative to the robot
+     * @param driveAngleDegrees -> The angle at which to drive forward at, relative to the robot in degrees
      * @param distanceFeet -> The distance to drive in feet
      * @param power -> The power to apply to the motor(-1 - 1)
      * @return
      */
-    public int driveDistanceWithAngle(double driveAngle, double distanceFeet, double power) {
+    public int driveDistanceWithAngle(double driveAngleDegrees, double distanceFeet, double power) {
         // The difference between the current and target angle
         double angleDifference = 0;
 
@@ -423,7 +423,7 @@ public class Drive {
             }
 
             // Get the initial angle of the robot from the NavX
-            initialOrientation = getYawAdjusted();
+            initialOrientation = getYawDegreesAdjusted();
             
             // Calculate the angle difference between the current angle and 0
             angleDifference = rotationAdjustPidController.calculate(initialOrientation, getYawDegreesAdjusted());
@@ -473,7 +473,7 @@ public class Drive {
          * Positive angle difference power rotates 
          * */
         SwerveModuleState[] states = swerveDriveKinematics.toSwerveModuleStates(
-            new ChassisSpeeds(power * Math.cos(driveAngle), power * Math.sin(driveAngle), angleDifference));
+            new ChassisSpeeds(power * Math.cos(Math.toRadians(driveAngleDegrees)), power * Math.sin(Math.toRadians(driveAngleDegrees)), angleDifference));
         SwerveDriveKinematics.desaturateWheelSpeeds(states, MAX_WHEEL_SPEED);   // Desaturate
         setModuleStates(states);
 
@@ -1059,8 +1059,8 @@ public class Drive {
     }
 
     // Test driving at an angle
-    public int testAngleDrive(double driveAngle, double distanceFeet, double power) {
-        return driveDistanceWithAngle(driveAngle, distanceFeet, power);
+    public int testAngleDrive(double driveAngleDegrees, double distanceFeet, double power) {
+        return driveDistanceWithAngle(driveAngleDegrees, distanceFeet, power);
     }
 }
 
