@@ -337,6 +337,40 @@ public class Auto {
             
                 break;
 
+            // Raise arm to 333 degrees to avoid note dragging
+            case 10:
+                status = arm.rotateArm(333);
+                break;
+
+            // Rotate robot to 28 to face speaker directly
+            case 11:
+                arm.maintainPosition(333);
+                status = drive.rotateRobot(Math.toRadians(28));
+                break;
+
+            case 12:
+                status = drive.rotateWheelsToAngle(0);
+                break;
+
+            // Drive back to speaker 5.5ft
+            case 13:
+                arm.maintainPosition(333);
+                status = drive.driveDistanceWithAngle(0, -5.5, 0.5);
+                break;
+
+            // Shoot
+            case 14:
+                shooter.spinup();
+                status = arm.rotateArm(SHOOT2_ANGLE);     
+                break;
+
+            // Shoot the note
+            case 15:
+                grabber.setMotorPower(grabber.INTAKE_POWER);
+                arm.maintainPosition(SHOOT2_ANGLE);
+                status = autoDelay(1);
+                break;
+
             // Finished routine, reset variables, stop motors, and return done
             default:
                 shooter.stopShooting();
