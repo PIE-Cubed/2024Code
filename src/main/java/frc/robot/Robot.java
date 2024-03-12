@@ -153,12 +153,12 @@ public class Robot extends TimedRobot {
           break;
 
         case "Amp Side Auto":
-          status = auto.speakerPositionRight();
+          status = auto.speakerPositionAmp();
           break;
 
-        /*case "Feed Side Auto":
-          status = auto.speakerPositionLeft();
-          break;*/
+        case "Feed Side Auto":
+          status = auto.speakerPositionFeed();
+          break;
 
         case "No Auto":
           status = Robot.DONE;
