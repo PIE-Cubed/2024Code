@@ -224,7 +224,7 @@ public class Auto {
 
             // Rotate the arm so it's in the shooting position
             case 10:
-                status = arm.rotateArm(SHOOT2_ANGLE); // Use 343 if not driving to speaker          
+                status = arm.rotateArm(SHOOT2_ANGLE); // Use 343 if not driving to speaker(old), tested: 334, needs to be raised     
                 break;
 
             // Shoot the note
@@ -307,9 +307,9 @@ public class Auto {
                 status = drive.driveDistanceWithAngle(0, 1, 0.5);            
                 break;
 
-            // Rotate the robot 43 degrees
+            // Rotate the robot 57 degrees
             case 7:
-                status = drive.rotateRobot(Math.toRadians(43));            
+                status = drive.rotateRobot(Math.toRadians(57));            
                 break;
 
             // Rotate the wheels back to zero before driving forward
