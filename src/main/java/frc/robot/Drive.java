@@ -49,7 +49,8 @@ public class Drive {
     private double  initYVelocity          = 0;
     private double  targetPosition         = 0;
     private double  initRotateVelocity     = 0;
-    private double  finishTime = 0;
+    private double  finishTime             = 0;
+    double targetFeet                      = 0;
     
     // Rate limiters for auto drive
     private SlewRateLimiter xLimiter;
@@ -417,7 +418,7 @@ public class Drive {
         if (driveDistanceFirstTime == true) {
             driveDistanceFirstTime = false;
 
-            // Zero out the drive encoders (this is in a for loop because it's behavior is WAY too inconsistent, unpredictable, and annoying)
+            // Zero out the drive encoders (this is in a for loop because its behavior is WAY too inconsistent, unpredictable, and annoying)
             for (int zeroCount = 0; zeroCount < 5; zeroCount++) {
                 zeroDriveEncoders();
             }
@@ -449,6 +450,76 @@ public class Drive {
                 zeroDriveEncoders();
             }
 
+            return Robot.DONE;
+        }
+
+        // Calculate the angle difference between the current angle and 0
+        angleDifference = rotationAdjustPidController.calculate(initialOrientation, getYawDegreesAdjusted());
+        
+        // Negate yaw if driving forward
+        if (distanceFeet > 0) {
+            angleDifference *= -1;
+        }
+
+        // Invert power if driving backwards
+        if (distanceFeet < 0) {
+            power *= -1;
+        }
+
+        /* Only forwards speed, as wheels should be rotated to point forward, 
+         * and rotation speed, to keep robot in a straight line 
+         * 
+         * X velocity equation: Power * Cosine of drive angle
+         * Y velocity equation: Power * Sine of drive angle
+         * Positive angle difference power rotates 
+         * */
+        SwerveModuleState[] states = swerveDriveKinematics.toSwerveModuleStates(
+            new ChassisSpeeds(power * Math.cos(driveAngle), power * Math.sin(driveAngle), angleDifference));
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, MAX_WHEEL_SPEED);   // Desaturate
+        setModuleStates(states);
+
+        return Robot.CONT;
+    }
+
+    /**
+     * Drives N feet
+     * @param driveAngle -> The angle at which to drive forward at, relative to the robot
+     * @param distanceFeet -> The distance to drive in feet
+     * @param power -> The power to apply to the motor(-1 - 1)
+     * @return
+     */
+    public int driveDistanceAngleDelta(double driveAngle, double distanceFeet, double power) {
+        // The difference between the current and target angle
+        double angleDifference = 0;
+
+        // If this function is being run for the first time, find the encoder 
+        // tick value (Current encoder tick + Number of ticks in the distance parameter)
+        if (driveDistanceFirstTime == true) {
+            driveDistanceFirstTime = false;
+            // Get the delta of the current and target distance
+            targetFeet = backRight.getDrivePositionFeet() + distanceFeet;
+
+            // Get the initial angle of the robot from the NavX
+            initialOrientation = getYawAdjusted();
+            
+            // Calculate the angle difference between the current angle and 0
+            angleDifference = rotationAdjustPidController.calculate(initialOrientation, getYawDegreesAdjusted());
+
+            // Print some debug stuff
+            // Current values
+            /*System.out.println("Current position: " + backRight.getDrivePositionFeet() + "ft");
+            System.out.println("Current angle: " + initialOrientation + "°");
+
+            // Target values
+            System.out.println("Target position: " + distanceFeet + "ft");
+            System.out.println("Target angle: " + driveAngle + "°");*/
+        }
+
+        // Stop the robot if it has driven the correct distance
+        if (Math.abs(backRight.getDrivePositionFeet()) >= Math.abs(targetFeet)) {
+            System.out.println("Done, traveled " + backRight.getDrivePositionFeet() + "ft");
+            driveDistanceFirstTime = true;
+            stopWheels();
             return Robot.DONE;
         }
 
