@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
+import frc.robot.Robot.ArmState;
 
 public class Auto {
     // State tracking variables - each variable can only be used in one function at any time
@@ -16,6 +17,8 @@ public class Auto {
     private int step;
     private boolean firstTime = true;
     private boolean teleopShootFirstTime = true;
+    private boolean isRed = false;
+    private int allianceAngleModifier = 1;
 
     private long delayEnd = 0; // Stores when delay() should return Robot.DONE
     private boolean delayFirstTime = true;
@@ -23,6 +26,7 @@ public class Auto {
     
     private int intakeStatus = Robot.CONT;
     private int driveStatus = Robot.CONT;
+    private int armStatus = Robot.CONT;
     private int status = Robot.CONT;
 
     private final int SHOOT1_ANGLE = 331;
@@ -34,19 +38,24 @@ public class Auto {
     // Object Creation
     private Drive          drive;
     //private PoseEstimation position;
-    //private CustomTables   nTables;
+    private CustomTables   nTables;
     private Arm            arm;
     private Grabber        grabber;
     private Shooter        shooter;
 
     // Constructor
-    public Auto(Drive drive, PoseEstimation position, Arm arm, Grabber grabber, Shooter shooter) {
+    public Auto(Drive drive, PoseEstimation position, Arm arm, Grabber grabber, Shooter shooter, CustomTables nTables) {
         this.drive    = drive;
         this.grabber  = grabber;
         //this.position = position;
         this.arm      = arm;
-        //this.nTables  = CustomTables.getInstance();
+        this.nTables  = CustomTables.getInstance();
         this.shooter  = shooter;
+
+        this.isRed = this.nTables.getIsRedAlliance();
+        if(!this.isRed) {
+            this.allianceAngleModifier = -1;
+        }
     }
 
     /****************************************************************************************** 
@@ -302,14 +311,14 @@ public class Auto {
                 status = arm.extendArm(14, 0.2);
                 break;*/
 
-            // Drive backwards 1 foot
+            // Drive forwards 1 foot
             case 6:
                 status = drive.driveDistanceWithAngle(0, 1, 0.5);            
                 break;
 
             // Rotate the robot 57 degrees
             case 7:
-                status = drive.rotateRobot(Math.toRadians(57));            
+                status = drive.rotateRobot(Math.toRadians(allianceAngleModifier * 57));
                 break;
 
             // Rotate the wheels back to zero before driving forward
@@ -318,7 +327,7 @@ public class Auto {
                 grabber.intakeOutake(true, false);
                 break;
 
-            // Drive back 4 feet and pick up a note
+            // Drive forwards 4 feet and pick up a note
             case 9:
                 if (intakeStatus == Robot.CONT) {
                     intakeStatus = grabber.intakeOutake(true, false);
@@ -329,6 +338,8 @@ public class Auto {
                 }
                 
                 if (intakeStatus == Robot.DONE && driveStatus == Robot.DONE) {
+                    driveStatus = Robot.CONT;
+                    intakeStatus = Robot.CONT;
                     status = Robot.DONE;
                 }
                 else {
@@ -337,12 +348,51 @@ public class Auto {
             
                 break;
 
-            // Raise arm to 333 degrees to avoid note dragging
+            // Reset Wheel angle to 0 and raise arm to 333 degrees to avoid note dragging
             case 10:
-                status = arm.rotateArm(333);
+                if(armStatus == Robot.CONT) {
+                    armStatus = arm.rotateArm(333);
+                }
+
+                if(driveStatus == Robot.CONT) {
+                    driveStatus = drive.rotateWheelsToAngle(0);
+                }
+                
+                if (armStatus == Robot.DONE && driveStatus == Robot.DONE) {
+                    driveStatus = Robot.CONT;
+                    armStatus = Robot.CONT;
+                    status = Robot.DONE;
+                }
+                else {
+                    status = Robot.CONT;
+                }
+
+                break;
+                
+            // Drive Backwards 4 feet
+            case 11:
+                arm.maintainPosition(333);
+                status = drive.driveDistanceWithAngle(0, -4.75, 0.5);
                 break;
 
-            // Rotate robot to 28 to face speaker directly
+            // Rotate the robot back to 0
+            case 12:
+                arm.maintainPosition(333);
+                status = drive.rotateRobot(Math.toRadians(0));
+                break;
+
+            // Reset wheel angle to 0
+            //case 14:
+            //    arm.maintainPosition(333);
+            //    status = drive.rotateWheelsToAngle(0);
+            //    break;
+
+            // Drive backwards 1 feet
+            case 13:
+                arm.maintainPosition(333);
+                status = drive.driveDistanceWithAngle(0, -1.5, 0.5);
+                break;
+            /*// Rotate robot to 28 to face speaker directly
             case 11:
                 arm.maintainPosition(333);
                 status = drive.rotateRobot(Math.toRadians(28));
@@ -358,10 +408,11 @@ public class Auto {
                 status = drive.driveDistanceWithAngle(0, -5.5, 0.5);
                 break;
 
+            */
             // Shoot
             case 14:
                 shooter.spinup();
-                status = arm.rotateArm(SHOOT2_ANGLE);     
+                status = arm.rotateArm(SHOOT2_ANGLE);
                 break;
 
             // Shoot the note

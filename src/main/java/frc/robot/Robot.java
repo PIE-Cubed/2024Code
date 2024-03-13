@@ -67,6 +67,10 @@ public class Robot extends TimedRobot {
     m_chooser = new SendableChooser<>();
     Fiducial = new LimelightTarget_Fiducial();
 
+		// Instance getters
+		nTables  = CustomTables.getInstance();
+    FCSInfo = NetworkTableInstance.getDefault();
+
 		// Instance creation
     grabber  = Grabber.getInstance();
 		drive    = new Drive();
@@ -74,12 +78,8 @@ public class Robot extends TimedRobot {
 		position = new PoseEstimation(drive);
     shooter  = new Shooter();
     arm      = new Arm();
-		auto     = new Auto(drive, position, arm, grabber, shooter);
+		auto     = new Auto(drive, position, arm, grabber, shooter, nTables);
     led      = new LED();
-
-		// Instance getters
-		nTables  = CustomTables.getInstance();
-    FCSInfo = NetworkTableInstance.getDefault();
 
     // Turn off the limelight LEDs so they don't blind people
     LimelightHelpers.setLEDMode_ForceOff("limelight");
