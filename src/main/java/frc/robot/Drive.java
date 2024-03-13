@@ -440,8 +440,8 @@ public class Drive {
         }
 
         // Stop the robot if it has driven the correct distance
-        if (Math.abs(backRight.getDrivePositionFeet()) >= Math.abs(distanceFeet)) {
-            System.out.println("Done, traveled " + backRight.getDrivePositionFeet() + "ft");
+        if (Math.abs(backLeft.getDrivePositionFeet()) >= Math.abs(distanceFeet)) {
+            System.out.println("Done, traveled " + backLeft.getDrivePositionFeet() + "ft");
             driveDistanceFirstTime = true;
             stopWheels();
 
