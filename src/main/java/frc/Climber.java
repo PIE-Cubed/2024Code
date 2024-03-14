@@ -1,15 +1,9 @@
 package frc;
 
-import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
-import com.revrobotics.SparkAbsoluteEncoder.Type;
-
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
 
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.RelativeEncoder;
 
 public class Climber {
     private final int LEFT_MOTOR_CAN = -1;
@@ -20,12 +14,6 @@ public class Climber {
 
     private CANSparkMax leftMotor;
     private CANSparkMax rightMotor;
-    
-    private RelativeEncoder leftMotorEncoder;
-    private RelativeEncoder rightMotorEncoder;
-    
-    private PIDController leftMotorPidController;
-    private PIDController rightMotorPidController;
 
     public Climber() {
         // Motors
@@ -36,19 +24,19 @@ public class Climber {
         rightMotor = new CANSparkMax(RIGHT_MOTOR_CAN, MotorType.kBrushless);
         rightMotor.setSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
         rightMotor.setIdleMode(IdleMode.kBrake);
-
-        // Encoders
-        leftMotorEncoder = leftMotor.getEncoder();
-        rightMotorEncoder = rightMotor.getEncoder();
     }
 
-    
     /**
-     * <p> Climb by setting motor power
-     * <p> DOES NOT STOP ON ITS OWN
+     * Runs the left climber motor
      */
-    public void climbTest() {
+    public void runLeftClimber() {
         leftMotor.set(CLIMB_POWER);
+    }
+
+    /**
+     * Runs the right climber motor
+     */
+    public void runRightClimber() {
         rightMotor.set(CLIMB_POWER);
     }
 }
