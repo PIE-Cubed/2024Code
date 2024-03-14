@@ -509,13 +509,13 @@ public class Robot extends TimedRobot {
           }
 
           // Move the arm out/in incrementally
-          if(controls.extendArm()) {
+          /*if(controls.extendArm()) {
             arm.testExtend(0.5);
           } else if(controls.retractArm()) {
             arm.testExtend(-0.5);
           } else {
             arm.testExtend(0.0);
-          }
+          }*/
 
           // next state
           if (controls.autoClimb())  {

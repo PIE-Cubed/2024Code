@@ -439,15 +439,10 @@ public class Auto {
     }
 
     /**
-     * <p> Moves the arm so the shooter is aiming at the speaker (located in the left position)
-     * <p> -26 degrees from horizontal
-     * <p> Fully retracts arm
-     * <p> First rotates, then retracts the arm
-     * <p> This currently takes 11 seconds for a full auto cycle
+     * <p> Shoots, then backs up to clear note and stage, drives out, then back
      * @return Robot status, CONT or DONE
      */
     public int speakerPositionFeed() {
-        System.out.println("Untested!!");
         if(firstTime == true) {
             firstTime = false;
             intakeStatus = Robot.CONT;
@@ -455,13 +450,13 @@ public class Auto {
             step = 1;
         }
 
-        switch(step) {   
+        switch(step) {
             // Rotate the drive motors to zero
             case 1:
                 status = drive.rotateWheelsToAngle(0);
                 break;
 
-            // Start the shooter motors and rotate the arm to -29 (331) degrees from 54
+            // Start the shooter motors and rotate the arm to -26 (333) degrees from 54
             case 2:
                 shooter.spinup();
                 status = arm.rotateArm(SHOOT1_ANGLE);
@@ -486,49 +481,33 @@ public class Auto {
                 status = arm.rotateArm(327);
                 break;
 
-            // Extend the arm so the wood block falls into the robot
-            /*case 6:
-                status = arm.extendArm(14, 0.2);
-                break;*/
-
-            // Drive backwards 1 foot
+            // Drive forwards 1 foot
             case 6:
-                status = drive.driveDistanceWithAngle(0, 1, 0.5);            
+                status = drive.driveDistanceWithAngle(0, 6, 0.5);            
                 break;
 
-            // Rotate the robot -43 degrees
+            // Rotate the robot 57 degrees
             case 7:
-                status = drive.rotateRobot(Math.toRadians(-43));            
+                status = drive.rotateRobot(Math.toRadians(allianceAngleModifier * 57));
                 break;
 
             // Rotate the wheels back to zero before driving forward
             case 8:
                 status = drive.rotateWheelsToAngle(0);            
-                grabber.intakeOutake(true, false);
+                break;
+            
+            // Drive forwards to get out of alliance area
+            case 9:
+                status = drive.driveDistanceWithAngle(0, 2, 0.5);
                 break;
 
-            // Drive back 4 feet and pick up a note
-            case 9:
-                if (intakeStatus == Robot.CONT) {
-                    intakeStatus = grabber.intakeOutake(true, false);
-                }
-                
-                if (driveStatus == Robot.CONT) {
-                    driveStatus = drive.driveDistanceWithAngle(0, 4, 0.5);
-                }
-                
-                if (intakeStatus == Robot.DONE && driveStatus == Robot.DONE) {
-                    status = Robot.DONE;
-                }
-                else {
-                    status = Robot.CONT;
-                }
-            
+            // Drive backwards to get back into alliance area
+            case 10:
+                status = drive.driveDistanceWithAngle(0, -2.5, 0.5);
                 break;
 
             // Finished routine, reset variables, stop motors, and return done
             default:
-                shooter.stopShooting();
                 step = 1;
                 firstTime = true;
                 return Robot.DONE;

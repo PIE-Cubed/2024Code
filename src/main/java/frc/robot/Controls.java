@@ -301,10 +301,18 @@ public class Controls {
 	}
 
 	/***
-	 * Pressing the X button will move the arm to the resting position
-	 * @return Manipulator controller X button pressed
+	 * Pressing the A button will move the arm to the resting/ground pickup position
+	 * @return Manipulator controller A button pressed
 	 */
 	public boolean moveToRestPosition() {
+		return manipulatorController.getAButtonPressed();
+	}
+
+	/**
+	 * Pressing the X button will move the arm slightly up to 333 deg
+	 * @return Manipulator controller X button pressed
+	 */
+	public boolean moveSlightlyUp() {
 		return manipulatorController.getXButtonPressed();
 	}
 
