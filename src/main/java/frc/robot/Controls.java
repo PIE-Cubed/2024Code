@@ -162,7 +162,7 @@ public class Controls {
 		return driveController.getRightTriggerAxis() > 0.05;
 	}
 
-	public boolean toggleFieldDrive() {
+	public boolean enableFieldDrive() {
 		/*if(driveController.getLeftTriggerAxis() > 0.05) {
 			fieldDrive = !fieldDrive;
 		}*/
@@ -211,19 +211,15 @@ public class Controls {
 	 * Pressing the DPAD DOWN button will lock the drive wheels
 	 * @return Drive controller DPAD DOWN button pressed
 	 */
-	public boolean lockDriveWheels() {
+	/*public boolean lockDriveWheels() {
 		return driveController.getPOV() == 180;
-	}
+	}*/
 
-	// Center of rotation evasion
-	
-
-	// Lights
 	/***
 	 * Pressing the Left Bumper button will amplify signal lights
 	 * @return Drive controller Left Bumper button pressed
 	 */
-	public boolean amplifySignalLights() {
+	public boolean runLeftClimber() {
 		return driveController.getLeftBumperPressed();
 	}
 
@@ -231,7 +227,7 @@ public class Controls {
 	 * Pressing the Right Bumper button will toggle source lights
 	 * @return Drive controller Right Bumper button pressed
 	 */
-	public boolean toggleSourceLights() {
+	public boolean runRightClimber() {
 		return driveController.getRightBumperPressed();
 	}
 

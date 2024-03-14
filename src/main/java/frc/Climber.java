@@ -3,6 +3,9 @@ package frc;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
+import edu.wpi.first.math.MathUsageId;
+import edu.wpi.first.math.MathUtil;
+
 import com.revrobotics.CANSparkMax;
 
 public class Climber {
@@ -38,5 +41,21 @@ public class Climber {
      */
     public void runRightClimber() {
         rightMotor.set(CLIMB_POWER);
+    }
+
+    /**
+     * Sets the left motor's power
+     * @param power
+     */
+    public void setLeftClimberPower(double power) {
+        leftMotor.set(MathUtil.clamp(power, -1, 1));
+    }
+
+    /**
+     * Sets the left motor's power
+     * @param power
+     */
+    public void setRightClimberPower(double power) {
+        rightMotor.set(MathUtil.clamp(power, -1, 1));
     }
 }

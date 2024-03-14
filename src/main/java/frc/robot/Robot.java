@@ -4,11 +4,11 @@
 
 package frc.robot;
 
-import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.Climber;
 import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
 
 /**
@@ -33,6 +33,7 @@ public class Robot extends TimedRobot {
 	Controls             controls;
   Shooter              shooter;
   Grabber              grabber;
+  Climber              climber;
 	Drive                drive;
 	Auto                 auto;
   Arm                  arm;
@@ -50,8 +51,8 @@ public class Robot extends TimedRobot {
   // Statuses for each "module" 
   private int shooterStatus = CONT;
   private int grabberStatus = CONT;
-  private int moveStatus = CONT;
-  private int armStatus = CONT;
+  private int moveStatus    = CONT;
+  private int armStatus     = CONT;
   private int restingStatus = CONT;
 
   private boolean shooterSpinning;
@@ -77,6 +78,7 @@ public class Robot extends TimedRobot {
 		controls = new Controls();
 		position = new PoseEstimation(drive);
     shooter  = new Shooter();
+    climber  = new Climber();
     arm      = new Arm();
 		auto     = new Auto(drive, position, arm, grabber, shooter, nTables);
     led      = new LED();
@@ -196,17 +198,20 @@ public class Robot extends TimedRobot {
     // Allows for controlling the arm
     armControl();
 
-    // Allows for shooting notes
-    shooterControl();
-    
     // Allows for controlling the grabber
     grabberControl();
+    
+    // Allows for shooting notes
+    shooterControl();
 
-    // Drivers check this to see if they grabbed a note
-    SmartDashboard.putBoolean("Grabber has Note", grabber.noteDetected());
-
+    // Allows for controlling the climber
+    climberControl();
+    
     // Allows for controlling the LEDs
     ledControl();
+    
+    // Drivers check this to see if they grabbed a note
+    SmartDashboard.putBoolean("Grabber has Note", grabber.noteDetected());
   }
 
   /** This function is called once when the robot is disabled. */
@@ -238,20 +243,9 @@ public class Robot extends TimedRobot {
     // Read values from shuffleboard
     //double shooterPower = SmartDashboard.getNumber("Shooter Power", 0.0);
     //double grabberPower = SmartDashboard.getNumber("Grabber Power", 0.0);
-    double rotateAngle = SmartDashboard.getNumber("Rotation Angle", 0.0);
+    //double rotateAngle = SmartDashboard.getNumber("Rotation Angle", 0.0);
 
     //testTeleopDrive();
-
-    // Read arm extension
-    //System.out.println("Arm extension position: " + arm.getExtendPosition());
-
-    // Rotate the wheels to a specific degree (in degrees)
-    /*if (status == Robot.CONT) {
-      status = drive.rotateWheelsToAngle(rotateAngle);      
-    }*/
-
-    // Rotate the robot without driving
-    //status = drive.rotateWheelsToAngle(rotateAngle);
   
     // Test shooter
     //shooter.startShooting(shooterPower);
@@ -276,10 +270,10 @@ public class Robot extends TimedRobot {
 
     // Move the arm to a certain degree
     /*if (armStatus == Robot.CONT) {
-      armStatus = arm.rotateArm(0);
+      armStatus = arm.rotateArm(rotateAngle);
     }
     else {
-      armStatus = arm.maintainPosition(0);
+      armStatus = arm.maintainPosition(rotateAngle);
     }*/
 
     // Test driving at an angle
@@ -287,26 +281,6 @@ public class Robot extends TimedRobot {
     if(status == Robot.CONT) {
       status = drive.testAngleDrive(0, 3, 0.3);
     }
-    */
-
-    // 60 from horizontal, arm extends 4in
-    
-    //System.out.println("Extension Encoder: " + Math.toDegrees(arm.getExtendPosition()));
-/* 
-    if (armStatus == Robot.CONT) {
-      armStatus = arm.extendArm(0.04, -0.5);    
-      System.out.println("Extend Encoder: " + arm.getExtendPosition());
-      System.out.println("Elevation Encoder: " + arm.getElevationPosition());
-    }
-  */
-/*
-    if (increment == 0)
-      System.out.println("ArmStatus: " + armStatus);
-    if(armStatus != DONE) {
-      armStatus = arm.rotateArm(Math.toRadians(45));  
-    }
-    
-    increment++;
     */
     
     // Test arm elevation
@@ -318,74 +292,6 @@ public class Robot extends TimedRobot {
     if (status == Robot.CONT) {
       status = drive.driveDistanceWithAngle(0, -2, 0.3);
     }*/
-
-    // Test power and velocity
-    /*
-    drive.setAllDriveMotorPower(MathUtil.clamp(power, -1, 1));
-    drive.printPowerandVelocity();*/
-
-    // Rotate drive wheels to zero
-    /*if (status == Robot.CONT) {
-      Measure<Angle> angleMeasurement = Units.Radians.of(0);  // Get the desired angle as a Measure<Angle> 
-      Translation2d vect = new Translation2d(0.0, new Rotation2d(angleMeasurement));  // Create Translation2d for rotateWheels
-      status = drive.rotateWheelsNoOpt(vect.getX(), vect.getY(), 0.0);  // Rotate wheels to 0 radians
-    }*/    
-
-    // Test distance
-    /*double distance = 5;
-
-    // Are all wheels at 0 radians and driveDistance is true
-    if(driveDistance == false)  {
-        // Rotate all wheels to 0 radians
-        if (status == Robot.CONT)  {
-          /*  TJM
-           *   I don't think this is what you want.  I think you are trying to rotate the wheels only
-           *   and not provide power to drive wheels.  rotateWheels() calls SetDesiredState() which will 
-           *   rotate the wheels and provide drive power.  If you want to go to 0 degrees for instance you
-           *   could set x=0 and z=0 and make y(forward power) small like .01.  
-           *   if x = 0 and y = .01 the angle would be 0 and wheel power would be small.
-           *   Perhaps a better way is  to 
-           *        use a rotate program like we did earlier OR
-           *        make a rotate program similar to teleop drive that only gives power to rotate motor
-           *            You could pass in a Rotation2d(angleRadians) and then directly set the SwerveModuleStates()
-           *            with forward power = 0 and all wheels getting the angle passed in
-           *   We can talk over on Tuesday or before if this doesn't make sense.
-           * 
-           */
-          /*Measure<Angle> angleMeasurement = Units.Radians.of(0);  // Get the desired angle as a Measure<Angle> 
-          Translation2d vect = new Translation2d(0.0, new Rotation2d(angleMeasurement));  // Create Translation2d for rotateWheels
-          status = drive.rotateWheelsNoOpt(vect.getX(), vect.getY(), 0.0);  // Rotate wheels to 0 radians
-      }
-      else if (status == Robot.DONE)  {
-            status = Robot.CONT;  // Reset status
-            driveDistance = true; // Start the distance test
-        }
-    } 
-    else {
-        // At 0 radians, start/continue the test
-        if (status == Robot.CONT)  {
-            //status = drive.driveDistance((Math.PI * 2.875) / 12, 0.05);  // ~0.75ft for wheel rotation tests
-            status = drive.driveDistance(distance, 0.075);
-        }
-    }*/
-
-    // Test AprilTags
-    //drive.testAprilTagID();
-    //drive.testAprilTagXY();
-    //drive.testAprilTagPipeline(0);
-    //drive.testMegaTagPose(0);
-    //System.out.println(drive.getDistanceToAprilTagMeters(0, 7));
-    //drive.alignWithAprilTag(1, 4);  // Pipeline 1 has a mask for ID 4
-
-    // Test rotation
-    //if (status == CONT)  {
-    //    double deg = SmartDashboard.getNumber("Angle(Deg)", 0);
-    //    status = drive.rotateRobot(Math.toRadians(deg));
-    //}
-    //if(status == DONE) System.out.println("Done");
-
-    // Test controller
-    //SmartDashboard.putNumber("Controller L", controls.getForwardSpeed());
   }
 
   /** This function is called once when the robot is first started up. */
@@ -407,7 +313,7 @@ public class Robot extends TimedRobot {
 
 		// Gets Manipulator values
 		boolean zeroYaw           = controls.zeroYaw();
-    boolean fieldDrive        = controls.toggleFieldDrive();
+    boolean fieldDrive        = controls.enableFieldDrive();
 
     // Zeros the gyro
 		if (zeroYaw == true) {
@@ -431,47 +337,8 @@ public class Robot extends TimedRobot {
 	}
 
   /**
-	 * Controls the arm in TeleOp
+	 * Controls the LEDs
 	 */
-	/*private void armControl() {
-    // Move the arm up/down incrementally
-    if(controls.moveArmUp()) {
-      arm.testElevate(-0.5);
-    }
-    else if (controls.moveArmDown()) {
-      arm.testElevate(0.5);
-    }
-    else{
-      arm.testElevate(0);
-    }
-
-    // Extend / retract the arm
-    if(controls.extendArm()){
-      arm.testExtend(0.2);
-    }
-    else if(controls.retractArm()) {
-      arm.testExtend(-0.2);
-    }
-    else {
-      arm.testExtend(0);
-    }
-
-    // Rotate arm to 29 degrees for the amp(not dump shot)
-    if(controls.moveToAmpPosition()) {
-      arm.rotateArm(29);
-    }
-
-    // Bring the arm to its resting position
-    if (controls.moveToRestPosition()) {
-      armStatus = arm.rotateArm(332.7);
-    }
-
-    // Bring the arm to its climbing position
-    if (controls.autoClimb()) {
-      armStatus = arm.rotateArm(90);
-    }
-	}*/
-
   private void ledControl() {
     boolean hasNote = grabber.noteDetected();
     boolean runningIntake = controls.runIntake();
@@ -490,6 +357,7 @@ public class Robot extends TimedRobot {
     led.updateLED();  // Update LEDs
 
   }
+  
   /**
 	 * Controls the arm in TeleOp
 	 */
@@ -610,30 +478,24 @@ public class Robot extends TimedRobot {
 	}
 
   /**
-   * 
+   * Controls the climber in TeleOp
    */
- // private void grabberControl() {
- //   boolean intake = controls.runIntake();
- //   boolean outtake = controls.ejectNote();
- //   
- //   grabber.intakeOutake(intake, outtake);
- // }
-//
- // /**
- // private void armControl() {
- //   boolean rotateUp     = controls.moveArmUp();
- //   boolean rotateDown   = controls.moveArmDown();
-//
- //   boolean extendArm    = controls.extendArm();
- //   boolean retractArm   = controls.retractArm();
-//
- //   arm.rotateArmIncrement(rotateUp, rotateDown);
- //   arm.moveArmIncrement(extendArm, retractArm);
- // }
+  private void climberControl() {
+    if(controls.runLeftClimber()) {
+      climber.runLeftClimber();
+    }
+    else {
+      climber.setLeftClimberPower(0);
+    }
 
-  /**
-   * 
-   */
+    if(controls.runRightClimber()) {
+      climber.runRightClimber();
+    }
+    else {
+      climber.setRightClimberPower(0);
+    }
+  }
+
   public void testTeleopDrive() {
     double rotateSpeed = controls.getRotateSpeed();
     double strafeSpeed = controls.getStrafeSpeed();
@@ -641,24 +503,5 @@ public class Robot extends TimedRobot {
 
     drive.teleopDrive(forwardSpeed, strafeSpeed, rotateSpeed, false);
 
-  }
-
-  /**
-   * 
-   */
-  private void testAprilTag() {
-    // Using NetworkTables
-    NetworkTable aprilTagTable = NetworkTableInstance.getDefault().getTable("limelight");
-    if(aprilTagTable.getEntry("tv").getBoolean(false)){
-      System.out.println("Has Target: " + aprilTagTable.getEntry("tv").getBoolean(false));
-      double[] targetPoseRobotSpace = aprilTagTable.getEntry("targetpose_robotspace").getDoubleArray(new double[0]);
-    
-      /* Print the AprilTag's pose in robotspace
-       * Prints out as: x, y, z, rx, ry, rz
-       */
-      for(double num : targetPoseRobotSpace) {
-        System.out.print(num + ", ");
-      }
-    }
   }
 }
