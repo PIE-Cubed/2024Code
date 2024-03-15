@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -80,7 +81,7 @@ public class Robot extends TimedRobot {
     shooter  = new Shooter();
     climber  = new Climber();
     arm      = new Arm();
-		auto     = new Auto(drive, position, arm, grabber, shooter, nTables);
+		auto     = new Auto(drive, position, arm, grabber, shooter);
     led      = new LED();
 
     // Turn off the limelight LEDs so they don't blind people
@@ -93,9 +94,13 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    // Start the camera server
+    CameraServer.startAutomaticCapture();
+    
     // Auto selection
     m_chooser.setDefaultOption("Speaker Center Auto", "Speaker Center Auto");
     m_chooser.addOption("Amp Side Auto", "Amp Side Auto");
+    m_chooser.addOption("Feed Side Auto", "Feed Side Auto");
     m_chooser.addOption("No Auto", "No Auto");
     //m_chooser.addOption("Feed Side Auto", "Feed Side Auto");
     SmartDashboard.putData("Auto Selector", m_chooser);
@@ -135,6 +140,12 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     m_autoSelected = m_chooser.getSelected();
     //auto.selectedAuto = m_autoSelected;
+
+    auto.isRed = this.nTables.getIsRedAlliance();
+    
+    if(!auto.isRed) {
+        auto.allianceAngleModifier = -1;
+    }
     
     // Reset the robot statuses. This ensures that we don't need to restart the code after every time we
     // run the robot.

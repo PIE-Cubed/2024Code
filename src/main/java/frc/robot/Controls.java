@@ -220,7 +220,7 @@ public class Controls {
 	 * @return Drive controller Left Bumper button pressed
 	 */
 	public boolean runLeftClimber() {
-		return driveController.getLeftBumperPressed();
+		return driveController.getLeftBumper();
 	}
 
 	/***
@@ -228,7 +228,7 @@ public class Controls {
 	 * @return Drive controller Right Bumper button pressed
 	 */
 	public boolean runRightClimber() {
-		return driveController.getRightBumperPressed();
+		return driveController.getRightBumper();
 	}
 
 

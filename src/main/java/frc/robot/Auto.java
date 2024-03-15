@@ -17,8 +17,8 @@ public class Auto {
     private int step;
     private boolean firstTime = true;
     private boolean teleopShootFirstTime = true;
-    private boolean isRed = false;
-    private int allianceAngleModifier = 1;
+    public boolean isRed = false;
+    public int allianceAngleModifier = 1;
 
     private long delayEnd = 0; // Stores when delay() should return Robot.DONE
     private boolean delayFirstTime = true;
@@ -44,18 +44,13 @@ public class Auto {
     private Shooter        shooter;
 
     // Constructor
-    public Auto(Drive drive, PoseEstimation position, Arm arm, Grabber grabber, Shooter shooter, CustomTables nTables) {
+    public Auto(Drive drive, PoseEstimation position, Arm arm, Grabber grabber, Shooter shooter) {
         this.drive    = drive;
         this.grabber  = grabber;
         //this.position = position;
         this.arm      = arm;
         this.nTables  = CustomTables.getInstance();
         this.shooter  = shooter;
-
-        this.isRed = this.nTables.getIsRedAlliance();
-        if(!this.isRed) {
-            this.allianceAngleModifier = -1;
-        }
     }
 
     /****************************************************************************************** 
@@ -488,7 +483,7 @@ public class Auto {
 
             // Rotate the robot 57 degrees
             case 7:
-                status = drive.rotateRobot(Math.toRadians(allianceAngleModifier * 57));
+                status = drive.rotateRobot(Math.toRadians(allianceAngleModifier * -57));
                 break;
 
             // Rotate the wheels back to zero before driving forward
@@ -498,12 +493,12 @@ public class Auto {
             
             // Drive forwards to get out of alliance area
             case 9:
-                status = drive.driveDistanceWithAngle(0, 2, 0.5);
+                status = drive.driveDistanceWithAngle(0, 3, 0.5);
                 break;
 
             // Drive backwards to get back into alliance area
             case 10:
-                status = drive.driveDistanceWithAngle(0, -2.5, 0.5);
+                status = drive.driveDistanceWithAngle(0, -3.5, 0.5);
                 break;
 
             // Finished routine, reset variables, stop motors, and return done

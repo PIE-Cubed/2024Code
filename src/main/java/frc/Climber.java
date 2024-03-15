@@ -9,8 +9,8 @@ import edu.wpi.first.math.MathUtil;
 import com.revrobotics.CANSparkMax;
 
 public class Climber {
-    private final int LEFT_MOTOR_CAN = -1;
-    private final int RIGHT_MOTOR_CAN = -1;
+    private final int LEFT_MOTOR_CAN = 50;
+    private final int RIGHT_MOTOR_CAN = 51;
     private final int MOTOR_CURRENT_LIMIT = 70;
     
     private final double CLIMB_POWER = 0.5;
@@ -33,7 +33,7 @@ public class Climber {
      * Runs the left climber motor
      */
     public void runLeftClimber() {
-        leftMotor.set(CLIMB_POWER);
+        leftMotor.set(-CLIMB_POWER);
     }
 
     /**
