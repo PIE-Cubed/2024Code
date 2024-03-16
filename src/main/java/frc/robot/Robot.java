@@ -497,18 +497,24 @@ public class Robot extends TimedRobot {
    * Controls the climber in TeleOp
    */
   private void climberControl() {
-    if(controls.runLeftClimber()) {
-      climber.runLeftClimber();
-    }
-    else {
-      climber.setLeftClimberPower(0);
-    }
+    boolean runLeft = controls.runLeftClimber();
+    boolean runRight = controls.runRightClimber();
 
-    if(controls.runRightClimber()) {
-      climber.runRightClimber();
+    if (runLeft && runRight) {      
+      climber.runLeftClimber(climber.PRECISION_CLIMB_POWER);
+      climber.runRightClimber(climber.PRECISION_CLIMB_POWER);
+    }
+    else if(runLeft && runRight == false) {
+      climber.runLeftClimber(climber.CLIMB_POWER);
+      climber.setRightClimberPower(0);
+    }
+    else if (runLeft == false && runRight){
+      climber.setLeftClimberPower(0);
+      climber.runRightClimber(climber.CLIMB_POWER);
     }
     else {
-      climber.setRightClimberPower(0);
+      climber.runLeftClimber(0);
+      climber.runRightClimber(0);
     }
   }
 

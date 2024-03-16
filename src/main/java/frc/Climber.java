@@ -13,7 +13,8 @@ public class Climber {
     private final int RIGHT_MOTOR_CAN = 51;
     private final int MOTOR_CURRENT_LIMIT = 70;
     
-    private final double CLIMB_POWER = 0.5;
+    public final double PRECISION_CLIMB_POWER = 0.2;
+    public final double CLIMB_POWER = 0.7;
 
     private CANSparkMax leftMotor;
     private CANSparkMax rightMotor;
@@ -32,15 +33,15 @@ public class Climber {
     /**
      * Runs the left climber motor
      */
-    public void runLeftClimber() {
-        leftMotor.set(-CLIMB_POWER);
+    public void runLeftClimber(double power) {
+        leftMotor.set(-power);
     }
 
     /**
      * Runs the right climber motor
      */
-    public void runRightClimber() {
-        rightMotor.set(CLIMB_POWER);
+    public void runRightClimber(double power) {
+        rightMotor.set(power);
     }
 
     /**
