@@ -29,8 +29,8 @@ public class Auto {
     private int armStatus = Robot.CONT;
     private int status = Robot.CONT;
 
-    private final int SHOOT1_ANGLE = 333;
-    private final int SHOOT2_ANGLE = 333;
+    private final int SHOOT1_ANGLE = 332;
+    private final int SHOOT2_ANGLE = 332;
 
     // Auto program selection
     //public String selectedAuto = "Speaker Center";
