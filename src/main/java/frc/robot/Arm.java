@@ -12,7 +12,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 
 public class Arm {
-    private final int EXTENDER_MOTOR_CAN = 3;
+    private final int EXTENDER_MOTOR_CAN = 49; //3
     private final int ELEVATION_MOTOR_CAN = 23;
     private final int MOTOR_CURRENT_LIMIT = 70;
 
@@ -53,6 +53,7 @@ public class Arm {
     private double elevationAngle;
 
     private double startPosition;
+    private double targetDistance;
 
     public Arm() {
         // Setup extender motor
@@ -126,7 +127,8 @@ public class Arm {
     /**
      * Extends the arm to the given distance
      * 
-     * @param distance The distance to extend to, in encoder ticks
+     * @param distance The distance to extend to, in encoder ticks (positive distance retracts, negative distance extends)
+     * @param power The power to extend with (positive power retracts, negative power extends)
      * @return Robot.CONT or Robot.DONE
      */
     public int extendArm(double distance, double power) {
@@ -135,16 +137,27 @@ public class Arm {
         if(extensionFirstTime) {
             extensionFirstTime = false;
             //extenderEncoder.setPosition(0);
-            distance = extenderEncoder.getPosition() + distance;
+            targetDistance = extenderEncoder.getPosition() + distance;
             extenderMotor.set(MathUtil.clamp(power, -1, 1));
         }
 
-        if(extenderEncoder.getPosition() >= distance) {
-            extensionFirstTime = true;
-            extenderMotor.set(0);
-            return Robot.DONE;
-        }
+        System.out.println("CUR: " + extenderEncoder.getPosition() + " || TGT: " + targetDistance);
 
+        if (distance < 0) {
+            if(extenderEncoder.getPosition() <= targetDistance) {
+                extensionFirstTime = true;
+                extenderMotor.set(0);
+                return Robot.DONE;
+            }
+        }
+        else {
+            if(extenderEncoder.getPosition() >= targetDistance) {
+                extensionFirstTime = true;
+                extenderMotor.set(0);
+                return Robot.DONE;
+            }
+        }
+        
         return Robot.CONT;
     }
 
@@ -267,7 +280,7 @@ public class Arm {
         System.out.println(elevationEncoder.getPosition());
     }
 
-    /// Positive power extends the motor
+    /// Positive power retracts the motor
     public void testExtend(double power) {
         extenderMotor.set(power);
     }

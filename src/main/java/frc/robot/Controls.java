@@ -334,8 +334,7 @@ public class Controls {
 	 * @return Manipulator controller RIGHT ANALOG DOWN pressed
 	 */
 	public boolean retractArm() {
-		return false;
-	//	return manipulatorController.getRightY() > 0.3;
+		return manipulatorController.getRightY() > 0.3;
 	}
 
 	/***
@@ -343,8 +342,7 @@ public class Controls {
 	 * @return Manipulator controller RIGHT ANALOG UP pressed
 	 */
 	public boolean extendArm() {
-		return false;
-	//	return manipulatorController.getRightY() < -0.3;
+		return manipulatorController.getRightY() < -0.3;
 	}
 
 

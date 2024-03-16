@@ -102,7 +102,6 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("Amp Side Auto", "Amp Side Auto");
     m_chooser.addOption("Feed Side Auto", "Feed Side Auto");
     m_chooser.addOption("No Auto", "No Auto");
-    //m_chooser.addOption("Feed Side Auto", "Feed Side Auto");
     SmartDashboard.putData("Auto Selector", m_chooser);
 
     // Reset the robot statuses. This ensures that we don't need to restart the code after every time we
@@ -274,7 +273,7 @@ public class Robot extends TimedRobot {
     //grabber.testColorSensor();
 
     // Test the auto selection
-    System.out.println("Selected auto: " + m_chooser.getSelected());
+    //System.out.println("Selected auto: " + m_chooser.getSelected());
 
     // Test LEDs
     //ledControl();
@@ -303,6 +302,9 @@ public class Robot extends TimedRobot {
     if (status == Robot.CONT) {
       status = drive.driveDistanceWithAngle(0, -2, 0.3);
     }*/
+
+    // Get the arm extension position
+    System.out.println("Arm extension position: " + arm.getExtendPosition());
   }
 
   /** This function is called once when the robot is first started up. */
@@ -387,14 +389,17 @@ public class Robot extends TimedRobot {
             arm.testElevate(0);
           }
 
-          // Move the arm out/in incrementally
-          /*if(controls.extendArm()) {
-            arm.testExtend(0.5);
-          } else if(controls.retractArm()) {
-            arm.testExtend(-0.5);
-          } else {
+          //Move the arm out/in incrementally
+          //System.out.println("Arm extension position: " + arm.getExtendPosition());
+          if(controls.extendArm()) {
+            arm.testExtend(0.25);
+          } 
+          else if(controls.retractArm()) {
+            arm.testExtend(-0.25);
+          } 
+          else {
             arm.testExtend(0.0);
-          }*/
+          }
 
           // next state
           if (controls.autoClimb())  {
