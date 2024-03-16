@@ -19,7 +19,7 @@ public class Grabber {
     private final boolean GRABBER_MOTOR2_IS_INVERTED = false;
 
     // TODO tune these power values
-    public final int INTAKE_CURRENT_LIMIT = 50;
+    public final int INTAKE_CURRENT_LIMIT = 40;
     public final double INTAKE_POWER = 0.6;
     public final double OUTTAKE_POWER = -0.75;
     public final double FEED_POWER = 0.9;  

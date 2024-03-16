@@ -19,7 +19,7 @@ import com.revrobotics.CANSparkFlex;
 
     private final int SHOOTER_MOTOR_1_CAN = 21;
     private final int SHOOTER_MOTOR_2_CAN = 22;
-    private final int MOTOR_CURRENT_LIMIT = 70;
+    private final int MOTOR_CURRENT_LIMIT = 40;
     private final double DUMP_SHOT_POWER  = 0.25;   // TODO tune power value
     private final double SHOT_POWER  = 1; 
     private CANSparkFlex shooterMotor1;

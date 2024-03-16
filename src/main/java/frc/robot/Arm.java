@@ -14,7 +14,7 @@ import com.revrobotics.RelativeEncoder;
 public class Arm {
     private final int EXTENDER_MOTOR_CAN = 49; //3
     private final int ELEVATION_MOTOR_CAN = 23;
-    private final int MOTOR_CURRENT_LIMIT = 70;
+    private final int MOTOR_CURRENT_LIMIT = 40;
 
     // TODO Find and tune limits
     private final double LOWER_EXTENSION_LIMIT = 0;

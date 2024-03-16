@@ -30,7 +30,7 @@ public class SwerveModule {
     private double prevPower = 0;
 
     // Constants
-    private final int MOTOR_CURRENT_LIMIT = 80;
+    private final int MOTOR_CURRENT_LIMIT = 40;
     
     // Controller Parameters
     private final double ROTATE_P = 0.3;

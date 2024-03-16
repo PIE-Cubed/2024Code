@@ -29,8 +29,8 @@ public class Auto {
     private int armStatus = Robot.CONT;
     private int status = Robot.CONT;
 
-    private final int SHOOT1_ANGLE = 332;
-    private final int SHOOT2_ANGLE = 332;
+    private final int SHOOT1_ANGLE = 334;
+    private final int SHOOT2_ANGLE = 334;
 
     // Auto program selection
     //public String selectedAuto = "Speaker Center";
@@ -228,7 +228,7 @@ public class Auto {
 
             // Extend the arm to its original position
             case 4:
-                status = arm.extendArm(-21, -0.25);
+                status = arm.extendArm(-19, -0.25);
                 break;
                         
             // Shoot the note by running the grabber
@@ -347,7 +347,7 @@ public class Auto {
 
             // Extend the arm to its original position
             case 4:
-                status = arm.extendArm(-21, -0.25);
+                status = arm.extendArm(-19, -0.25);
                 break;
                         
             // Shoot the note by running the grabber
@@ -532,7 +532,7 @@ public class Auto {
 
             // Extend the arm to its original position
             case 4:
-                status = arm.extendArm(-21, -0.25);
+                status = arm.extendArm(-19, -0.25);
                 break;
                         
             // Shoot the note by running the grabber
