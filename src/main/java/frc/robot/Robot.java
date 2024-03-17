@@ -9,7 +9,6 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.Climber;
 import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
 
 /**
@@ -270,7 +269,7 @@ public class Robot extends TimedRobot {
     }*/
 
     // Retrieve RGB, IR, and proximity values from the color sensor
-    //grabber.testColorSensor();
+    grabber.testColorSensor();
 
     // Test the auto selection
     //System.out.println("Selected auto: " + m_chooser.getSelected());
@@ -304,7 +303,11 @@ public class Robot extends TimedRobot {
     }*/
 
     // Get the arm extension position
-    System.out.println("Arm extension position: " + arm.getExtendPosition());
+    //System.out.println("Arm position: " + arm.getElevationPosition());
+    //System.out.println("Arm extension position: " + arm.getExtendPosition());
+
+    // Get drive controller values
+    //System.out.println("Forward speed: " + controls.getForwardSpeed() + " Strafe speed: " + controls.getStrafeSpeed() + " Rotate speed: " + controls.getRotateSpeed());
   }
 
   /** This function is called once when the robot is first started up. */
@@ -392,10 +395,10 @@ public class Robot extends TimedRobot {
           //Move the arm out/in incrementally
           //System.out.println("Arm extension position: " + arm.getExtendPosition());
           if(controls.extendArm()) {
-            arm.testExtend(0.25);
+            arm.testExtend(0.35);
           } 
           else if(controls.retractArm()) {
-            arm.testExtend(-0.25);
+            arm.testExtend(-0.35);
           } 
           else {
             arm.testExtend(0.0);
@@ -456,7 +459,7 @@ public class Robot extends TimedRobot {
       auto.teleopShoot();
     }
     
-    // If the divers have just stopped shooting, disable the shooter motors
+    // If the drivers have just stopped shooting, disable the shooter motors
     if (shooterState == true && controls.enableShooter() == false) {
       shooterState = false;
       shooter.stopShooting();
@@ -505,12 +508,12 @@ public class Robot extends TimedRobot {
       climber.runRightClimber(climber.PRECISION_CLIMB_POWER);
     }
     else if(runLeft && runRight == false) {
-      climber.runLeftClimber(climber.CLIMB_POWER);
+      climber.runLeftClimber(climber.PRECISION_CLIMB_POWER); //CLIMB_POWER
       climber.setRightClimberPower(0);
     }
     else if (runLeft == false && runRight){
       climber.setLeftClimberPower(0);
-      climber.runRightClimber(climber.CLIMB_POWER);
+      climber.runRightClimber(climber.PRECISION_CLIMB_POWER); //CLIMB_POWER
     }
     else {
       climber.runLeftClimber(0);

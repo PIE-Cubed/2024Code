@@ -365,7 +365,7 @@ public class Drive {
         */
         if (rotateWheelsFirstTime == true) {
             rotateWheelsFirstTime = false;
-            finishTime = System.currentTimeMillis() + 1500;
+            finishTime = System.currentTimeMillis() + 1000;
         }
 
         SwerveModuleState[] states = swerveDriveKinematics.toSwerveModuleStates(

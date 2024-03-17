@@ -29,8 +29,8 @@ public class Auto {
     private int armStatus = Robot.CONT;
     private int status = Robot.CONT;
 
-    private final int SHOOT1_ANGLE = 334;
-    private final int SHOOT2_ANGLE = 334;
+    private final int SHOOT1_ANGLE = 336;
+    private final int SHOOT2_ANGLE = 336;
 
     // Auto program selection
     //public String selectedAuto = "Speaker Center";
@@ -228,7 +228,8 @@ public class Auto {
 
             // Extend the arm to its original position
             case 4:
-                status = arm.extendArm(-19, -0.25);
+                status = arm.extendArm(-16, -0.25);
+                arm.maintainPosition(SHOOT1_ANGLE);
                 break;
                         
             // Shoot the note by running the grabber
@@ -238,9 +239,9 @@ public class Auto {
                 status = Robot.DONE;
                 break;
 
-            // Assume the robot shot the note after 0.75 second(s)
+            // Assume the robot shot the note after 0.6 second(s)
             case 6:
-                status = autoDelayMS(750);
+                status = autoDelayMS(600);
                 arm.maintainPosition(SHOOT1_ANGLE);
                 break;
 
@@ -262,7 +263,7 @@ public class Auto {
                 }
                 
                 if (driveStatus == Robot.CONT) {
-                    driveStatus = drive.driveDistanceWithAngle(0, 4, 0.5);
+                    driveStatus = drive.driveDistanceWithAngle(0, 4.5, 0.2);
                 }
                 
                 if (intakeStatus == Robot.DONE && driveStatus == Robot.DONE) {
@@ -275,13 +276,13 @@ public class Auto {
                 break;
 
             case 10:
-                status = arm.rotateArm(333);
+                status = arm.rotateArm(SHOOT1_ANGLE);
                 break;
 
             // Drive back to the speaker
             case 11:
-                arm.maintainPosition(333);
-                status = drive.driveDistanceWithAngle(0, -4.6, 0.5);
+                arm.maintainPosition(SHOOT1_ANGLE);
+                status = drive.driveDistanceWithAngle(0, -5.3, 0.5);
                 break;
 
             // Rotate the arm so it's in the shooting position
@@ -347,7 +348,8 @@ public class Auto {
 
             // Extend the arm to its original position
             case 4:
-                status = arm.extendArm(-19, -0.25);
+                status = arm.extendArm(-16, -0.25);
+                arm.maintainPosition(SHOOT1_ANGLE);
                 break;
                         
             // Shoot the note by running the grabber
@@ -532,7 +534,8 @@ public class Auto {
 
             // Extend the arm to its original position
             case 4:
-                status = arm.extendArm(-19, -0.25);
+                status = arm.extendArm(-16, -0.25);
+                arm.maintainPosition(SHOOT1_ANGLE);
                 break;
                         
             // Shoot the note by running the grabber
