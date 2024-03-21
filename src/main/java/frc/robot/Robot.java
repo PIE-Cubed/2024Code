@@ -30,6 +30,7 @@ public class Robot extends TimedRobot {
   NetworkTableInstance FCSInfo;
 	PoseEstimation       position;
 	CustomTables         nTables;
+  AprilTags            aprilTags;
 	Controls             controls;
   Shooter              shooter;
   Grabber              grabber;
@@ -49,12 +50,16 @@ public class Robot extends TimedRobot {
 	private String m_autoSelected;
   
   // Statuses for each "module" 
-  private int shooterStatus = CONT;
-  private int grabberStatus = CONT;
-  private int moveStatus    = CONT;
-  private int armStatus     = CONT;
-  private int restingStatus = CONT;
-
+  private int shooterStatus     = CONT;
+  private int grabberStatus     = CONT;
+  private int moveStatus        = CONT;
+  private int armStatus         = CONT;
+  private int restingStatus     = CONT;
+  
+  // Statuses for AprilTag targeting
+  private int apriltagArmStatus     = CONT;
+  private int apriltagAlignedStatus = CONT;
+  
   private boolean shooterSpinning;
 
   /* arm states */
@@ -73,15 +78,16 @@ public class Robot extends TimedRobot {
     FCSInfo = NetworkTableInstance.getDefault();
 
 		// Instance creation
-    grabber  = Grabber.getInstance();
-		drive    = new Drive();
-		controls = new Controls();
-		position = new PoseEstimation(drive);
-    shooter  = new Shooter();
-    climber  = new Climber();
-    arm      = new Arm();
-		auto     = new Auto(drive, position, arm, grabber, shooter);
-    led      = new LED();
+    grabber   = Grabber.getInstance();
+    aprilTags = new AprilTags();
+		drive     = new Drive();
+		controls  = new Controls();
+		position  = new PoseEstimation(drive);
+    shooter   = new Shooter();
+    climber   = new Climber();
+    arm       = new Arm();
+		auto      = new Auto(drive, position, arm, grabber, shooter);
+    led       = new LED();
 
     // Turn off the limelight LEDs so they don't blind people
     LimelightHelpers.setLEDMode_ForceOff("limelight");
@@ -518,6 +524,54 @@ public class Robot extends TimedRobot {
     else {
       climber.runLeftClimber(0);
       climber.runRightClimber(0);
+    }
+  }
+
+  private void targetSpeakerTag() {
+    double armAngle;  // Angle to rotate to
+
+    // Check if the robot is out of range
+    if(aprilTags.outOfRange(0, 7)) {
+      led.apriltagOutOfRangeColor();
+      led.updateLED();
+      
+      return; // Don't do anything, out of range
+    }
+
+    // Final checks if there's no driver input(robot stop)
+    if(
+      controls.getForwardSpeed() == 0 && 
+      controls.getRotateSpeed() == 0 && 
+      controls.getStrafeSpeed() == 0
+    ) {
+      armAngle = aprilTags.calculateArmAngleToShoot(); // Get arm angle
+
+      // Goto and maintain arm shooting angle
+      if(apriltagArmStatus == CONT) {
+        apriltagArmStatus = arm.rotateArm(armAngle);
+      } 
+      else {
+        arm.maintainPosition(armAngle);
+      }
+
+      // Face AprilTag(always rotate in case of bumping?)
+      if(apriltagAlignedStatus == CONT) {
+        apriltagAlignedStatus = drive.alignWithAprilTag(0, 7);  // Rotate to face the tag
+      }
+
+      if(apriltagAlignedStatus == DONE && apriltagArmStatus == DONE){
+        led.apriltagReadyToShootColor();
+        led.updateLED();
+      }
+    }
+    // Still moving, just rotate arm and set LEDs to orange(in range but moving)
+    else {
+      armAngle = aprilTags.calculateArmAngleToShoot(); // Get arm angle
+      apriltagArmStatus = arm.rotateArm(armAngle);     // Rotate arm
+      
+      // Set LEDs to orange
+      led.apriltagInRangeMovingColor();
+      led.updateLED();
     }
   }
 

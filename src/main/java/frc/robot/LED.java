@@ -17,6 +17,7 @@ public class LED {
     private double GREEN = 0.77;            // Green
     private double ORANGE = 0.65;           // Orange
     private double YELLOW = 0.69;           // Yellow
+    private double RED = 0.61;              // Red
     
     private double oldColor;
     private double setColor = TEAM_COLORS;
@@ -52,6 +53,27 @@ public class LED {
      */
     public void gettingNoteColor() {
         setColor = ORANGE;
+    }
+
+    /**
+     * Sets the LEDs to red
+     */
+    public void apriltagOutOfRangeColor() {
+        setColor = RED;
+    }
+
+    /**
+     * Sets the LEDs to orange
+     */
+    public void apriltagInRangeMovingColor() {
+        setColor = ORANGE;
+    }
+
+    /**
+     * Sets the LEDs to green
+     */
+    public void apriltagReadyToShootColor() {
+        setColor = GREEN;
     }
 
     /**

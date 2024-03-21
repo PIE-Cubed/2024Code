@@ -793,37 +793,6 @@ public class Drive {
         return Robot.FAIL;  // No AprilTag in sight, fail
     }
 
-    /**
-     * <p>Gets the distance to the target AprilTag in meters
-     * <p>The id param is only used to ensure the correct AprilTag is found
-     * <p>Returns -1 if it fails to get the AprilTag
-     * <p>Using 'LimelightHelpers' as NetworkTables crashes when getting pose
-     * @param pipeline The limelight pipeline to searchfor the AprilTag
-     * @param id The ID of the target AprilTag
-     * @return Distance to AprilTag in meters
-     */
-    public double getDistanceToAprilTagMeters(int pipeline, int id) {
-        NetworkTable aprilTagTable = NetworkTableInstance.getDefault().getTable("limelight");
-        
-        LimelightHelpers.setPipelineIndex("limelight", pipeline);   // Set the pipeline
-        if(aprilTagTable.getEntry("tv").getDouble(0.0) == 1 &&
-           aprilTagTable.getEntry("tid").getDouble(0.0) == id){
-            /* Pose3d:
-             *  x: The horizontal offset
-             *  y: The vertical offset
-             *  z: The forward offset
-             */
-            Pose3d targetpose = LimelightHelpers.getTargetPose3d_RobotSpace("limelight");
-            double x = targetpose.getX();
-            double z = targetpose.getZ();
-
-            double distance = Math.sqrt((x*x) + (z*z)); // Calculate distance with pythagorean's formula
-            System.out.println("X: " + x + " Z: " + z);
-            return distance;
-        }
-        return -1;
-    }
-
     /******************************************************************************************
     *
     *    SETTING FUNCTIONS
@@ -1084,50 +1053,6 @@ public class Drive {
 			backLeft.rotateControllerAtSetpoint() && 
 			backRight.rotateControllerAtSetpoint();
 	}
-
-    public void testAprilTagID() {
-        NetworkTable aprilTagTable = NetworkTableInstance.getDefault().getTable("limelight");
-
-        double tid = aprilTagTable.getEntry("tid").getDouble(0.0);
-        double tv = aprilTagTable.getEntry("tv").getDouble(0);
-
-        SmartDashboard.putNumber("LimelightID", tid);
-        SmartDashboard.putNumber("LimelightValidTag", tv);
-    }
-
-    public void testAprilTagXY() {
-        NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
-
-        /*
-         * tx:
-         *  Horizontal offset from crosshair to target
-         *  Positive is to the right relative to the camera
-         *  LL1: -27 degrees to 27 degrees / LL2: -29.8 to 29.8 degrees
-         * ty:
-         *  Vertical offset from crosshair to target
-         *  Positive is downwards relative to the camera
-         *  LL1: -20.5 degrees to 20.5 degrees / LL2: -24.85 to 24.85 degrees
-         * ta:
-         *  Target area percent, 0% - 100% of image
-         */
-        double tx = table.getEntry("tx").getDouble(0.0);    // Target x
-        double ty = table.getEntry("ty").getDouble(0.0);    // Target y
-        double ta = table.getEntry("ta").getDouble(0.0);    // Target area
-
-        //post to smart dashboard periodically
-        SmartDashboard.putNumber("LimelightX", tx);
-        SmartDashboard.putNumber("LimelightY", ty);
-        SmartDashboard.putNumber("LimelightArea", ta);
-    }
-
-    public void testAprilTagPipeline(int pipeline) {
-        NetworkTable aprilTagTable = NetworkTableInstance.getDefault().getTable("limelight");
-        
-        aprilTagTable.getEntry("pipeline").setNumber(pipeline); // Set the new pipeline
-        
-        double pipelineNT = aprilTagTable.getEntry("pipeline").getDouble(0);    // Check if the change is reflected in NetworkTables
-        SmartDashboard.putNumber("LimelightPipeline", pipelineNT);  // Display current pipeline from NetworkTables
-    }
 
     // Test driving at an angle
     public int testAngleDrive(double driveAngleDegrees, double distanceFeet, double power) {
