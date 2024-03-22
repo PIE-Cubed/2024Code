@@ -9,7 +9,6 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -18,8 +17,6 @@ import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
  * project.
  */
 public class Robot extends TimedRobot {
-  public LimelightTarget_Fiducial Fiducial;
-
   // STATUS CODES
 	public static final int FAIL = -1;
 	public static final int PASS =  1;
@@ -30,7 +27,7 @@ public class Robot extends TimedRobot {
   NetworkTableInstance FCSInfo;
 	PoseEstimation       position;
 	CustomTables         nTables;
-  AprilTags            aprilTags;
+  AprilTags            apriltags;
 	Controls             controls;
   Shooter              shooter;
   Grabber              grabber;
@@ -71,7 +68,6 @@ public class Robot extends TimedRobot {
 	 */
 	public Robot() {
     m_chooser = new SendableChooser<>();
-    Fiducial = new LimelightTarget_Fiducial();
 
 		// Instance getters
 		nTables  = CustomTables.getInstance();
@@ -79,8 +75,8 @@ public class Robot extends TimedRobot {
 
 		// Instance creation
     grabber   = Grabber.getInstance();
-    aprilTags = new AprilTags();
-		drive     = new Drive();
+    apriltags = new AprilTags(nTables.getIsRedAlliance());
+		drive     = new Drive(apriltags);
 		controls  = new Controls();
 		position  = new PoseEstimation(drive);
     shooter   = new Shooter();
@@ -88,9 +84,6 @@ public class Robot extends TimedRobot {
     arm       = new Arm();
 		auto      = new Auto(drive, position, arm, grabber, shooter);
     led       = new LED();
-
-    // Turn off the limelight LEDs so they don't blind people
-    LimelightHelpers.setLEDMode_ForceOff("limelight");
   }
 
   /**
@@ -531,7 +524,7 @@ public class Robot extends TimedRobot {
     double armAngle;  // Angle to rotate to
 
     // Check if the robot is out of range
-    if(aprilTags.outOfRange(0, 7)) {
+    if(apriltags.outOfRange(0, 7)) {
       led.apriltagOutOfRangeColor();
       led.updateLED();
       
@@ -544,7 +537,7 @@ public class Robot extends TimedRobot {
       controls.getRotateSpeed() == 0 && 
       controls.getStrafeSpeed() == 0
     ) {
-      armAngle = aprilTags.calculateArmAngleToShoot(); // Get arm angle
+      armAngle = apriltags.calculateArmAngleToShoot(); // Get arm angle
 
       // Goto and maintain arm shooting angle
       if(apriltagArmStatus == CONT) {
@@ -566,7 +559,7 @@ public class Robot extends TimedRobot {
     }
     // Still moving, just rotate arm and set LEDs to orange(in range but moving)
     else {
-      armAngle = aprilTags.calculateArmAngleToShoot(); // Get arm angle
+      armAngle = apriltags.calculateArmAngleToShoot(); // Get arm angle
       apriltagArmStatus = arm.rotateArm(armAngle);     // Rotate arm
       
       // Set LEDs to orange

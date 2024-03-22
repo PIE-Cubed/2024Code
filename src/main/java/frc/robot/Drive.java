@@ -87,6 +87,10 @@ public class Drive {
     private final double ROTATE_TOLERANCE_RADIANS = 0.05;
     private final double ROTATE_ADJUST_TOLERANCE_RADIANS = 0.01745329;   // ~1 degree
     private final double ROTATE_TOLERANCE_DEGREES = 3;
+    private final double APRILTAG_TOLERANCE_DEGREES = 5;
+
+    // Apriltags
+    AprilTags apriltags;
 
     // NavX
     public static AHRS ahrs;
@@ -94,7 +98,7 @@ public class Drive {
     /**
      * The constructor for the Drive class
      */
-    public Drive() {
+    public Drive(AprilTags apriltags) {
         // NavX
         try {
             ahrs = new AHRS(SPI.Port.kMXP);
@@ -163,11 +167,11 @@ public class Drive {
         rotatePidController = new PIDController(1.4, 0, 0);
         rotatePidController.setTolerance(ROTATE_TOLERANCE_RADIANS);
         rotatePidController.enableContinuousInput(Math.PI, -Math.PI);
-        
+
         // TODO Get PID snappier, 0.80 has a little wobble but isnt that fast
-        aprilTagRotatePidController = new PIDController(0.80, 0, 0);
-        aprilTagRotatePidController.setTolerance(ROTATE_TOLERANCE_RADIANS);
-        aprilTagRotatePidController.enableContinuousInput(Math.PI, -Math.PI);
+        aprilTagRotatePidController = new PIDController(0.25, 0, 0);
+        aprilTagRotatePidController.setTolerance(APRILTAG_TOLERANCE_DEGREES);
+        aprilTagRotatePidController.enableContinuousInput(180, -180);
 
         // TODO Test and calibrate
         rotationAdjustPidController = new PIDController(0.1, 0, 0);
@@ -177,6 +181,8 @@ public class Drive {
         // Reset the first time variable(s)
         driveDistanceFirstTime = true;
         
+        this.apriltags = apriltags;
+
         // Zero all drive encoders
         zeroDriveEncoders();
     }
@@ -741,34 +747,21 @@ public class Drive {
     }
 
     /**
-     * <p>Sort of wrapper function which uses an AprilTag as a target angle
-     * <p>If the pipeline is out of range, it returns Robot.FAIL
-     * <p>The id param is only used to ensure the correct AprilTag is found
+     * <p> Sort of wrapper function which uses an AprilTag as a target angle
+     * <p> If the pipeline is out of range, it returns Robot.FAIL
      * @param pipeline The limelight pipeline to searchfor the AprilTag
-     * @param id The ID of the target AprilTag
      * @return Robot status
      */
     public int alignWithAprilTag(int pipeline, int id) {
-        // Get the NetworkTable for the limelight
-        NetworkTable aprilTagTable = NetworkTableInstance.getDefault().getTable("limelight");
-
         if(firstTime){
-            aprilTagTable.getEntry("pipeline").setNumber(pipeline); // Set the pipeline
             setpointCounter = 0;
-            aprilTagRotatePidController.setSetpoint(0); // Reset PID Controller
             firstTime = false;
         }
         
-        /* Check if there's a valid AprilTag in vision and
-         * if the target AprilTag is the one we're looking for
-         *  tv is a double for if an AprilTag is in view
-         *  tid is a double for the id of the target AprilTag
-         */
-        if(aprilTagTable.getEntry("tv").getDouble(0.0) == 1 &&
-            aprilTagTable.getEntry("tid").getDouble(0.0) == id){
-            
-            // Get the horizontal offset of the AprilTag to the crosshair, convert to radians
-            double targetOffset = Math.toRadians(aprilTagTable.getEntry("tx").getDouble(0.0));
+        // Only run if there is a valid Apriltag
+        if(apriltags.validApriltagInView()){
+            // Get the horizontal offset of the AprilTag to the crosshair
+            double targetOffset = apriltags.getHorizontalOffset();
             double rotateVelocity = -1 * aprilTagRotatePidController.calculate(targetOffset, 0);
 
             // Increment setpointCounter if the robot is at the setpoint

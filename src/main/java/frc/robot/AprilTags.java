@@ -1,6 +1,5 @@
 package frc.robot;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
@@ -10,10 +9,16 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class AprilTags {
     private NetworkTable aprilTagTable;
 
+    private boolean isRed = false;
+
     private final double MAX_DISTANCE_FT = 6;   // Maximum distance to speaker until its too unreliable to shoot
 
-    public AprilTags() {
+    public AprilTags(boolean isRed) {
+        // Turn off the limelight LEDs so they don't blind people
+        LimelightHelpers.setLEDMode_ForceOff("limelight");
+
         aprilTagTable = NetworkTableInstance.getDefault().getTable("limelight");
+        this.isRed = isRed;
     }
 
     /**
@@ -65,6 +70,40 @@ public class AprilTags {
      */
     public boolean outOfRange(int pipeline, int id) {
         return Units.metersToFeet(getDistanceToAprilTagMeters(pipeline, id)) > MAX_DISTANCE_FT;
+    }
+
+    /**
+     * Gets the offset of the AprilTag to the center of the limelight's view
+     * @return The degree offset
+     */
+    public double getHorizontalOffset() {
+        return aprilTagTable.getEntry("tx").getDouble(0.0);
+    }
+
+    public boolean validApriltagInView() {
+        return aprilTagTable.getEntry("tv").getDouble(0.0) == 1;
+    }
+
+    /**
+     * <p> Sets the limelight pipeline for the speaker
+     * <p> Pipeline 0 for Apriltag 4(Red)
+     * <p> Pipeline 1 for Apriltag 7(Blue)
+     */
+    public void setSpeakerPipeline() {
+        if(isRed){
+            aprilTagTable.getEntry("pipeline").setNumber(0);    // Apriltag 4
+        }
+        else {
+            aprilTagTable.getEntry("pipeline").setNumber(1);    // Apriltag 7
+        }
+    }
+
+    /**
+     * Sets the limelight pipeline
+     * @param pipeline The pipeline ID
+     */
+    public void setPipeline(int pipeline) {
+        aprilTagTable.getEntry("pipeline").setNumber(pipeline);
     }
 
     /****************************************************************************************** 
