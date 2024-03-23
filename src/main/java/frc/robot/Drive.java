@@ -168,8 +168,8 @@ public class Drive {
         rotatePidController.setTolerance(ROTATE_TOLERANCE_RADIANS);
         rotatePidController.enableContinuousInput(Math.PI, -Math.PI);
 
-        // TODO Get PID snappier, 0.80 has a little wobble but isnt that fast
-        aprilTagRotatePidController = new PIDController(0.25, 0, 0);
+        // TODO Get PID snappier
+        aprilTagRotatePidController = new PIDController(0.022, 0, 0);
         aprilTagRotatePidController.setTolerance(APRILTAG_TOLERANCE_DEGREES);
         aprilTagRotatePidController.enableContinuousInput(180, -180);
 
@@ -749,10 +749,9 @@ public class Drive {
     /**
      * <p> Sort of wrapper function which uses an AprilTag as a target angle
      * <p> If the pipeline is out of range, it returns Robot.FAIL
-     * @param pipeline The limelight pipeline to searchfor the AprilTag
      * @return Robot status
      */
-    public int alignWithAprilTag(int pipeline, int id) {
+    public int alignWithAprilTag() {
         if(firstTime){
             setpointCounter = 0;
             firstTime = false;
@@ -762,7 +761,7 @@ public class Drive {
         if(apriltags.validApriltagInView()){
             // Get the horizontal offset of the AprilTag to the crosshair
             double targetOffset = apriltags.getHorizontalOffset();
-            double rotateVelocity = -1 * aprilTagRotatePidController.calculate(targetOffset, 0);
+            double rotateVelocity = -1 * aprilTagRotatePidController.calculate(targetOffset, 0);    // Drive to zero
 
             // Increment setpointCounter if the robot is at the setpoint
             if(aprilTagRotatePidController.atSetpoint()){

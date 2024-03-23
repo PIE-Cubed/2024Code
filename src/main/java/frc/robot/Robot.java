@@ -63,6 +63,10 @@ public class Robot extends TimedRobot {
   enum ArmState {TELEOP, CLIMB, AMP, REST};
   private ArmState armState = ArmState.TELEOP;
 
+  /* TeleOp States */
+  enum TeleopState { TELEOP, TARGET };
+  private TeleopState teleopState = TeleopState.TELEOP;
+
 	/**
 	 * Constructor
 	 */
@@ -74,16 +78,16 @@ public class Robot extends TimedRobot {
     FCSInfo = NetworkTableInstance.getDefault();
 
 		// Instance creation
-    grabber   = Grabber.getInstance();
+    //grabber   = Grabber.getInstance();
     apriltags = new AprilTags(nTables.getIsRedAlliance());
 		drive     = new Drive(apriltags);
 		controls  = new Controls();
 		position  = new PoseEstimation(drive);
-    shooter   = new Shooter();
-    climber   = new Climber();
-    arm       = new Arm();
+    //shooter   = new Shooter();
+    //climber   = new Climber();
+    //arm       = new Arm();
 		auto      = new Auto(drive, position, arm, grabber, shooter);
-    led       = new LED();
+    //led       = new LED();
   }
 
   /**
@@ -93,7 +97,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     // Start the camera server
-    CameraServer.startAutomaticCapture();
+    //CameraServer.startAutomaticCapture();
     
     // Auto selection
     m_chooser.setDefaultOption("Speaker Center Auto", "Speaker Center Auto");
@@ -204,22 +208,23 @@ public class Robot extends TimedRobot {
     wheelControl();
 
     // Allows for controlling the arm
-    armControl();
+    //armControl();
 
     // Allows for controlling the grabber
-    grabberControl();
+    //grabberControl();
     
     // Allows for shooting notes
-    shooterControl();
+    //shooterControl();
 
     // Allows for controlling the climber
-    climberControl();
+    //climberControl();
     
     // Allows for controlling the LEDs
-    ledControl();
+    //ledControl();
     
     // Drivers check this to see if they grabbed a note
-    SmartDashboard.putBoolean("Grabber has Note", grabber.noteDetected());
+    //SmartDashboard.putBoolean("Grabber has Note", grabber.noteDetected());
+    //System.out.println(apriltags.getDistanceToSpeakerFeet());
   }
 
   /** This function is called once when the robot is disabled. */
@@ -268,7 +273,10 @@ public class Robot extends TimedRobot {
     }*/
 
     // Retrieve RGB, IR, and proximity values from the color sensor
-    grabber.testColorSensor();
+    //grabber.testColorSensor();
+
+    // Test AprilTags
+    //drive.alignWithAprilTag();
 
     // Test the auto selection
     //System.out.println("Selected auto: " + m_chooser.getSelected());
@@ -325,16 +333,42 @@ public class Robot extends TimedRobot {
 		double  rotateSpeed       = controls.getRotateSpeed();
 		double  strafeSpeed       = controls.getStrafeSpeed();
 		double  forwardSpeed      = controls.getForwardSpeed();
-
+    
 		// Gets Manipulator values
 		boolean zeroYaw           = controls.zeroYaw();
     boolean fieldDrive        = controls.enableFieldDrive();
+    boolean targetSpeaker     = controls.toggleSpeakerTargeting();
 
     // Zeros the gyro
 		if (zeroYaw == true) {
 			drive.resetYaw();
 		}
+
+    // Targets the speaker
+    if(targetSpeaker) {
+      teleopState = TeleopState.TARGET;
+      apriltags.setSpeakerPipeline();   // Set the pipeline depending on alliance color(0,ID4,Red, 1,ID7,Blue)
+    }
     
+    if(teleopState == TeleopState.TELEOP) {
+      drive.teleopDrive(forwardSpeed, strafeSpeed, rotateSpeed, fieldDrive);
+
+      teleopState = TeleopState.TELEOP;
+    }
+    else if(teleopState == TeleopState.TARGET) {
+      int targetStatus = auto.targetSpeaker();
+      
+      if(targetStatus == DONE) {      // Done rotating, drive forward
+        teleopState = TeleopState.TELEOP;
+      }
+      else if(targetStatus == CONT) { // Not done rotating
+        teleopState = TeleopState.TARGET;
+      }
+      else if(targetStatus == FAIL) { // Can't find AprilTag
+        teleopState = TeleopState.TELEOP;
+      }
+    }
+
 		// Calculated line of best fit for relationship between rotate speed and drift angle
     // Think its used to travel straight when rotating
     // Will allegedly revisit later to adjust to new motors 
@@ -347,8 +381,6 @@ public class Robot extends TimedRobot {
      * 
      * drive.teleopDrive(newXVel, newYVel, rotateSpeed, true);
      */
-
-		drive.teleopDrive(forwardSpeed, strafeSpeed, rotateSpeed, fieldDrive);
 	}
 
   /**
@@ -524,7 +556,7 @@ public class Robot extends TimedRobot {
     double armAngle;  // Angle to rotate to
 
     // Check if the robot is out of range
-    if(apriltags.outOfRange(0, 7)) {
+    if(apriltags.outOfRange()) {
       led.apriltagOutOfRangeColor();
       led.updateLED();
       
@@ -549,7 +581,7 @@ public class Robot extends TimedRobot {
 
       // Face AprilTag(always rotate in case of bumping?)
       if(apriltagAlignedStatus == CONT) {
-        apriltagAlignedStatus = drive.alignWithAprilTag(0, 7);  // Rotate to face the tag
+        apriltagAlignedStatus = drive.alignWithAprilTag();  // Rotate to face the tag
       }
 
       if(apriltagAlignedStatus == DONE && apriltagArmStatus == DONE){

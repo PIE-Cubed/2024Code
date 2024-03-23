@@ -28,7 +28,7 @@ public class Auto {
     private int driveStatus = Robot.CONT;
     private int armStatus = Robot.CONT;
     private int status = Robot.CONT;
-
+    
     private final int SHOOT1_ANGLE = 336;
     private final int SHOOT2_ANGLE = 336;
 
@@ -592,6 +592,43 @@ public class Auto {
         // Done current step, goto next one
         if(status == Robot.DONE) {
             step++;
+        }
+
+        return Robot.CONT;
+    }
+    /**
+     * <p> Faces the speaker
+     * <p> Fail stops the auto immediatly, resets, and returns fail
+     * @return Robot status, CONT, DONE, or FAIL
+     */
+    public int targetSpeaker() {
+        if(firstTime == true) {
+            firstTime = false;
+            step = 1;
+        }
+
+        switch(step) {
+            case 1:
+                status = drive.alignWithAprilTag();
+                break;
+            case 2:
+                status = drive.rotateWheelsToAngle(0);
+                break;
+            default:
+                step = 1;
+                firstTime = true;
+                return Robot.DONE;
+        }
+
+        // Done current step, goto next one
+        if(status == Robot.DONE) {
+            step++;
+        }
+        else if(status == Robot.FAIL) { // Fail, reset and return fail
+            System.out.println("No Valid AprilTag in Frame!!!");
+            step = 1;
+            firstTime = true;
+            return Robot.FAIL;
         }
 
         return Robot.CONT;

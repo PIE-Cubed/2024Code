@@ -3,7 +3,6 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class AprilTags {
@@ -17,7 +16,7 @@ public class AprilTags {
         // Turn off the limelight LEDs so they don't blind people
         LimelightHelpers.setLEDMode_ForceOff("limelight");
 
-        aprilTagTable = NetworkTableInstance.getDefault().getTable("limelight");
+        //aprilTagTable = NetworkTableInstance.getDefault().getTable("limelight");
         this.isRed = isRed;
     }
 
@@ -37,16 +36,12 @@ public class AprilTags {
      * <p>Gets the distance to the target AprilTag in meters
      * <p>The id param is only used to ensure the correct AprilTag is found
      * <p>Returns -1 if it fails to get the AprilTag
-     * <p>Using 'LimelightHelpers' as NetworkTables crashes when getting pose
-     * @param pipeline The limelight pipeline to searchfor the AprilTag
-     * @param id The ID of the target AprilTag
+     * <p>Reports a ~3-4in greater distance
+     * <p>Must call 'setSpeakerPipeline' first
      * @return Distance to AprilTag in meters
      */
-    public double getDistanceToAprilTagMeters(int pipeline, int id) {
-        LimelightHelpers.setPipelineIndex("limelight", pipeline);   // Set the pipeline
-        
-        if(aprilTagTable.getEntry("tv").getDouble(0.0) == 1 &&
-           aprilTagTable.getEntry("tid").getDouble(0.0) == id){
+    public double getDistanceToSpeakerFeet() {
+        if(validApriltagInView()) {
             /* Pose3d:
              *  x: The horizontal offset
              *  y: The vertical offset
@@ -58,18 +53,17 @@ public class AprilTags {
 
             double distance = Math.sqrt((x*x) + (z*z)); // Calculate distance with pythagorean's formula
 
-            return distance;
+            return Units.metersToFeet(distance);
         }
         return -1;
     }
 
     /**
-     * @param pipeline The pipeline for the AprilTag
-     * @param id The ID of the AprilTag, used for redundancy
+     * Checks if the robot is too far to shoot
      * @return If the robot is too far away from the speaker
      */
-    public boolean outOfRange(int pipeline, int id) {
-        return Units.metersToFeet(getDistanceToAprilTagMeters(pipeline, id)) > MAX_DISTANCE_FT;
+    public boolean outOfRange() {
+        return Units.metersToFeet(getDistanceToSpeakerFeet()) > MAX_DISTANCE_FT;
     }
 
     /**
@@ -77,11 +71,11 @@ public class AprilTags {
      * @return The degree offset
      */
     public double getHorizontalOffset() {
-        return aprilTagTable.getEntry("tx").getDouble(0.0);
+        return LimelightHelpers.getTX("limelight");
     }
 
     public boolean validApriltagInView() {
-        return aprilTagTable.getEntry("tv").getDouble(0.0) == 1;
+        return LimelightHelpers.getTV("limelight");
     }
 
     /**
@@ -91,10 +85,10 @@ public class AprilTags {
      */
     public void setSpeakerPipeline() {
         if(isRed){
-            aprilTagTable.getEntry("pipeline").setNumber(0);    // Apriltag 4
+            LimelightHelpers.setPipelineIndex("limelight", 0);  // AprilTag 4
         }
         else {
-            aprilTagTable.getEntry("pipeline").setNumber(1);    // Apriltag 7
+            LimelightHelpers.setPipelineIndex("limelight", 1);  // AprilTag 7
         }
     }
 
@@ -103,7 +97,7 @@ public class AprilTags {
      * @param pipeline The pipeline ID
      */
     public void setPipeline(int pipeline) {
-        aprilTagTable.getEntry("pipeline").setNumber(pipeline);
+        LimelightHelpers.setPipelineIndex("limelight", pipeline);
     }
 
     /****************************************************************************************** 
@@ -111,14 +105,6 @@ public class AprilTags {
     *    TEST FUNCTIONS
     * 
     ******************************************************************************************/  
-    public void testAprilTagID() {
-        double tid = aprilTagTable.getEntry("tid").getDouble(0.0);
-        double tv = aprilTagTable.getEntry("tv").getDouble(0.0);
-
-        SmartDashboard.putNumber("LimelightID", tid);
-        SmartDashboard.putNumber("LimelightValidTag", tv);
-    }
-
     public void testAprilTagXY() {
         /*
          * tx:
@@ -132,20 +118,16 @@ public class AprilTags {
          * ta:
          *  Target area percent, 0% - 100% of image
          */
-        double tx = aprilTagTable.getEntry("tx").getDouble(0.0);    // Target x
-        double ty = aprilTagTable.getEntry("ty").getDouble(0.0);    // Target y
-        double ta = aprilTagTable.getEntry("ta").getDouble(0.0);    // Target area
+        double tx = LimelightHelpers.getTX("limelight");
+        double ty = LimelightHelpers.getTY("limelight");
+        double ta = LimelightHelpers.getTA("limelight");
 
         // Post to smart dashboard
         SmartDashboard.putNumber("LimelightX", tx);
         SmartDashboard.putNumber("LimelightY", ty);
         SmartDashboard.putNumber("LimelightArea", ta);
     }
-
-    public void testAprilTagPipeline(int pipeline) {
-        aprilTagTable.getEntry("pipeline").setNumber(pipeline); // Set the pipeline
-        
-        double pipelineNT = aprilTagTable.getEntry("pipeline").getDouble(0);    // Check if the change is reflected in NetworkTables
-        SmartDashboard.putNumber("LimelightPipeline", pipelineNT);  // Display current pipeline from NetworkTables
+    public int getAprilTagID() {
+        return (int)LimelightHelpers.getFiducialID("limelight");
     }
 }
