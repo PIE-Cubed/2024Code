@@ -78,16 +78,16 @@ public class Robot extends TimedRobot {
     FCSInfo = NetworkTableInstance.getDefault();
 
 		// Instance creation
-    //grabber   = Grabber.getInstance();
+    grabber   = Grabber.getInstance();
     apriltags = new AprilTags(nTables.getIsRedAlliance());
 		drive     = new Drive(apriltags);
 		controls  = new Controls();
 		position  = new PoseEstimation(drive);
-    //shooter   = new Shooter();
-    //climber   = new Climber();
-    //arm       = new Arm();
+    shooter   = new Shooter();
+    climber   = new Climber();
+    arm       = new Arm();
 		auto      = new Auto(drive, position, arm, grabber, shooter);
-    //led       = new LED();
+    led       = new LED();
   }
 
   /**
@@ -97,7 +97,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     // Start the camera server
-    //CameraServer.startAutomaticCapture();
+    CameraServer.startAutomaticCapture();
     
     // Auto selection
     m_chooser.setDefaultOption("Speaker Center Auto", "Speaker Center Auto");
@@ -208,22 +208,22 @@ public class Robot extends TimedRobot {
     wheelControl();
 
     // Allows for controlling the arm
-    //armControl();
+    armControl();
 
     // Allows for controlling the grabber
-    //grabberControl();
+    grabberControl();
     
     // Allows for shooting notes
-    //shooterControl();
+    shooterControl();
 
     // Allows for controlling the climber
-    //climberControl();
+    climberControl();
     
     // Allows for controlling the LEDs
-    //ledControl();
+    ledControl();
     
     // Drivers check this to see if they grabbed a note
-    //SmartDashboard.putBoolean("Grabber has Note", grabber.noteDetected());
+    SmartDashboard.putBoolean("Grabber has Note", grabber.noteDetected());
     //System.out.println(apriltags.getDistanceToSpeakerFeet());
   }
 
