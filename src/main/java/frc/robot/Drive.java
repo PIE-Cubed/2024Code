@@ -380,26 +380,31 @@ public class Drive {
                 -1 * Math.sin(Math.toRadians(driveAngleDegrees)), // Chassis speeds is positive for left
                 0
             ));
-        SwerveDriveKinematics.desaturateWheelSpeeds(states, 0);   // Desaturate
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, 0);   // Desaturate to not move
         setModuleStatesNoOpt(states);
 
         // Calculate the angle difference between the current and target angles
-        double angleDifferenceFL = Math.abs(Math.toDegrees(frontLeft.getRotateAngleDegrees()) - driveAngleDegrees);
-        double angleDifferenceFR = Math.abs(Math.toDegrees(frontRight.getRotateAngleDegrees()) - driveAngleDegrees);
-        double angleDifferenceBL = Math.abs(Math.toDegrees(backLeft.getRotateAngleDegrees()) - driveAngleDegrees);
-        double angleDifferenceBR = Math.abs(Math.toDegrees(backRight.getRotateAngleDegrees()) - driveAngleDegrees);
+        /*double angleDifferenceFL = Math.abs(frontLeft.getRotateAngleDegrees() - driveAngleDegrees);
+        double angleDifferenceFR = Math.abs(frontRight.getRotateAngleDegrees() - driveAngleDegrees);
+        double angleDifferenceBL = Math.abs(backLeft.getRotateAngleDegrees() - driveAngleDegrees);
+        double angleDifferenceBR = Math.abs(backRight.getRotateAngleDegrees() - driveAngleDegrees);
         boolean allWheelsDone = (angleDifferenceFL <= ROTATE_TOLERANCE_DEGREES
          && angleDifferenceFR <= ROTATE_TOLERANCE_DEGREES
          && angleDifferenceBL <= ROTATE_TOLERANCE_DEGREES
-         && angleDifferenceBR <= ROTATE_TOLERANCE_DEGREES);
+         && angleDifferenceBR <= ROTATE_TOLERANCE_DEGREES);*/
 
         // Stop the robot if it has rotated to the correct angle (within 2 degrees)
-        if (System.currentTimeMillis() > finishTime || allWheelsDone) {
-            System.out.println("Done, rotated to " + backRight.getRotateAngleDegrees() + " degrees");
+        if (allEncodersAtSetpoint()) {
             rotateWheelsFirstTime = true;
             stopWheels();
             return Robot.DONE;
-        }
+        } // Stop if the rotation took longer than 1 second 
+        else if(System.currentTimeMillis() > finishTime) {
+            System.out.println("RotateWheelsToAngle: Timeout, took longer than 1 second");
+            rotateWheelsFirstTime = true;
+            stopWheels();
+            return Robot.DONE;
+        } // Continue
         else {
             return Robot.CONT;
         }

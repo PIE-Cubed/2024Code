@@ -85,7 +85,9 @@ public class SwerveModule {
         // Creates the rotate PID Controller
         rotateMotorController = new PIDController(ROTATE_P, ROTATE_I, ROTATE_D);
         rotateMotorController.enableContinuousInput(-Math.PI, Math.PI);
-        rotateMotorController.setTolerance(0.15); // Wide tolerance to not delay auto
+        rotateMotorController.setTolerance(Math.toRadians(5));
+        rotateMotorController.setIntegratorRange(-0.1, 0.1);
+        rotateMotorController.reset();
 
         // Configures the drive encoder
         driveEncoder.setPositionConversionFactor(DRIVE_POS_CONVERSION_FACTOR);   // Converts from revolutions to meters
@@ -139,6 +141,7 @@ public class SwerveModule {
 
         driveMotor.set(MathUtil.clamp(desiredState.speedMetersPerSecond, -1.0, 1.0));
         rotateMotor.set(MathUtil.clamp(rotatePower, -1.0, 1.0));
+       //System.out.println(rotateMotor.getDeviceId() + ": " + Math.toDegrees(currentAngle) + ", " + rotatePower);
     }
 
     /****************************************************************************************** 
@@ -212,7 +215,7 @@ public class SwerveModule {
      * Gets the absolute encoder position.
      * @return The absolute encoder's position in radians
      */
-    private double getAbsPosition() {
+    public double getAbsPosition() {
         /* angle is in radians and using -pi to +pi for modulus */
         return MathUtil.angleModulus( absoluteEncoder.getPosition() );
     }

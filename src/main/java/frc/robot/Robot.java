@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -59,6 +60,9 @@ public class Robot extends TimedRobot {
   
   private boolean shooterSpinning;
 
+  private double startTime = 0;
+  private int iterCount = 0;
+
   /* arm states */
   enum ArmState {TELEOP, CLIMB, AMP, REST};
   private ArmState armState = ArmState.TELEOP;
@@ -78,16 +82,16 @@ public class Robot extends TimedRobot {
     FCSInfo = NetworkTableInstance.getDefault();
 
 		// Instance creation
-    grabber   = Grabber.getInstance();
+    //grabber   = Grabber.getInstance();
     apriltags = new AprilTags(nTables.getIsRedAlliance());
 		drive     = new Drive(apriltags);
 		controls  = new Controls();
 		position  = new PoseEstimation(drive);
-    shooter   = new Shooter();
-    climber   = new Climber();
-    arm       = new Arm();
+    //shooter   = new Shooter();
+    //climber   = new Climber();
+    //arm       = new Arm();
 		auto      = new Auto(drive, position, arm, grabber, shooter);
-    led       = new LED();
+    //led       = new LED();
   }
 
   /**
@@ -97,7 +101,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     // Start the camera server
-    CameraServer.startAutomaticCapture();
+    //CameraServer.startAutomaticCapture();
     
     // Auto selection
     m_chooser.setDefaultOption("Speaker Center Auto", "Speaker Center Auto");
@@ -208,22 +212,22 @@ public class Robot extends TimedRobot {
     wheelControl();
 
     // Allows for controlling the arm
-    armControl();
+    //armControl();
 
     // Allows for controlling the grabber
-    grabberControl();
+    //grabberControl();
     
     // Allows for shooting notes
-    shooterControl();
+    //shooterControl();
 
     // Allows for controlling the climber
-    climberControl();
+    //climberControl();
     
     // Allows for controlling the LEDs
-    ledControl();
+    //ledControl();
     
     // Drivers check this to see if they grabbed a note
-    SmartDashboard.putBoolean("Grabber has Note", grabber.noteDetected());
+    //SmartDashboard.putBoolean("Grabber has Note", grabber.noteDetected());
     //System.out.println(apriltags.getDistanceToSpeakerFeet());
   }
 
@@ -239,7 +243,7 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit() {
     // Initialize Shuffleboard
-    SmartDashboard.putNumber("Rotation Angle", 0.0);
+    SmartDashboard.putNumber("Rotation Power", 0.0);
 
     // Reset the robot statuses. This ensures that we don't need to restart the code after every time we
     // run the robot.
@@ -248,6 +252,8 @@ public class Robot extends TimedRobot {
     status = Robot.CONT;
 
     //driveDistance = false;
+    startTime = System.currentTimeMillis();
+    iterCount = 0;
   }
 
   /** This function is called periodically during test mode. */
@@ -257,6 +263,20 @@ public class Robot extends TimedRobot {
     //double shooterPower = SmartDashboard.getNumber("Shooter Power", 0.0);
     //double grabberPower = SmartDashboard.getNumber("Grabber Power", 0.0);
     //double rotateAngle = SmartDashboard.getNumber("Rotation Angle", 0.0);
+    //double power = SmartDashboard.getNumber("Rotation Power", 0.0);
+    
+    //drive.setAllRotateMotorPower(power);    
+
+    if(drive.rotateWheelsToAngle(45) == DONE) {
+      System.out.println("Finished in: " + (System.currentTimeMillis() - startTime) + "ms | " + iterCount + " iterations");
+      startTime = System.currentTimeMillis();
+      iterCount = 0;
+    }
+    else {
+      iterCount++;
+    }
+
+    //System.out.println(Math.toDegrees(drive.getBRAngle()));
 
     //testTeleopDrive();
   
