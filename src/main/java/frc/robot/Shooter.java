@@ -35,6 +35,7 @@ import com.revrobotics.CANSparkFlex;
         shooterMotor2 = new CANSparkFlex(SHOOTER_MOTOR_2_CAN, MotorType.kBrushless);
         shooterMotor2.setSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
         shooterMotor2.setIdleMode(IdleMode.kCoast);
+        shooterMotor2.setInverted(true);
 
         // Get the same grabber instance
         instancedGrabber = Grabber.getInstance();

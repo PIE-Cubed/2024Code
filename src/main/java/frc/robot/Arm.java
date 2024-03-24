@@ -7,18 +7,19 @@ import com.revrobotics.SparkAbsoluteEncoder.Type;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.AnalogPotentiometer;
 
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.RelativeEncoder;
 
 public class Arm {
     private final int EXTENDER_MOTOR_CAN = 49; //3
     private final int ELEVATION_MOTOR_CAN = 23;
     private final int MOTOR_CURRENT_LIMIT = 40;
+    private final int EXTENDER_POTENTIOMETER_ID = 0;
 
     // TODO Find and tune limits
-    private final double LOWER_EXTENSION_LIMIT = 0;
-    private final double UPPER_EXTENSION_LIMIT = 0;
+    private final double LOWER_EXTENSION_LIMIT_MM = 0;
+    private final double UPPER_EXTENSION_LIMIT_MM = 1000;
     private final double LOWER_ELEVATION_LIMIT = 0;
     private final double UPPER_ELEVATION_LIMIT = Math.PI;
 
@@ -26,8 +27,9 @@ public class Arm {
     private final double EXTENSION_TOLERANCE_TICKS = 1;    // Currently ticks until conversion factor is made
     private final double ELEVATION_TOLERANCE_DEGREES = 2;
 
-    private final double EXTENDER_ENCODER_FACTOR = 1;  // TODO Find conversion factor
     private final double ELEVATION_ENCODER_FACTOR = 360;
+    private final double EXTENDER_POTENTIOMETER_ZERO = -3;
+    private final double EXTENDER_POTENTIOMETER_RANGE = 1000;  // Max value
 
     private final double ARM_EXTENDER_PID_P = 0.035;
     private final double ARM_EXTENDER_PID_I = ARM_EXTENDER_PID_P / 1.5;
@@ -35,12 +37,11 @@ public class Arm {
     public final double ARM_REST_POSITION_DEGREES = 329;
     public final double ARM_AMP_POSITION_DEGREES = 33;
 
-
     private CANSparkMax extenderMotor;
     private CANSparkMax elevationMotor;
     
     private AbsoluteEncoder elevationEncoder;
-    private RelativeEncoder extenderEncoder;
+    private AnalogPotentiometer extenderPot;
     
     private PIDController extenderMotorPidController;
     private PIDController elevationMotorPidController;
@@ -67,9 +68,14 @@ public class Arm {
         elevationMotor.setIdleMode(IdleMode.kBrake);
 
         // Encoders
-        extenderEncoder = extenderMotor.getEncoder();
-        extenderEncoder.setPositionConversionFactor(EXTENDER_ENCODER_FACTOR);
+        // Extender Potentiometer
+        extenderPot = new AnalogPotentiometer(
+            EXTENDER_POTENTIOMETER_ID, 
+            EXTENDER_POTENTIOMETER_RANGE, 
+            EXTENDER_POTENTIOMETER_ZERO
+        );
 
+        // Elevation Absolute
         elevationEncoder = elevationMotor.getAbsoluteEncoder(Type.kDutyCycle);
         elevationEncoder.setPositionConversionFactor(ELEVATION_ENCODER_FACTOR);
         elevationEncoder.setVelocityConversionFactor(ELEVATION_ENCODER_FACTOR);
@@ -85,7 +91,6 @@ public class Arm {
         elevationMotorPidController.setTolerance(ELEVATION_TOLERANCE_DEGREES);
         elevationMotorPidController.enableContinuousInput(0, 360);
         
-
         // Action variables
         extensionFirstTime = true;
         extensionDistance = 0.0;
@@ -98,64 +103,49 @@ public class Arm {
     }
 
     /**
-     * Extends the arm to the given distance with a PID
-     * 
-     * @param distance The distance to extend to, in encoder ticks
+     * Extends the arm to the given distance with a PID controller
+     * @param distance The distance to extend to, in mm
      * @return Robot.CONT or Robot.DONE
      */
-    public int extendArmWintPID(double distance) {
-        //distance = MathUtil.clamp(distance, LOWER_EXTENSION_LIMIT, UPPER_EXTENSION_LIMIT);  // Limit extension
+    public int extendArmWithPID(double distance) {
+        distance = MathUtil.clamp(distance, LOWER_EXTENSION_LIMIT_MM, UPPER_EXTENSION_LIMIT_MM);  // Limit extension
 
         if(extensionFirstTime) {
             extensionFirstTime = false;
-            extenderEncoder.setPosition(0);
-            extenderMotorPidController.setSetpoint(distance);
         }
 
-        double power = extenderMotorPidController.calculate(extenderEncoder.getPosition());
+        double power = extenderMotorPidController.calculate(getExtendPosition(), distance);
         extenderMotor.set(MathUtil.clamp(power, -1, 1));
 
         if(extenderMotorPidController.atSetpoint()) {
             extensionFirstTime = true;
+
             return Robot.DONE;
         }
-        else {
-            return Robot.CONT;
-        }
+        
+        return Robot.CONT;
     }
 
     /**
      * Extends the arm to the given distance
-     * 
-     * @param distance The distance to extend to, in encoder ticks (positive distance retracts, negative distance extends)
+     * @param distance The distance to extend to, in mm
      * @param power The power to extend with (positive power retracts, negative power extends)
      * @return Robot.CONT or Robot.DONE
      */
     public int extendArm(double distance, double power) {
-        //distance = MathUtil.clamp(distance, LOWER_EXTENSION_LIMIT, UPPER_EXTENSION_LIMIT);  // Limit extension
+        distance = MathUtil.clamp(distance, LOWER_EXTENSION_LIMIT_MM, UPPER_EXTENSION_LIMIT_MM);  // Limit extension
 
         if(extensionFirstTime) {
             extensionFirstTime = false;
-            //extenderEncoder.setPosition(0);
-            targetDistance = extenderEncoder.getPosition() + distance;
-            extenderMotor.set(MathUtil.clamp(power, -1, 1));
         }
+        
+        extenderMotor.set(MathUtil.clamp(power, -1, 1));
+        
+        if(getExtendPosition() >= targetDistance) {
+            extensionFirstTime = true;
+            extenderMotor.set(0);
 
-        System.out.println("CUR: " + extenderEncoder.getPosition() + " || TGT: " + targetDistance);
-
-        if (distance < 0) {
-            if(extenderEncoder.getPosition() <= targetDistance) {
-                extensionFirstTime = true;
-                extenderMotor.set(0);
-                return Robot.DONE;
-            }
-        }
-        else {
-            if(extenderEncoder.getPosition() >= targetDistance) {
-                extensionFirstTime = true;
-                extenderMotor.set(0);
-                return Robot.DONE;
-            }
+            return Robot.DONE;
         }
         
         return Robot.CONT;
@@ -235,23 +225,23 @@ public class Arm {
     }
 
     /**
-     * Extends arm incrementaly up
+     * Extends arm incrementaly, 5mm steps
      * 
      * @param extend
      * @param retract
      */
     public void moveArmIncrement(boolean extend, boolean retract) {
         if(extend) {
-            extensionDistance += 0.01;
+            extensionDistance += 5;
         }
         else if(retract){
-            extensionDistance -= 0.01;
+            extensionDistance -= 5;
         }
         else {
             extensionDistance += 0;
         }
 
-        extensionDistance = MathUtil.clamp(extensionDistance, LOWER_EXTENSION_LIMIT, UPPER_EXTENSION_LIMIT);
+        extensionDistance = MathUtil.clamp(extensionDistance, LOWER_EXTENSION_LIMIT_MM, UPPER_EXTENSION_LIMIT_MM);
 
         extendArm(extensionDistance, 0.1);
     }
@@ -260,8 +250,12 @@ public class Arm {
         return elevationEncoder.getPosition();
     }
 
+    /**
+     * Gets the extender position with the string potentiometer
+     * @return The extender position
+     */
     public double getExtendPosition() {
-        return extenderEncoder.getPosition();
+        return extenderPot.get();
     }
 
     /**************************************************************************

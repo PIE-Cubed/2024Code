@@ -82,16 +82,16 @@ public class Robot extends TimedRobot {
     FCSInfo = NetworkTableInstance.getDefault();
 
 		// Instance creation
-    //grabber   = Grabber.getInstance();
+    grabber   = Grabber.getInstance();
     apriltags = new AprilTags(nTables.getIsRedAlliance());
 		drive     = new Drive(apriltags);
 		controls  = new Controls();
 		position  = new PoseEstimation(drive);
-    //shooter   = new Shooter();
+    shooter   = new Shooter();
     //climber   = new Climber();
-    //arm       = new Arm();
+    arm       = new Arm();
 		auto      = new Auto(drive, position, arm, grabber, shooter);
-    //led       = new LED();
+    led       = new LED();
   }
 
   /**
@@ -212,22 +212,22 @@ public class Robot extends TimedRobot {
     wheelControl();
 
     // Allows for controlling the arm
-    //armControl();
+    armControl();
 
     // Allows for controlling the grabber
-    //grabberControl();
+    grabberControl();
     
     // Allows for shooting notes
-    //shooterControl();
+    shooterControl();
 
     // Allows for controlling the climber
     //climberControl();
     
     // Allows for controlling the LEDs
-    //ledControl();
+    ledControl();
     
     // Drivers check this to see if they grabbed a note
-    //SmartDashboard.putBoolean("Grabber has Note", grabber.noteDetected());
+    SmartDashboard.putBoolean("Grabber has Note", grabber.noteDetected());
     //System.out.println(apriltags.getDistanceToSpeakerFeet());
   }
 
@@ -267,14 +267,17 @@ public class Robot extends TimedRobot {
     
     //drive.setAllRotateMotorPower(power);    
 
-    if(drive.rotateWheelsToAngle(45) == DONE) {
-      System.out.println("Finished in: " + (System.currentTimeMillis() - startTime) + "ms | " + iterCount + " iterations");
-      startTime = System.currentTimeMillis();
-      iterCount = 0;
-    }
-    else {
-      iterCount++;
-    }
+    //if(drive.rotateWheelsToAngle(45) == DONE) {
+    //  System.out.println("Finished in: " + (System.currentTimeMillis() - startTime) + "ms | " + iterCount + " iterations");
+    //  startTime = System.currentTimeMillis();
+    //  iterCount = 0;
+    //}
+    //else {
+    //  iterCount++;
+    //}
+
+    //arm.testExtend(0.1);
+    System.out.println(arm.getExtendPosition());
 
     //System.out.println(Math.toDegrees(drive.getBRAngle()));
 
@@ -620,7 +623,7 @@ public class Robot extends TimedRobot {
     }
   }
 
-  public void testTeleopDrive() {
+  private void testTeleopDrive() {
     double rotateSpeed = controls.getRotateSpeed();
     double strafeSpeed = controls.getStrafeSpeed();
     double forwardSpeed = controls.getForwardSpeed();

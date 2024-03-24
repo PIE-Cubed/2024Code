@@ -15,7 +15,7 @@ public class Grabber {
     private final int GRABBER_MOTOR1_CAN = 2;
     private final int GRABBER_MOTOR2_CAN = 5;
 
-    private final boolean GRABBER_MOTOR1_IS_INVERTED = false;
+    private final boolean GRABBER_MOTOR1_IS_INVERTED = true;
     private final boolean GRABBER_MOTOR2_IS_INVERTED = false;
 
     // TODO tune these power values
