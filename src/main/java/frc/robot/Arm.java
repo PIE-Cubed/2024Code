@@ -12,30 +12,30 @@ import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import com.revrobotics.CANSparkMax;
 
 public class Arm {
-    private final int EXTENDER_MOTOR_CAN = 49; //3
+    private final int EXTENDER_MOTOR_CAN = 49; // 3
     private final int ELEVATION_MOTOR_CAN = 23;
     private final int MOTOR_CURRENT_LIMIT = 40;
     private final int EXTENDER_POTENTIOMETER_ID = 0;
 
-    // TODO Find and tune limits
-    private final double LOWER_EXTENSION_LIMIT_MM = 0;
-    private final double UPPER_EXTENSION_LIMIT_MM = 1000;
+    private final double LOWER_EXTENSION_LIMIT_MM = 83;
+    private final double UPPER_EXTENSION_LIMIT_MM = 155;
     private final double LOWER_ELEVATION_LIMIT = 0;
     private final double UPPER_ELEVATION_LIMIT = Math.PI;
 
-    // TODO Tune tolerances
-    private final double EXTENSION_TOLERANCE_TICKS = 1;    // Currently ticks until conversion factor is made
+    private final double EXTENSION_TOLERANCE_MM = 10;    // TODO Test and tune
     private final double ELEVATION_TOLERANCE_DEGREES = 2;
 
     private final double ELEVATION_ENCODER_FACTOR = 360;
-    private final double EXTENDER_POTENTIOMETER_ZERO = -3;
-    private final double EXTENDER_POTENTIOMETER_RANGE = 1000;  // Max value
+    private final double EXTENDER_POTENTIOMETER_ZERO = -3;     // ~3mm offset to zero
+    private final double EXTENDER_POTENTIOMETER_RANGE = 1000;  // Max value, in mm
 
     private final double ARM_EXTENDER_PID_P = 0.035;
     private final double ARM_EXTENDER_PID_I = ARM_EXTENDER_PID_P / 1.5;
 
     public final double ARM_REST_POSITION_DEGREES = 329;
     public final double ARM_AMP_POSITION_DEGREES = 33;
+    public final double ARM_REST_POSITION = 87;
+    public final double ARM_INTAKE_POSITION = 147;
 
     private CANSparkMax extenderMotor;
     private CANSparkMax elevationMotor;
@@ -48,6 +48,7 @@ public class Arm {
 
     // Action variables
     private boolean extensionFirstTime;
+    private boolean retract = false;
     private double extensionDistance;
 
     private boolean elevationFirstTime;
@@ -61,6 +62,7 @@ public class Arm {
         extenderMotor = new CANSparkMax(EXTENDER_MOTOR_CAN, MotorType.kBrushless);
         extenderMotor.setSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
         extenderMotor.setIdleMode(IdleMode.kBrake);
+        extenderMotor.setInverted(false);
         
         // Setup elevation motor
         elevationMotor = new CANSparkMax(ELEVATION_MOTOR_CAN, MotorType.kBrushless);
@@ -83,7 +85,7 @@ public class Arm {
         // PID controllers
         // Extender PID
         extenderMotorPidController = new PIDController(1.0, 0.0, 0.0);
-        extenderMotorPidController.setTolerance(EXTENSION_TOLERANCE_TICKS);
+        extenderMotorPidController.setTolerance(EXTENSION_TOLERANCE_MM);
 
         // Elevation PID
         elevationMotorPidController = new PIDController(ARM_EXTENDER_PID_P, ARM_EXTENDER_PID_I, 0.0);
@@ -149,6 +151,64 @@ public class Arm {
         }
         
         return Robot.CONT;
+    }
+
+    /**
+     * Extends the arm to the given distance
+     * @param targetPosition The position to extend to, in mm
+     * @param power The power to extend with (positive power retracts, negative power extends)
+     * @return Robot.CONT or Robot.DONE
+     */
+    private int extendArmToPosition(double targetPosition, double power) {
+        double currentPosition = getExtendPosition();
+
+        if(extensionFirstTime) {
+            extensionFirstTime = false;
+
+            if(currentPosition > targetPosition) {
+                retract = true;
+            }
+            else if (currentPosition < targetPosition) {
+                retract = false;
+            }
+            else {
+                extensionFirstTime = true;
+                extenderMotor.set(0);
+                return Robot.DONE;
+            }
+        }
+
+        targetPosition = MathUtil.clamp(targetPosition, LOWER_EXTENSION_LIMIT_MM, UPPER_EXTENSION_LIMIT_MM);  // Limit extension
+        
+        // Retract the arm if it's too far out
+        if (retract == true) {
+            extenderMotor.set(MathUtil.clamp(power, -1, 1));
+
+            if (currentPosition <= targetPosition) {
+                extensionFirstTime = true;
+                extenderMotor.set(0);
+                return Robot.DONE;
+            }
+        }
+        else {
+            extenderMotor.set(MathUtil.clamp(power * -1, -1, 1));
+
+            if (currentPosition >= targetPosition) {
+                extensionFirstTime = true;
+                extenderMotor.set(0);
+                return Robot.DONE;
+            }
+        }
+        
+        return Robot.CONT;
+    }
+
+    public int extendToRest() {
+        return extendArmToPosition(ARM_REST_POSITION, 0.4);
+    }
+
+    public int extendToIntake() {
+        return extendArmToPosition(ARM_INTAKE_POSITION, 0.4);
     }
 
     /**

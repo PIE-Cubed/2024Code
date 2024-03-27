@@ -301,15 +301,23 @@ public class Controls {
 	 * @return Manipulator controller A button pressed
 	 */
 	public boolean moveToRestPosition() {
-		return manipulatorController.getAButtonPressed();
+		return manipulatorController.getXButtonPressed();
 	}
 
 	/**
 	 * Pressing the X button will move the arm slightly up to 333 deg
 	 * @return Manipulator controller X button pressed
 	 */
-	public boolean moveSlightlyUp() {
+	/*public boolean moveSlightlyUp() {
 		return manipulatorController.getXButtonPressed();
+	}*/
+
+	/**
+	 * Pressing the A button will move the arm slightly up to 333 deg
+	 * @return Manipulator controller A button pressed
+	 */
+	public boolean moveToIntakePosition() {
+		return manipulatorController.getAButtonPressed();
 	}
 
 	// Arm movement

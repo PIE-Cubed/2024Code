@@ -64,7 +64,7 @@ public class Robot extends TimedRobot {
   private int iterCount = 0;
 
   /* arm states */
-  enum ArmState {TELEOP, CLIMB, AMP, REST};
+  enum ArmState {TELEOP, CLIMB, AMP, REST, INTAKE};
   private ArmState armState = ArmState.TELEOP;
 
   /* TeleOp States */
@@ -276,8 +276,13 @@ public class Robot extends TimedRobot {
     //  iterCount++;
     //}
 
-    //arm.testExtend(0.1);
-    System.out.println(arm.getExtendPosition());
+    /*if (armStatus == Robot.CONT) {
+      armStatus = arm.extendArmToPosition(arm.ARM_INTAKE_POSITION, 0.3); //145
+    }
+
+    System.out.println(arm.getExtendPosition());*/
+
+    //System.out.println(drive.getFLRot());
 
     //System.out.println(Math.toDegrees(drive.getBRAngle()));
 
@@ -468,6 +473,9 @@ public class Robot extends TimedRobot {
           else if (controls.moveToRestPosition())  {
               armState = ArmState.REST;
           }
+          else if (controls.moveToIntakePosition())  {
+              armState = ArmState.INTAKE;
+          }
 
       }
       else if (armState == ArmState.CLIMB)
@@ -495,7 +503,15 @@ public class Robot extends TimedRobot {
       }
       else if (armState == ArmState.REST)
       {
-          armStatus = arm.rotateArm(arm.ARM_REST_POSITION_DEGREES);
+          armStatus = arm.extendToRest();
+
+          if (armStatus == Robot.DONE) {
+              armState = ArmState.TELEOP;
+          }
+      }
+      else if (armState == ArmState.INTAKE)
+      {
+          armStatus = arm.extendToIntake();
 
           if (armStatus == Robot.DONE) {
               armState = ArmState.TELEOP;
