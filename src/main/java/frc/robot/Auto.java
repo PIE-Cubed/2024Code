@@ -129,7 +129,11 @@ public class Auto {
 
         switch(step) {
             case 1:     // Rotate arm to -27 degrees from horizontal (359 - 27 = 332)
-                status = arm.rotateArm(332);
+                status = arm.rotateArm(350);
+                break;
+            case 2:
+                arm.maintainPosition(350);
+                status = arm.extendArm(0, -0.1);
                 break;
             default:    // Finished routine, reset variables and return done
                 step = 1;
@@ -701,7 +705,7 @@ public class Auto {
      * <p> First rotates, then retracts the arm
      * @return Robot status, CONT or DONE
      */
-    public void teleopShoot() {
+    public int teleopShoot() {
         //int intakeStatus = Robot.CONT;
         //int driveStatus = Robot.CONT;
         int status = Robot.CONT;
@@ -717,25 +721,25 @@ public class Auto {
                 shooter.spinup();
                 status = arm.rotateArm(SHOOT1_ANGLE);
                 break;
-
-            // Wait for the thooter motors to spin up
-            case 2:                
-                arm.maintainPosition(SHOOT1_ANGLE);
-                //status = autoDelay(1);
-                status = Robot.DONE;
-                break;
             
             // Start the grabber and keep the arm in shooting position
-            default:
+            case 2:
                 grabber.setMotorPower(grabber.INTAKE_POWER);
                 arm.maintainPosition(SHOOT1_ANGLE);
+                status = autoDelayMS(1000);
                 break;
+            
+            default:
+                teleopShootFirstTime = true;
+                return Robot.DONE;
         }
 
         // Done current step, goto next one
         if(status == Robot.DONE) {
             step++;
         }
+
+        return Robot.CONT;
     }
 
     /*

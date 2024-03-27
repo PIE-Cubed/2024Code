@@ -64,7 +64,7 @@ public class Robot extends TimedRobot {
   private int iterCount = 0;
 
   /* arm states */
-  enum ArmState {TELEOP, CLIMB, AMP, REST, INTAKE};
+  enum ArmState {TELEOP, CLIMB, AMP, REST, INTAKE, SHOOT};
   private ArmState armState = ArmState.TELEOP;
 
   /* TeleOp States */
@@ -305,6 +305,7 @@ public class Robot extends TimedRobot {
 
     // Test AprilTags
     //drive.alignWithAprilTag();
+    System.out.println(apriltags.getDistanceToSpeakerFeet());
 
     // Test the auto selection
     //System.out.println("Selected auto: " + m_chooser.getSelected());
@@ -447,7 +448,7 @@ public class Robot extends TimedRobot {
           else if (controls.moveArmDown()) {
             arm.testElevate(0.5);
           }
-          else{
+          else {
             arm.testElevate(0);
           }
 
@@ -475,6 +476,9 @@ public class Robot extends TimedRobot {
           }
           else if (controls.moveToIntakePosition())  {
               armState = ArmState.INTAKE;
+          }
+          else if (controls.enableShooter())  {
+              armState = ArmState.SHOOT;
           }
 
       }
@@ -515,6 +519,16 @@ public class Robot extends TimedRobot {
 
           if (armStatus == Robot.DONE) {
               armState = ArmState.TELEOP;
+          }
+      }
+      else if (armState == ArmState.SHOOT)
+      {
+          // Hand over control of the arm to shooterControl
+          if (controls.enableShooter() == false) {
+              armState = ArmState.TELEOP;
+          }
+          else {
+            armState = ArmState.SHOOT;
           }
       }
   }
