@@ -365,18 +365,21 @@ public class Auto {
                 arm.maintainPosition(SHOOT1_ANGLE);
                 break;
 
-            /*// Rotate the arm to it's resting position and turn off the shooter and Switch the grabber to intake mode
-            case 6:
+            // Rotate the arm to it's resting position and turn off the shooter and Switch the grabber to intake mode
+            case 5:
                 status = arm.rotateArm(arm.ARM_REST_POSITION_DEGREES);
                 break;
 
             // Extend the arm so the wood holding block falls into the robot, and so the arm is in the shooting position
-            case 7:
+            case 6:
+                arm.testElevate(0);
                 status = arm.extendToIntake();
                 break;
 
-            // Drive backwards 4 feet
-            case 9:
+            // Drive backwards 4 1/2 feet
+            case 7:
+                //arm.maintainPosition(arm.ARM_REST_POSITION_DEGREES);
+
                 if (intakeStatus == Robot.CONT) {
                     intakeStatus = grabber.intakeOutake(true, false);
                 }
@@ -411,10 +414,9 @@ public class Auto {
 
             // Shoot the note
             case 13:
-                grabber.setMotorPower(grabber.INTAKE_POWER);
-                arm.maintainPosition(SHOOT2_ANGLE);
+                apriltagShoot(true);
                 status = autoDelay(1);
-                break;*/
+                break;
             
             // Finished routine, reset variables, stop motors, and return done
             default:
