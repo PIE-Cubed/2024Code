@@ -17,6 +17,7 @@ public class Auto {
     private int step;
     private boolean firstTime = true;
     private boolean teleopShootFirstTime = true;
+    private boolean autoShootFirstTime = true;
     public boolean isRed = false;
     public int allianceAngleModifier = 1;
 
@@ -32,6 +33,8 @@ public class Auto {
     private final int SHOOT1_ANGLE = 339;   // Up against speaker
     //private final int SHOOT1_ANGLE = 349;   // Edge of safe zone
     private final int SHOOT2_ANGLE = 339;
+    
+    private double apriltagShootAngle = SHOOT1_ANGLE;   // Start at against the speaker
 
     // Auto program selection
     //public String selectedAuto = "Speaker Center";
@@ -43,15 +46,17 @@ public class Auto {
     private Arm            arm;
     private Grabber        grabber;
     private Shooter        shooter;
+    private AprilTags      apriltags;
 
     // Constructor
-    public Auto(Drive drive, PoseEstimation position, Arm arm, Grabber grabber, Shooter shooter) {
-        this.drive    = drive;
-        this.grabber  = grabber;
+    public Auto(Drive drive, PoseEstimation position, Arm arm, Grabber grabber, Shooter shooter, AprilTags apriltags) {
+        this.drive     = drive;
+        this.grabber   = grabber;
         //this.position = position;
-        this.arm      = arm;
-        this.nTables  = CustomTables.getInstance();
-        this.shooter  = shooter;
+        this.arm       = arm;
+        this.nTables   = CustomTables.getInstance();
+        this.shooter   = shooter;
+        this.apriltags = apriltags;
     }
 
     /****************************************************************************************** 
@@ -253,13 +258,12 @@ public class Auto {
 
             // Rotate the arm to it's resting position and turn off the shooter and Switch the grabber to intake mode
             case 7:
-                status = arm.rotateArm(SHOOT1_ANGLE);
+                status = arm.rotateArm(arm.ARM_REST_POSITION_DEGREES);
                 break;
 
             // Extend the arm so the wood holding block falls into the robot, and so the arm is in the shooting position
             case 8:
-                status = Robot.DONE;
-                // = arm.extendArm(8, 0.3);
+                status = arm.extendToIntake();
                 break;
 
             // Drive backwards 4 feet
@@ -744,7 +748,58 @@ public class Auto {
             
             default:
                 teleopShootFirstTime = true;
-                shooter.stopShooting();
+                grabber.intakeOutake(false, false);
+                arm.disableRotation();
+                step = 1;
+                return Robot.DONE;
+        }
+
+        // Done current step, goto next one
+        if(status == Robot.DONE) {
+            step++;
+        }
+
+        return Robot.CONT;
+    }
+
+    /**
+     * <p> Moves the arm so the shooter is aiming at the speaker
+     * <p> -27 degrees from horizontal
+     * <p> Fully retracts arm
+     * <p> First rotates, then retracts the arm
+     * @return Robot status, CONT or DONE
+     */
+    public int apriltagShoot(boolean shooterEnable) {
+        int status = Robot.CONT;
+
+        if(autoShootFirstTime == true) {
+            autoShootFirstTime = false;
+            step = 1;
+        }
+
+        switch(step) {            
+            // Start the shooter motors and rotate the arm to -23 (336) degrees from 54
+            case 1:
+                shooter.spinup();
+                apriltagShootAngle = apriltags.calculateArmAngleToShoot();
+                status = arm.rotateArm(apriltagShootAngle);
+                break;
+            
+            // Start the grabber and keep the arm in shooting position
+            case 2:
+                grabber.setMotorPower(grabber.INTAKE_POWER);
+                arm.maintainPosition(apriltagShootAngle);
+                
+                if(shooterEnable) {
+                    status = Robot.CONT;
+                }
+                else {
+                    status = Robot.DONE;
+                }
+                break;
+            
+            default:
+                autoShootFirstTime = true;
                 grabber.intakeOutake(false, false);
                 arm.disableRotation();
                 step = 1;
@@ -764,6 +819,13 @@ public class Auto {
      */
     public void resetTeleopShoot() {
         teleopShootFirstTime = true;
+    }
+
+    /*
+     * Set auto shooting first time to true
+     */
+    public void resetAutoShoot() {
+        autoShootFirstTime = true;
     }
 
     /**

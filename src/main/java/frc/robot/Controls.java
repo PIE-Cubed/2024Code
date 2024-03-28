@@ -258,7 +258,7 @@ public class Controls {
 	 * Pressing the right bumper will shoot the note softly
 	 * @return Manipulator controller right bumper pressed
 	 */
-	public boolean dumpShot() {
+	public boolean enableAutoShoot() {
 		return manipulatorController.getRightBumper();
 	}
 	
@@ -283,9 +283,9 @@ public class Controls {
 	 * Pressing the Back button will stop the shooter wheels
 	 * @return Manipulator controller Stop button pressed
 	 */
-	public boolean stopShooterWheels() {
-		return manipulatorController.getBackButtonPressed();
-	}
+	//public boolean stopShooterWheels() {
+	//	return manipulatorController.getBackButtonPressed();
+	//}
 
 	// Positioning
 	/***
@@ -351,6 +351,10 @@ public class Controls {
 	 */
 	public boolean extendArm() {
 		return manipulatorController.getRightY() > 0.3;
+	}
+
+	public boolean toggleLimelightLED() {
+		return manipulatorController.getBackButtonPressed();
 	}
 
 

@@ -34,8 +34,8 @@ public class Arm {
 
     public final double ARM_REST_POSITION_DEGREES = 329;
     public final double ARM_AMP_POSITION_DEGREES = 33;
-    public final double ARM_REST_POSITION = 87;
-    public final double ARM_INTAKE_POSITION = 147;
+    public final double ARM_POT_REST_POSITION = 87;
+    public final double ARM_POT_INTAKE_POSITION = 147;
 
     private CANSparkMax extenderMotor;
     private CANSparkMax elevationMotor;
@@ -204,11 +204,11 @@ public class Arm {
     }
 
     public int extendToRest() {
-        return extendArmToPosition(ARM_REST_POSITION, 0.4);
+        return extendArmToPosition(ARM_POT_REST_POSITION, 0.4);
     }
 
     public int extendToIntake() {
-        return extendArmToPosition(ARM_INTAKE_POSITION, 0.4);
+        return extendArmToPosition(ARM_POT_INTAKE_POSITION, 0.4);
     }
 
     /**
@@ -229,7 +229,7 @@ public class Arm {
             The PID value will be positive to increase the angle */
         double power = -elevationMotorPidController.calculate(elevationEncoder.getPosition(), degrees);
         //SmartDashboard.putNumber("Arm power", power);
-        elevationMotor.set(MathUtil.clamp(power, -0.2, 0.2));   // Clamp
+        elevationMotor.set(MathUtil.clamp(power, -0.4, 0.4));   // Clamp
                 
         if(elevationMotorPidController.atSetpoint()) {
             elevationFirstTime = true;

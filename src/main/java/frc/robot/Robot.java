@@ -7,7 +7,6 @@ package frc.robot;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -42,6 +41,7 @@ public class Robot extends TimedRobot {
 	private int status = CONT;
 	private boolean firstTime = true;
   private boolean shooterState = false;
+  private boolean autoShooterState = false;
 
 	// Auto path
 	private SendableChooser<String> m_chooser = new SendableChooser<>();
@@ -59,6 +59,7 @@ public class Robot extends TimedRobot {
   private int apriltagAlignedStatus = CONT;
   
   private boolean shooterSpinning;
+  private boolean limelightLED;
 
   private double startTime = 0;
   private int iterCount = 0;
@@ -75,6 +76,7 @@ public class Robot extends TimedRobot {
 	 * Constructor
 	 */
 	public Robot() {
+    System.out.println("[INFO] >> Instantiating objects...");
     m_chooser = new SendableChooser<>();
 
 		// Instance getters
@@ -90,7 +92,7 @@ public class Robot extends TimedRobot {
     shooter   = new Shooter();
     //climber   = new Climber();
     arm       = new Arm();
-		auto      = new Auto(drive, position, arm, grabber, shooter);
+		auto      = new Auto(drive, position, arm, grabber, shooter, apriltags);
     led       = new LED();
   }
 
@@ -100,10 +102,14 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    System.out.println("[INFO] >> Robot init running.");
+
     // Start the camera server
+    //System.out.println("[INFO] >> Starting camera server...");
     //CameraServer.startAutomaticCapture();
     
     // Auto selection
+    System.out.println("[INFO] >> Configuring auto...");
     m_chooser.setDefaultOption("Speaker Center Auto", "Speaker Center Auto");
     m_chooser.addOption("Amp Side Auto", "Amp Side Auto");
     m_chooser.addOption("Feed Side Auto", "Feed Side Auto");
@@ -117,6 +123,7 @@ public class Robot extends TimedRobot {
     status = Robot.CONT;
 
     shooterSpinning = false;
+    limelightLED = false;
   }
 
   /**
@@ -143,9 +150,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
+    System.out.println("[INFO] >> Auto mode selected.");
     m_autoSelected = m_chooser.getSelected();
-    //auto.selectedAuto = m_autoSelected;
-
     auto.isRed = this.nTables.getIsRedAlliance();
     
     if(!auto.isRed) {
@@ -158,7 +164,7 @@ public class Robot extends TimedRobot {
     armStatus = Robot.CONT;
     status = Robot.CONT;
 
-    System.out.println("Auto selected: " + m_autoSelected);    
+    System.out.println("[INFO] >> Auto program selected: " + m_autoSelected);    
   }
 
   /** This function is called periodically during autonomous. */
@@ -195,6 +201,8 @@ public class Robot extends TimedRobot {
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
+    System.out.println("[INFO] >> TeleOp mode selected.");
+
     // Reset the robot statuses. This ensures that we don't need to restart the code after every time we
     // run the robot.
     grabberStatus = Robot.CONT;
@@ -203,7 +211,7 @@ public class Robot extends TimedRobot {
 
     shooterSpinning = false;
     //apriltags.setSpeakerPipeline();
-    System.out.println(apriltags.getDistanceToSpeakerFeet());
+    //System.out.println(apriltags.getDistanceToSpeakerFeet());
 
     // Turn on the shooter motors
     //shooter.spinup();
@@ -246,6 +254,8 @@ public class Robot extends TimedRobot {
   /** This function is called once when test mode is enabled. */
   @Override
   public void testInit() {
+    System.out.println("[INFO] >> Test mode selected.");
+
     // Initialize Shuffleboard
     SmartDashboard.putNumber("Rotation Power", 0.0);
 
@@ -268,10 +278,14 @@ public class Robot extends TimedRobot {
     //double grabberPower = SmartDashboard.getNumber("Grabber Power", 0.0);
     //double rotateAngle = SmartDashboard.getNumber("Rotation Angle", 0.0);
     //double power = SmartDashboard.getNumber("Rotation Power", 0.0);
-    
+
+    apriltags.setSpeakerPipeline();
+    System.out.println(apriltags.calculateArmAngleToShoot());
+
     //drive.setAllRotateMotorPower(power);    
 
-    //if(drive.rotateWheelsToAngle(45) == DONE) {
+    //apriltags.setSpeakerPipeline();
+    //if(drive.alignWithAprilTag() == DONE) {
     //  System.out.println("Finished in: " + (System.currentTimeMillis() - startTime) + "ms | " + iterCount + " iterations");
     //  startTime = System.currentTimeMillis();
     //  iterCount = 0;
@@ -309,7 +323,7 @@ public class Robot extends TimedRobot {
 
     // Test AprilTags
     //drive.alignWithAprilTag();
-    System.out.println(apriltags.getDistanceToSpeakerFeet());
+    //System.out.println(apriltags.getDistanceToSpeakerFeet());
 
     // Test the auto selection
     //System.out.println("Selected auto: " + m_chooser.getSelected());
@@ -423,6 +437,11 @@ public class Robot extends TimedRobot {
     boolean hasNote = grabber.noteDetected();
     boolean runningIntake = controls.runIntake();
     boolean partyMode = controls.enablePartyMode();
+    
+    if(controls.toggleLimelightLED()) {
+      limelightLED = !limelightLED;
+    }
+      apriltags.setLED(limelightLED);
 
     if(partyMode) {             // If the robot is done climbing, top priority
       led.partyColor();           // Sets the color to rainbow
@@ -541,16 +560,30 @@ public class Robot extends TimedRobot {
 	 * Controls the shooter in TeleOp
 	 */
 	private void shooterControl() {
+    boolean enableShooter = controls.enableShooter();
+    boolean enableAutoShooter = controls.enableAutoShoot();
+
     // Shoot a note
-    if (controls.enableShooter() == true) {
+    if (enableShooter == true) {
       shooterState = true;
-      auto.teleopShoot(controls.enableShooter());
+      auto.teleopShoot(enableShooter);
+    }
+    
+    if(enableAutoShooter == true && enableShooter == false) {
+      autoShooterState = true;
+      auto.apriltagShoot(enableAutoShooter);
     }
     
     // If the drivers have just stopped shooting
-    if (shooterState == true && controls.enableShooter() == false) {
+    if (shooterState == true && enableShooter == false) {
       shooterState = false;
       auto.resetTeleopShoot();
+      shooter.stopShooting();
+    }
+    else if (autoShooterState == true && enableAutoShooter == false) {
+      autoShooterState = false;
+      auto.resetAutoShoot();
+      shooter.stopShooting();
     }
 
     // Start or stop the shooter wheels, the start button flips the current state
@@ -607,7 +640,7 @@ public class Robot extends TimedRobot {
     }
   }
 
-  private void targetSpeakerTag() {
+  /*private void targetSpeakerTag() {
     double armAngle;  // Angle to rotate to
 
     // Check if the robot is out of range
@@ -654,7 +687,7 @@ public class Robot extends TimedRobot {
       led.updateLED();
     }
   }
-
+*/
   private void testTeleopDrive() {
     double rotateSpeed = controls.getRotateSpeed();
     double strafeSpeed = controls.getStrafeSpeed();

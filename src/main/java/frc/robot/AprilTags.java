@@ -12,6 +12,11 @@ public class AprilTags {
 
     private final double MAX_DISTANCE_FT = 6;   // Maximum distance to speaker until its too unreliable to shoot
 
+    private final double CUBED_CONST = 0.00000325;
+    private final double SQUARED_CONST = 0.00317;
+    private final double SINGLE_CONST = 1.09;
+    private final double OFFSET = 228;
+
     public AprilTags(boolean isRed) {
         // Turn off the limelight LEDs so they don't blind people
         LimelightHelpers.setLEDMode_ForceOff("limelight");
@@ -27,9 +32,21 @@ public class AprilTags {
      *         <p> -1 if it fails to get the AprilTag
      */
     public double calculateArmAngleToShoot() {
-        // To be implemented...
+        double distance = getDistanceToSpeakerFeet() * 30.48;
+        double angle = (CUBED_CONST * Math.pow(distance, 3)) - (SQUARED_CONST * Math.pow(distance, 2)) + (SINGLE_CONST * distance) + OFFSET;
 
-        return -1;
+        if(angle >= 360) {
+            angle -= 360;
+        }
+
+        // If the distance is >= 8 feet, subtract 1.5 degrees
+        // for every foot past the 8 feet
+        if (distance >= 243.84) { // 8 feet
+            angle -= Math.abs(1.51 * ((distance / 30.48) - 8));
+            angle = Math.abs(angle);
+        }
+
+        return angle;
     }
 
     /**
@@ -129,5 +146,14 @@ public class AprilTags {
     }
     public int getAprilTagID() {
         return (int)LimelightHelpers.getFiducialID("limelight");
+    }
+
+    public void setLED(boolean on) {
+        if(on) {
+            LimelightHelpers.setLEDMode_ForceOn("limelight");
+        }
+        else {
+            LimelightHelpers.setLEDMode_ForceOff("limelight");
+        }
     }
 }

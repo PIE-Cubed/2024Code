@@ -4,9 +4,8 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.math.MathUtil;
-
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.I2C;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import com.revrobotics.ColorSensorV3;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -14,6 +13,7 @@ import com.revrobotics.CANSparkBase.IdleMode;
 public class Grabber {
     private final int GRABBER_MOTOR1_CAN = 2;
     private final int GRABBER_MOTOR2_CAN = 5;
+    private final int INTAKE_BUTTONS_ID = 0;
 
     private final boolean GRABBER_MOTOR1_IS_INVERTED = false;
     private final boolean GRABBER_MOTOR2_IS_INVERTED = true;
@@ -23,12 +23,13 @@ public class Grabber {
     public final double INTAKE_POWER = 0.6;
     public final double OUTTAKE_POWER = -0.75;
     public final double FEED_POWER = 0.9;  
-    public final double PROXIMITY_THRESHOLD = 160;    //95
+    public final double PROXIMITY_THRESHOLD = 100;    //95
     public final double IR_THRESHOLD = 150;
     
     private CANSparkMax grabberMotor1;
     private CANSparkMax grabberMotor2;
     private ColorSensorV3 colorSensor;
+    private DigitalInput IntakeStopButtons;
     private static Grabber instancedGrabber;
 
     public static synchronized Grabber getInstance() {
@@ -55,6 +56,9 @@ public class Grabber {
         // Set the grabber motor idle modes to break, as it helps stop the note from moving forward
         grabberMotor1.setIdleMode(IdleMode.kBrake);
         grabberMotor2.setIdleMode(IdleMode.kBrake);
+
+        // Create the digital input for the intake buttons
+        IntakeStopButtons = new DigitalInput(INTAKE_BUTTONS_ID);
     } 
 
 
@@ -111,7 +115,8 @@ public class Grabber {
      * @return whether a note is found
      */
     public boolean noteDetected() {
-        return colorSensor.getProximity() > PROXIMITY_THRESHOLD;
+        //return colorSensor.getProximity() > PROXIMITY_THRESHOLD;
+        return !IntakeStopButtons.get();
     }
 
     /**
@@ -138,6 +143,10 @@ public class Grabber {
             "\n | IR: " + ir +
             "\n | Proximity: " + proximity + "\n\n"
         );
+    }
+
+    public double getProximity() {
+        return colorSensor.getProximity();
     }
 
 }

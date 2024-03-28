@@ -87,7 +87,7 @@ public class Drive {
     private final double ROTATE_TOLERANCE_RADIANS = 0.05;
     private final double ROTATE_ADJUST_TOLERANCE_RADIANS = 0.01745329;   // ~1 degree
     private final double ROTATE_TOLERANCE_DEGREES = 3;
-    private final double APRILTAG_TOLERANCE_DEGREES = 5;
+    private final double APRILTAG_TOLERANCE_DEGREES = 2;
 
     // Apriltags
     AprilTags apriltags;
@@ -164,12 +164,12 @@ public class Drive {
         autoDriveRotateController.setTolerance(AUTO_DRIVE_ROTATE_TOLERANCE);
         autoDriveRotateController.enableContinuousInput(Math.PI, -Math.PI);
         
-        rotatePidController = new PIDController(1.4, 0, 0);
+        rotatePidController = new PIDController(1.38, 0, 0);
         rotatePidController.setTolerance(ROTATE_TOLERANCE_RADIANS);
         rotatePidController.enableContinuousInput(Math.PI, -Math.PI);
 
         // TODO Get PID snappier
-        aprilTagRotatePidController = new PIDController(0.022, 0, 0);
+        aprilTagRotatePidController = new PIDController(0.014, 0, 0);
         aprilTagRotatePidController.setTolerance(APRILTAG_TOLERANCE_DEGREES);
         aprilTagRotatePidController.enableContinuousInput(180, -180);
 
