@@ -318,6 +318,14 @@ public class Arm {
         return extenderPot.get();
     }
 
+    /**
+     * Turns off the elevation motor to let it fall
+     */
+    public void disableRotation() {
+        elevationMotor.set(0);
+    }
+
+
     /**************************************************************************
      * 
      *      TEST FUNCTIONS

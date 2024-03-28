@@ -29,8 +29,8 @@ public class Auto {
     private int armStatus = Robot.CONT;
     private int status = Robot.CONT;
     
-    private final int SHOOT1_ANGLE = 336;
-    private final int SHOOT2_ANGLE = 336;
+    private final int SHOOT1_ANGLE = 339;
+    private final int SHOOT2_ANGLE = 339;
 
     // Auto program selection
     //public String selectedAuto = "Speaker Center";
@@ -184,6 +184,7 @@ public class Auto {
             default:
             System.out.println("DONE");
                 shooter.stopShooting();
+                grabber.intakeOutake(false, false);
                 step = 1;
                 firstTime = true;
                 return Robot.DONE;
@@ -304,6 +305,7 @@ public class Auto {
             // Finished routine, reset variables, stop motors, and return done
             default:
                 shooter.stopShooting();
+                grabber.intakeOutake(false, false);
                 step = 1;
                 firstTime = true;
                 return Robot.DONE;
@@ -372,6 +374,7 @@ public class Auto {
             // Rotate the arm to its resting position, and turn off the shooter & grabber
             case 7:            
                 shooter.stopShooting();
+                grabber.intakeOutake(false, false);
                 status = arm.rotateArm(327);
                 break;
 
@@ -494,6 +497,7 @@ public class Auto {
             // Finished routine, reset variables, stop motors, and return done
             default:
                 shooter.stopShooting();
+                grabber.intakeOutake(false, false);
                 step = 1;
                 firstTime = true;
                 return Robot.DONE;
@@ -558,6 +562,7 @@ public class Auto {
             // Rotate the arm to its resting position, and turn off the shooter & grabber
             case 7:            
                 shooter.stopShooting();
+                grabber.intakeOutake(false, false);
                 status = arm.rotateArm(327);
                 break;
 
@@ -685,6 +690,7 @@ public class Auto {
             // Finished routine, reset variables, stop motors, and return done
             default:
                 shooter.stopShooting();
+                grabber.intakeOutake(false, false);
                 step = 1;
                 firstTime = true;
                 return Robot.DONE;
@@ -705,7 +711,7 @@ public class Auto {
      * <p> First rotates, then retracts the arm
      * @return Robot status, CONT or DONE
      */
-    public int teleopShoot() {
+    public int teleopShoot(boolean shooterEnable) {
         //int intakeStatus = Robot.CONT;
         //int driveStatus = Robot.CONT;
         int status = Robot.CONT;
@@ -726,11 +732,21 @@ public class Auto {
             case 2:
                 grabber.setMotorPower(grabber.INTAKE_POWER);
                 arm.maintainPosition(SHOOT1_ANGLE);
-                status = autoDelayMS(1000);
+                
+                if(shooterEnable) {
+                    status = Robot.CONT;
+                }
+                else {
+                    status = Robot.DONE;
+                }
                 break;
             
             default:
                 teleopShootFirstTime = true;
+                shooter.stopShooting();
+                grabber.intakeOutake(false, false);
+                arm.disableRotation();
+                step = 1;
                 return Robot.DONE;
         }
 

@@ -62,10 +62,12 @@ import com.revrobotics.CANSparkFlex;
         instancedGrabber.setMotorPower(instancedGrabber.FEED_POWER);
     }
 
+    /**
+     * <p> Turns off shooter motor
+     */
     public void stopShooting() {
         shooterMotor1.set(0);
         shooterMotor2.set(0);
-        instancedGrabber.intakeOutake(false, false);
     }
 
     /**

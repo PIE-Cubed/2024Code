@@ -201,6 +201,8 @@ public class Robot extends TimedRobot {
     armStatus = Robot.CONT;
     status = Robot.CONT;
 
+    shooterSpinning = false;
+
     // Turn on the shooter motors
     //shooter.spinup();
   }
@@ -540,14 +542,12 @@ public class Robot extends TimedRobot {
     // Shoot a note
     if (controls.enableShooter() == true) {
       shooterState = true;
-      auto.teleopShoot();
+      auto.teleopShoot(controls.enableShooter());
     }
     
-    // If the drivers have just stopped shooting, disable the shooter motors
+    // If the drivers have just stopped shooting
     if (shooterState == true && controls.enableShooter() == false) {
       shooterState = false;
-      shooter.stopShooting();
-      arm.testElevate(0); // Let arm fall to rest position(bumper)
       auto.resetTeleopShoot();
     }
 
