@@ -29,7 +29,8 @@ public class Auto {
     private int armStatus = Robot.CONT;
     private int status = Robot.CONT;
     
-    private final int SHOOT1_ANGLE = 339;
+    private final int SHOOT1_ANGLE = 339;   // Up against speaker
+    //private final int SHOOT1_ANGLE = 349;   // Edge of safe zone
     private final int SHOOT2_ANGLE = 339;
 
     // Auto program selection
@@ -292,7 +293,7 @@ public class Auto {
 
             // Rotate the arm so it's in the shooting position
             case 12:
-                status = arm.rotateArm(SHOOT2_ANGLE); // Use 343 if not driving to speaker(old), tested: 334, needs to be raised     
+                status = arm.rotateArm(SHOOT2_ANGLE);    
                 break;
 
             // Shoot the note

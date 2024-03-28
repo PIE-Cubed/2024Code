@@ -202,6 +202,8 @@ public class Robot extends TimedRobot {
     status = Robot.CONT;
 
     shooterSpinning = false;
+    //apriltags.setSpeakerPipeline();
+    System.out.println(apriltags.getDistanceToSpeakerFeet());
 
     // Turn on the shooter motors
     //shooter.spinup();

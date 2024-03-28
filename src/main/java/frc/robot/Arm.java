@@ -233,7 +233,7 @@ public class Arm {
                 
         if(elevationMotorPidController.atSetpoint()) {
             elevationFirstTime = true;
-            elevationMotor.set(0.1);
+            //elevationMotor.set(0.1);
             return Robot.DONE;
         }
         else{
