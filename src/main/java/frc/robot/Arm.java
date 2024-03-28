@@ -46,6 +46,8 @@ public class Arm {
     private PIDController extenderMotorPidController;
     private PIDController elevationMotorPidController;
 
+    private int rotateTargetCount = 0;
+
     // Action variables
     private boolean extensionFirstTime;
     private boolean retract = false;
@@ -222,6 +224,7 @@ public class Arm {
         if(elevationFirstTime) {
             elevationFirstTime = false;
             elevationMotorPidController.setSetpoint(degrees);
+            rotateTargetCount = 0;
         }
 
         //System.out.println("From: " + elevationEncoder.getPosition() + " To: " + degrees);
@@ -229,16 +232,22 @@ public class Arm {
             The PID value will be positive to increase the angle */
         double power = -elevationMotorPidController.calculate(elevationEncoder.getPosition(), degrees);
         //SmartDashboard.putNumber("Arm power", power);
-        elevationMotor.set(MathUtil.clamp(power, -0.4, 0.4));   // Clamp
+        elevationMotor.set(MathUtil.clamp(power, -0.4, 0.4)); // Clamp
                 
         if(elevationMotorPidController.atSetpoint()) {
-            elevationFirstTime = true;
-            //elevationMotor.set(0.1);
-            return Robot.DONE;
+            rotateTargetCount++;
+
+            if (rotateTargetCount >= 5) {
+                elevationFirstTime = true;
+                //elevationMotor.set(0.1);
+                return Robot.DONE;
+            }
         }
         else{
-            return Robot.CONT;
+            rotateTargetCount = 0;
         }
+
+        return Robot.CONT;
     }
 
     /**

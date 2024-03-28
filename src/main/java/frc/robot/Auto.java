@@ -212,7 +212,7 @@ public class Auto {
      * <p> This currently takes 11 seconds for a full auto cycle
      * @return Robot status, CONT or DONE
      */
-    public int speakerPositionCenter() {
+    public int speakerPositionCenterNoAprilTags() {
         if(firstTime == true) {
             firstTime = false;
             intakeStatus = Robot.CONT;
@@ -311,6 +311,116 @@ public class Auto {
             default:
                 shooter.stopShooting();
                 grabber.intakeOutake(false, false);
+                step = 1;
+                firstTime = true;
+                return Robot.DONE;
+        }
+
+        // Done current step, goto next one
+        if(status == Robot.DONE) {
+            step++;
+        }
+
+        return Robot.CONT;
+    }
+
+    /**
+     * <p> Moves the arm so the shooter is aiming at the speaker (located in the center position)
+     * <p> -26 degrees from horizontal
+     * <p> Fully retracts arm
+     * <p> First rotates, then retracts the arm
+     * <p> This currently takes 11 seconds for a full auto cycle
+     * @return Robot status, CONT or DONE
+     */
+    public int speakerPositionCenter() {
+        if(firstTime == true) {
+            firstTime = false;
+            intakeStatus = Robot.CONT;
+            driveStatus = Robot.CONT;
+            step = 1;
+        }
+
+        switch(step) {            
+            // Rotate the drive motors to zero
+            case 1:
+                status = drive.rotateWheelsToAngle(0);
+                break;
+            
+            // Start the shooter motors and rotate the arm to -26 (333) degrees from 54
+            case 2:
+                shooter.spinup();
+                status = arm.rotateArm(SHOOT1_ANGLE);
+                break;
+                        
+            // Shoot the note by running the grabber
+            case 3:
+                grabber.setMotorPower(grabber.INTAKE_POWER);
+                arm.maintainPosition(SHOOT1_ANGLE);
+                status = Robot.DONE;
+                break;
+
+            // Assume the robot shot the note after 0.6 second(s)
+            case 4:
+                status = autoDelayMS(600);
+                arm.maintainPosition(SHOOT1_ANGLE);
+                break;
+
+            /*// Rotate the arm to it's resting position and turn off the shooter and Switch the grabber to intake mode
+            case 6:
+                status = arm.rotateArm(arm.ARM_REST_POSITION_DEGREES);
+                break;
+
+            // Extend the arm so the wood holding block falls into the robot, and so the arm is in the shooting position
+            case 7:
+                status = arm.extendToIntake();
+                break;
+
+            // Drive backwards 4 feet
+            case 9:
+                if (intakeStatus == Robot.CONT) {
+                    intakeStatus = grabber.intakeOutake(true, false);
+                }
+                
+                if (driveStatus == Robot.CONT) {
+                    driveStatus = drive.driveDistanceWithAngle(0, 4.5, 0.2);
+                }
+                
+                if (intakeStatus == Robot.DONE && driveStatus == Robot.DONE) {
+                    status = Robot.DONE;
+                }
+                else {
+                    status = Robot.CONT;
+                }
+            
+                break;
+
+            case 10:
+                status = arm.rotateArm(SHOOT1_ANGLE);
+                break;
+
+            // Drive back to the speaker
+            case 11:
+                arm.maintainPosition(SHOOT1_ANGLE);
+                status = drive.driveDistanceWithAngle(0, -5.3, 0.5);
+                break;
+
+            // Rotate the arm so it's in the shooting position
+            case 12:
+                status = arm.rotateArm(SHOOT2_ANGLE);    
+                break;
+
+            // Shoot the note
+            case 13:
+                grabber.setMotorPower(grabber.INTAKE_POWER);
+                arm.maintainPosition(SHOOT2_ANGLE);
+                status = autoDelay(1);
+                break;*/
+            
+            // Finished routine, reset variables, stop motors, and return done
+            default:
+                shooter.stopShooting();
+                grabber.intakeOutake(false, false);
+                arm.testElevate(0);
                 step = 1;
                 firstTime = true;
                 return Robot.DONE;
