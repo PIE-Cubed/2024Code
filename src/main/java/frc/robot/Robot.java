@@ -279,8 +279,8 @@ public class Robot extends TimedRobot {
     //double rotateAngle = SmartDashboard.getNumber("Rotation Angle", 0.0);
     //double power = SmartDashboard.getNumber("Rotation Power", 0.0);
 
-    apriltags.setSpeakerPipeline();
-    System.out.println(apriltags.calculateArmAngleToShoot());
+    //apriltags.setSpeakerPipeline();
+    //System.out.println(apriltags.calculateArmAngleToShoot());
 
     //drive.setAllRotateMotorPower(power);    
 
@@ -332,12 +332,12 @@ public class Robot extends TimedRobot {
     //ledControl();
 
     // Move the arm to a certain degree
-    /*if (armStatus == Robot.CONT) {
-      armStatus = arm.rotateArm(rotateAngle);
+    if (armStatus == Robot.CONT) {
+      armStatus = arm.rotateArm(355);
     }
     else {
-      armStatus = arm.maintainPosition(rotateAngle);
-    }*/
+      armStatus = arm.maintainPosition(355);
+    }
 
     // Test driving at an angle
     /* 

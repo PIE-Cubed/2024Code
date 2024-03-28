@@ -29,8 +29,8 @@ public class Arm {
     private final double EXTENDER_POTENTIOMETER_ZERO = -3;     // ~3mm offset to zero
     private final double EXTENDER_POTENTIOMETER_RANGE = 1000;  // Max value, in mm
 
-    private final double ARM_EXTENDER_PID_P = 0.035;
-    private final double ARM_EXTENDER_PID_I = ARM_EXTENDER_PID_P / 1.5;
+    private final double ARM_ELEVATION_PID_P = 0.04;
+    private final double ARM_ELEVATION_PID_I = ARM_ELEVATION_PID_P / 1.5;
 
     public final double ARM_REST_POSITION_DEGREES = 329;
     public final double ARM_AMP_POSITION_DEGREES = 33;
@@ -88,7 +88,7 @@ public class Arm {
         extenderMotorPidController.setTolerance(EXTENSION_TOLERANCE_MM);
 
         // Elevation PID
-        elevationMotorPidController = new PIDController(ARM_EXTENDER_PID_P, ARM_EXTENDER_PID_I, 0.0);
+        elevationMotorPidController = new PIDController(ARM_ELEVATION_PID_P, ARM_ELEVATION_PID_I, 0.0);
         elevationMotorPidController.setIntegratorRange(-0.1, 0.1);
         elevationMotorPidController.setTolerance(ELEVATION_TOLERANCE_DEGREES);
         elevationMotorPidController.enableContinuousInput(0, 360);
