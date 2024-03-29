@@ -11,17 +11,18 @@ public class AprilTags {
     private boolean isRed = false;
 
     private final double MAX_DISTANCE_FT = 6;   // Maximum distance to speaker until its too unreliable to shoot
-
     private final double CUBED_CONST = 0.00000325;
     private final double SQUARED_CONST = 0.00317;
     private final double SINGLE_CONST = 1.09;
     private final double OFFSET = 228;
 
     public AprilTags(boolean isRed) {
+        System.out.println("[INFO] >> Configuring limelight...");
         // Turn off the limelight LEDs so they don't blind people
         LimelightHelpers.setLEDMode_ForceOff("limelight");
 
         //aprilTagTable = NetworkTableInstance.getDefault().getTable("limelight");
+        System.out.println("[INFO] >> Getting alliance...");
         this.isRed = isRed;
     }
 
@@ -41,10 +42,15 @@ public class AprilTags {
 
         // If the distance is >= 8 feet, subtract 1.5 degrees
         // for every foot past the 8 feet
-        if (distance >= 243.84) { // 8 feet
-            angle -= Math.abs(1.51 * ((distance / 30.48) - 8));
-            angle = Math.abs(angle);
+        //if (distance >= 243.84) { // 8 feet
+        //    angle -= Math.abs(1.51 * ((distance / 30.48) - 8));
+        //    angle = Math.abs(angle);
+        //}
+        if(angle <= 330 && angle >= 5) {
+            System.out.println("Angle(" + angle + ") out of range (5-330deg)! Using 339");
+            angle = 339;
         }
+        System.out.println(distance);
 
         return angle;
     }
@@ -101,6 +107,22 @@ public class AprilTags {
      * <p> Pipeline 1 for Apriltag 7(Blue)
      */
     public void setSpeakerPipeline() {
+        if(isRed){
+            LimelightHelpers.setPipelineIndex("limelight", 0);  // AprilTag 4
+        }
+        else {
+            LimelightHelpers.setPipelineIndex("limelight", 1);  // AprilTag 7
+        }
+    }
+
+    /**
+     * <p> Sets the limelight pipeline for the speaker
+     * <p> Use this to manually set the speaker pipeline
+     * <p> Pipeline 0 for Apriltag 4(Red)
+     * <p> Pipeline 1 for Apriltag 7(Blue)
+     * @param isRed If we're on the red alliance
+     */
+    public void setSpeakerPipeline(boolean isRed) {
         if(isRed){
             LimelightHelpers.setPipelineIndex("limelight", 0);  // AprilTag 4
         }

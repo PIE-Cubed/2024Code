@@ -6,6 +6,7 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.I2C;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import com.revrobotics.ColorSensorV3;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -21,9 +22,10 @@ public class Grabber {
     // TODO tune these power values
     public final int INTAKE_CURRENT_LIMIT = 40;
     public final double INTAKE_POWER = 0.6;
+    public final double AUTO_INTAKE_POWER = 0.6;
     public final double OUTTAKE_POWER = -0.75;
     public final double FEED_POWER = 0.9;  
-    public final double PROXIMITY_THRESHOLD = 100;    //95
+    public final double PROXIMITY_THRESHOLD = 65;    //95
     public final double IR_THRESHOLD = 150;
     
     private CANSparkMax grabberMotor1;
@@ -33,6 +35,8 @@ public class Grabber {
     private static Grabber instancedGrabber;
 
     public static synchronized Grabber getInstance() {
+        System.out.println("[INFO] >> Initializing instanced grabber...");
+
         if (instancedGrabber == null){
             instancedGrabber = new Grabber();
         }
@@ -41,7 +45,9 @@ public class Grabber {
     }
     
     // Constructor
-    private Grabber() {
+    private Grabber() {        
+        System.out.println("[INFO] >> Initializing grabber motor controllers...");
+
         // Instantiate grabber motors & sensors
         grabberMotor1 = new CANSparkMax(GRABBER_MOTOR1_CAN, MotorType.kBrushed);
         grabberMotor1.setInverted(GRABBER_MOTOR1_IS_INVERTED);
@@ -51,14 +57,16 @@ public class Grabber {
         grabberMotor2.setInverted(GRABBER_MOTOR2_IS_INVERTED);
         grabberMotor2.setSmartCurrentLimit(INTAKE_CURRENT_LIMIT);
 
-        colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
-
         // Set the grabber motor idle modes to break, as it helps stop the note from moving forward
         grabberMotor1.setIdleMode(IdleMode.kBrake);
         grabberMotor2.setIdleMode(IdleMode.kBrake);
+        
+        System.out.println("[INFO] >> Initializing grabber sensors...");
+        colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
 
         // Create the digital input for the intake buttons
         IntakeStopButtons = new DigitalInput(INTAKE_BUTTONS_ID);
+
     } 
 
 
@@ -80,21 +88,25 @@ public class Grabber {
      * 
      */
     // TODO test color sensor's ability to stop intake correctly
-    public int intakeOutake(boolean intake, boolean outtake) {
+    public int intakeOutake(boolean intake, boolean outtake, boolean isAuto) {
         if (intake && outtake) {
             return Robot.CONT;
         }
 
         if(intake) {
-            //SmartDashboard.putBoolean("Note detected", noteDetected());
-
             if(noteDetected()) {
                 setMotorPower(0.0);
                 
                 return Robot.DONE;
             } 
             else {
-                setMotorPower(INTAKE_POWER);
+                if(isAuto) {
+                    setMotorPower(AUTO_INTAKE_POWER);
+                }
+                else {                    
+                    setMotorPower(INTAKE_POWER);
+                }
+
                 return Robot.CONT;
             }
         } 
@@ -115,8 +127,7 @@ public class Grabber {
      * @return whether a note is found
      */
     public boolean noteDetected() {
-        //return colorSensor.getProximity() > PROXIMITY_THRESHOLD;
-        return !IntakeStopButtons.get();
+        return !IntakeStopButtons.get() || colorSensor.getProximity() > PROXIMITY_THRESHOLD;
     }
 
     /**
@@ -147,6 +158,14 @@ public class Grabber {
 
     public double getProximity() {
         return colorSensor.getProximity();
+    }
+
+    public double getPower1() {
+        return grabberMotor1.get();
+    }
+
+    public double getPower2() {
+        return grabberMotor2.get();
     }
 
 }

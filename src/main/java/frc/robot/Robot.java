@@ -76,10 +76,13 @@ public class Robot extends TimedRobot {
 	 * Constructor
 	 */
 	public Robot() {
-    System.out.println("[INFO] >> Instantiating objects...");
+    System.out.println("[INFO] >> Initializing chooser(s)...");
+    
     m_chooser = new SendableChooser<>();
 
 		// Instance getters
+    System.out.println("[INFO] >> Initializing instance getters...");
+        
 		nTables  = CustomTables.getInstance();
     FCSInfo = NetworkTableInstance.getDefault();
 
@@ -90,7 +93,7 @@ public class Robot extends TimedRobot {
 		controls  = new Controls();
 		position  = new PoseEstimation(drive);
     shooter   = new Shooter();
-    //climber   = new Climber();
+    climber   = new Climber();
     arm       = new Arm();
 		auto      = new Auto(drive, position, arm, grabber, shooter, apriltags);
     led       = new LED();
@@ -152,8 +155,13 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     System.out.println("[INFO] >> Auto mode selected.");
     m_autoSelected = m_chooser.getSelected();
+
+    System.out.println("[INFO] >> Getting alliance color...");
+        
     auto.isRed = this.nTables.getIsRedAlliance();
     
+    System.out.println("[INFO] >> Getting alliance color...");
+        
     if(!auto.isRed) {
         auto.allianceAngleModifier = -1;
     }
@@ -233,14 +241,13 @@ public class Robot extends TimedRobot {
     shooterControl();
 
     // Allows for controlling the climber
-    //climberControl();
+    climberControl();
     
     // Allows for controlling the LEDs
     ledControl();
     
     // Drivers check this to see if they grabbed a note
     SmartDashboard.putBoolean("Grabber has Note", grabber.noteDetected());
-    //System.out.println(apriltags.getDistanceToSpeakerFeet());
   }
 
   /** This function is called once when the robot is disabled. */
@@ -320,6 +327,7 @@ public class Robot extends TimedRobot {
 
     // Retrieve RGB, IR, and proximity values from the color sensor
     //grabber.testColorSensor();
+    //SmartDashboard.putBoolean("Note Detected", grabber.noteDetected());
 
     // Test AprilTags
     //drive.alignWithAprilTag();
@@ -332,12 +340,12 @@ public class Robot extends TimedRobot {
     //ledControl();
 
     // Move the arm to a certain degree
-    if (armStatus == Robot.CONT) {
+    /*if (armStatus == Robot.CONT) {
       armStatus = arm.rotateArm(355);
     }
     else {
       armStatus = arm.maintainPosition(355);
-    }
+    }*/
 
     // Test driving at an angle
     /* 
@@ -358,7 +366,7 @@ public class Robot extends TimedRobot {
 
     // Get the arm extension position
     //System.out.println("Arm position: " + arm.getElevationPosition());
-    //System.out.println("Arm extension position: " + arm.getExtendPosition());
+    System.out.println("Arm extension position: " + arm.getExtendPosition());
 
     // Get drive controller values
     //System.out.println("Forward speed: " + controls.getForwardSpeed() + " Strafe speed: " + controls.getStrafeSpeed() + " Rotate speed: " + controls.getRotateSpeed());
@@ -604,7 +612,7 @@ public class Robot extends TimedRobot {
 	private void grabberControl() {
     // Start the grabber in ground mode 
     if(shooterState == false) {
-      grabber.intakeOutake(controls.runIntake(), controls.ejectNote());
+      grabber.intakeOutake(controls.runIntake(), controls.ejectNote(), false);
     }
     
     /*else if (controls.runIntake()){

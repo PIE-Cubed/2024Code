@@ -2,10 +2,7 @@ package frc.robot;
 
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
-
-import edu.wpi.first.math.MathUsageId;
 import edu.wpi.first.math.MathUtil;
-
 import com.revrobotics.CANSparkMax;
 
 public class Climber {
@@ -13,7 +10,7 @@ public class Climber {
     private final int RIGHT_MOTOR_CAN = 51;
     private final int MOTOR_CURRENT_LIMIT = 40;
     
-    public final double PRECISION_CLIMB_POWER = 0.2;
+    public final double PRECISION_CLIMB_POWER = -0.2;
     public final double CLIMB_POWER = 0.7;
 
     private CANSparkMax leftMotor;
@@ -21,6 +18,8 @@ public class Climber {
 
     public Climber() {
         // Motors
+        System.out.println("[INFO] >> Initializing climber motors...");
+        
         leftMotor = new CANSparkMax(LEFT_MOTOR_CAN, MotorType.kBrushless);
         leftMotor.setSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
         leftMotor.setIdleMode(IdleMode.kBrake);

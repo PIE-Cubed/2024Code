@@ -17,7 +17,7 @@ public class Arm {
     private final int MOTOR_CURRENT_LIMIT = 40;
     private final int EXTENDER_POTENTIOMETER_ID = 0;
 
-    private final double LOWER_EXTENSION_LIMIT_MM = 83;
+    private final double LOWER_EXTENSION_LIMIT_MM = 58;
     private final double UPPER_EXTENSION_LIMIT_MM = 155;
     private final double LOWER_ELEVATION_LIMIT = 0;
     private final double UPPER_ELEVATION_LIMIT = Math.PI;
@@ -34,8 +34,8 @@ public class Arm {
 
     public final double ARM_REST_POSITION_DEGREES = 329;
     public final double ARM_AMP_POSITION_DEGREES = 33;
-    public final double ARM_POT_REST_POSITION = 87;
-    public final double ARM_POT_INTAKE_POSITION = 147;
+    public final double ARM_POT_REST_POSITION = 58;
+    public final double ARM_POT_INTAKE_POSITION = 135;
 
     private CANSparkMax extenderMotor;
     private CANSparkMax elevationMotor;
@@ -59,7 +59,9 @@ public class Arm {
     private double startPosition;
     private double targetDistance;
 
-    public Arm() {
+    public Arm() {        
+        System.out.println("[INFO] >> Initializing arm motors...");
+
         // Setup extender motor
         extenderMotor = new CANSparkMax(EXTENDER_MOTOR_CAN, MotorType.kBrushless);
         extenderMotor.setSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
@@ -71,7 +73,9 @@ public class Arm {
         elevationMotor.setSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
         elevationMotor.setIdleMode(IdleMode.kBrake);
 
-        // Encoders
+        // Encoders        
+        System.out.println("[INFO] >> Initializing arm encoder(s)...");
+        
         // Extender Potentiometer
         extenderPot = new AnalogPotentiometer(
             EXTENDER_POTENTIOMETER_ID, 
@@ -85,6 +89,8 @@ public class Arm {
         elevationEncoder.setVelocityConversionFactor(ELEVATION_ENCODER_FACTOR);
 
         // PID controllers
+        System.out.println("[INFO] >> Initializing arm PID controllers...");
+        
         // Extender PID
         extenderMotorPidController = new PIDController(1.0, 0.0, 0.0);
         extenderMotorPidController.setTolerance(EXTENSION_TOLERANCE_MM);
@@ -232,7 +238,7 @@ public class Arm {
             The PID value will be positive to increase the angle */
         double power = -elevationMotorPidController.calculate(elevationEncoder.getPosition(), degrees);
         //SmartDashboard.putNumber("Arm power", power);
-        elevationMotor.set(MathUtil.clamp(power, -0.4, 0.4)); // Clamp
+        elevationMotor.set(MathUtil.clamp(power, -0.3, 0.3)); // Clamp
                 
         if(elevationMotorPidController.atSetpoint()) {
             rotateTargetCount++;

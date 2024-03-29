@@ -100,6 +100,8 @@ public class Drive {
      */
     public Drive(AprilTags apriltags) {
         // NavX
+        System.out.println("[INFO] >> Initializing navX MXP...");
+        
         try {
             ahrs = new AHRS(SPI.Port.kMXP);
         } catch (RuntimeException ex) {
@@ -110,14 +112,14 @@ public class Drive {
         System.out.println("[INFO] >> Connecting to navX...");
 
         while (ahrs.isConnected() == false) {
-            System.out.print(".");
+            System.out.print("#");
         }
 
         System.out.println("\n\n[INFO] >> navX Connected.");
         System.out.println("[INFO] >> Calibrating navX...");
 
         while (ahrs.isCalibrating() == true) {
-            System.out.print(".");
+            System.out.print("#");
         }
 
         System.out.println("\n[INFO] >> navX Ready!");
@@ -125,6 +127,8 @@ public class Drive {
         ahrs.zeroYaw();
 
         // Initializing rate limiters
+        System.out.println("[INFO] >> Initializing drive rate limiters...");
+        
         xLimiter = new SlewRateLimiter(24);
         yLimiter = new SlewRateLimiter(24);
         rotateLimiter = new SlewRateLimiter(8 * Math.PI);
@@ -134,6 +138,8 @@ public class Drive {
          * whereas positive y values represent moving toward the left of the robot 
          * Values are in meters
          */
+        System.out.println("[INFO] >> Creating drive kinematics...");
+        
         FRONT_LEFT_LOCATION  = new Translation2d(0.26035, 0.26035);
         FRONT_RIGHT_LOCATION = new Translation2d(0.26035, -0.26035);
         BACK_LEFT_LOCATION   = new Translation2d(-0.26035, 0.26035);
@@ -148,12 +154,16 @@ public class Drive {
         );
 
         // Creates the swerve modules. Encoders should be zeroed with the block
+        System.out.println("[INFO] >> Initializing swerve modules...");
+        
         frontLeft  = new SwerveModule(14, 15, true);
         frontRight = new SwerveModule(16, 17, false);
         backLeft   = new SwerveModule(12, 13, true);
         backRight  = new SwerveModule(10, 11, false);
 
         // PID instantiation
+        System.out.println("[INFO] >> Initializing drive PID controllers...");
+        
         autoDriveXController = new PIDController(adp, adi, add);
         autoDriveXController.setTolerance(AUTO_DRIVE_TOLERANCE);
 

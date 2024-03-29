@@ -52,6 +52,8 @@ public class Controls {
 	 * The constructor for the Controls class
 	 */
 	public Controls() {
+        System.out.println("[INFO] >> Initializing controllers...");
+
 		// Instance Creation
 		driveController = new XboxController(DRIVE_ID);
 		manipulatorController = new XboxController(MANIPULATOR_ID);
@@ -176,7 +178,7 @@ public class Controls {
 	 * @return Drive controller A button pressed
 	 */
 	public boolean toggleSpeakerTargeting() {
-		return driveController.getAButtonPressed();
+		return driveController.getAButton();
 	}
 
 	// Stage Functions
