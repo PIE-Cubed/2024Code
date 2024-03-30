@@ -678,6 +678,10 @@ public class Auto {
             firstTime = false;
             intakeStatus = Robot.CONT;
             driveStatus = Robot.CONT;
+            apriltags.setSpeakerPipeline(isRed);
+
+            System.out.println("Is Red: " + isRed);
+
             step = 1;
         }
 
@@ -689,7 +693,7 @@ public class Auto {
 
             // Retract the arm fully to prevent out of bounds issues
             case 2:
-                status = arm.extendArm(23, 0.25);
+                status = Robot.DONE;
                 break;
             
             // Start the shooter motors and rotate the arm to -26 (333) degrees from 54
@@ -700,52 +704,42 @@ public class Auto {
 
             // Extend the arm to its original position
             case 4:
-                status = arm.extendArm(-16, -0.25);
-                arm.maintainPosition(SHOOT1_ANGLE);
-                break;
-                        
-            // Shoot the note by running the grabber
-            case 5:
                 grabber.setMotorPower(grabber.INTAKE_POWER);
                 arm.maintainPosition(SHOOT1_ANGLE);
                 status = Robot.DONE;
                 break;
-
+                    
             // Assume the robot shot the note after 0.75 second(s)
-            case 6:
+            case 5:
                 status = autoDelayMS(750);
                 arm.maintainPosition(SHOOT1_ANGLE);
                 break;
 
             // Rotate the arm to its resting position, and turn off the shooter & grabber
-            case 7:            
+            case 6:            
                 shooter.stopShooting();
                 grabber.intakeOutake(false, false, true);
-                status = arm.rotateArm(327);
-                break;
-
-            // Drive forwards 1 foot
-            case 8:
                 status = drive.driveDistanceWithAngle(0, 6, 0.5);            
+
                 break;
 
             // Rotate the robot 57 degrees
-            case 9:
-                status = drive.rotateRobot(Math.toRadians(allianceAngleModifier * -57));
+            case 7:
+                status = drive.rotateRobot(Math.toRadians(allianceAngleModifier * -50));
                 break;
 
             // Rotate the wheels back to zero before driving forward
-            case 10:
+            case 8:
                 status = drive.rotateWheelsToAngle(0);            
                 break;
             
             // Drive forwards to get out of alliance area
-            case 11:
+            case 9:
                 status = drive.driveDistanceWithAngle(0, 3, 0.5);
                 break;
 
             // Drive backwards to get back into alliance area
-            case 12:
+            case 10:
                 status = drive.driveDistanceWithAngle(0, -3.5, 0.5);
                 break;
 
