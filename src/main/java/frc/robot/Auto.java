@@ -633,6 +633,7 @@ public class Auto {
 
             // Raise arm to shooting angle
             case 13:
+                //April tag distance is 9.49 FT, low by 1-2 degrees
                 apriltagShootAngle = apriltags.calculateArmAngleToShoot();
                 status = arm.rotateArm(apriltagShootAngle);
                 //System.out.println(apriltagShootAngle);

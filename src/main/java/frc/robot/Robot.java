@@ -331,7 +331,7 @@ public class Robot extends TimedRobot {
 
     // Test AprilTags
     //drive.alignWithAprilTag();
-    //System.out.println(apriltags.getDistanceToSpeakerFeet());
+    System.out.println(apriltags.getDistanceToSpeakerFeet());
 
     // Test the auto selection
     //System.out.println("Selected auto: " + m_chooser.getSelected());
