@@ -513,7 +513,7 @@ public class Auto {
 
             // Rotate the arm to its resting position, and turn off the shooter & grabber
             case 6:            
-                shooter.stopShooting();
+                //shooter.stopShooting();
                 grabber.intakeOutake(false, false, true);
                 status = drive.driveDistanceWithAngle(0, 1.4, 0.5);            
                 break;
@@ -521,7 +521,7 @@ public class Auto {
             // Rotate the robot 57 degrees
             // Currently overturning at 57
             case 7:
-                status = drive.rotateRobot(Math.toRadians(allianceAngleModifier * 50));
+                status = drive.rotateRobot(Math.toRadians(allianceAngleModifier * 47));
                 break;
 
             case 8:
@@ -619,6 +619,7 @@ public class Auto {
             */
 
             // Align with the speaker to shoot
+            // Gets stuck here
             case 11:
                 status = drive.alignWithAprilTag();
                 break;
@@ -627,7 +628,7 @@ public class Auto {
             case 12:
                 //arm.maintainPosition(SHOOT1_ANGLE);
                 //status = drive.driveDistanceWithAngle(0, -5.3, 0.5);
-                shooter.spinup();
+                //shooter.spinup();
                 status = arm.extendToRest();
                 break;
 
