@@ -519,8 +519,9 @@ public class Auto {
                 break;
 
             // Rotate the robot 57 degrees
+            // Currently overturning at 57
             case 7:
-                status = drive.rotateRobot(Math.toRadians(66));
+                status = drive.rotateRobot(Math.toRadians(allianceAngleModifier * 50));
                 break;
 
             case 8:
@@ -534,7 +535,7 @@ public class Auto {
                 grabber.intakeOutake(true, false, true);
                 break;
 
-            // Drive forwards 4 feet and pick up a note
+            // Drive forwards 4.5 feet and pick up a note
             case 10:
                 if (intakeStatus == Robot.CONT) {
                     intakeStatus = grabber.intakeOutake(true, false, true);
@@ -616,6 +617,7 @@ public class Auto {
                 break;
 
             */
+
             // Align with the speaker to shoot
             case 11:
                 status = drive.alignWithAprilTag();
@@ -646,17 +648,6 @@ public class Auto {
                 grabber.setMotorPower(grabber.INTAKE_POWER);
                 arm.maintainPosition(apriltagShootAngle);
                 status = autoDelayMS(500);
-                break;
-            case 16:
-                shooter.spinup();
-                status = arm.rotateArm(SHOOT2_ANGLE);
-                break;
-
-            // Shoot the note
-            case 17:
-                grabber.setMotorPower(grabber.INTAKE_POWER);
-                arm.maintainPosition(SHOOT2_ANGLE);
-                status = autoDelay(500);
                 break;
 
             // Finished routine, reset variables, stop motors, and return done
