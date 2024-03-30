@@ -138,7 +138,7 @@ public class Drive {
          * whereas positive y values represent moving toward the left of the robot 
          * Values are in meters
          */
-        System.out.println("[INFO] >> Creating drive kinematics...");
+        //System.out.println("[INFO] >> Creating drive kinematics...");
         
         FRONT_LEFT_LOCATION  = new Translation2d(0.26035, 0.26035);
         FRONT_RIGHT_LOCATION = new Translation2d(0.26035, -0.26035);
@@ -154,7 +154,7 @@ public class Drive {
         );
 
         // Creates the swerve modules. Encoders should be zeroed with the block
-        System.out.println("[INFO] >> Initializing swerve modules...");
+        //System.out.println("[INFO] >> Initializing swerve modules...");
         
         frontLeft  = new SwerveModule(14, 15, true);
         frontRight = new SwerveModule(16, 17, false);
@@ -162,7 +162,7 @@ public class Drive {
         backRight  = new SwerveModule(10, 11, false);
 
         // PID instantiation
-        System.out.println("[INFO] >> Initializing drive PID controllers...");
+        //System.out.println("[INFO] >> Initializing drive PID controllers...");
         
         autoDriveXController = new PIDController(adp, adi, add);
         autoDriveXController.setTolerance(AUTO_DRIVE_TOLERANCE);
@@ -258,13 +258,13 @@ public class Drive {
             backRight.zeroDriveEncoder();
             initialOrientation = getYawAdjusted();
 
-            System.out.println("Current position: " + backRight.getDrivePositionFeet() + "ft");
-            System.out.println("Target position: " + distanceFeet + "ft");
+            //System.out.println("Current position: " + backRight.getDrivePositionFeet() + "ft");
+            //System.out.println("Target position: " + distanceFeet + "ft");
         }
 
         // If the robot has traveled the correct distance, stop the wheels and reset the drive distance
         if (backRight.getDrivePositionFeet() >= distanceFeet) {  
-            System.out.println("Done, traveled " + backRight.getDrivePositionFeet() + "ft");
+            //System.out.println("Done, traveled " + backRight.getDrivePositionFeet() + "ft");
             driveDistanceFirstTime = true;
             stopWheels();
             return Robot.DONE;
@@ -301,7 +301,7 @@ public class Drive {
         backLeft.setDesiredState(state);
         backRight.setDesiredState(state);*/
 
-        System.out.println(backRight.getDrivePositionFeet());
+        //System.out.println(backRight.getDrivePositionFeet());
         return Robot.CONT;
     }
 
@@ -332,17 +332,17 @@ public class Drive {
 
             // Print some debug stuff
             // Current values
-            System.out.println("Current position: " + backRight.getDrivePositionFeet() + "ft");
-            System.out.println("Current angle: " + initialOrientation + "°");
+            //System.out.println("Current position: " + backRight.getDrivePositionFeet() + "ft");
+            //System.out.println("Current angle: " + initialOrientation + "°");
 
             // Target values
-            System.out.println("Target position: " + distanceFeet + "ft");
-            System.out.println("Target angle: " + driveAngle + "°");
+            //System.out.println("Target position: " + distanceFeet + "ft");
+            //System.out.println("Target angle: " + driveAngle + "°");
         }
 
         // Stop the robot if it has driven the correct distance
         if (Math.abs(backRight.getDrivePositionFeet()) >= Math.abs(distanceFeet)) {
-            System.out.println("Done, traveled " + backRight.getDrivePositionFeet() + "ft");
+            //System.out.println("Done, traveled " + backRight.getDrivePositionFeet() + "ft");
             driveReverseDistanceFirstTime = true;
             stopWheels();
             return Robot.DONE;
@@ -462,7 +462,7 @@ public class Drive {
 
         // Stop the robot if it has driven the correct distance
         if (Math.abs(backLeft.getDrivePositionFeet()) >= Math.abs(distanceFeet)) {
-            System.out.println("Done, traveled " + backLeft.getDrivePositionFeet() + "ft");
+            //System.out.println("Done, traveled " + backLeft.getDrivePositionFeet() + "ft");
             driveDistanceFirstTime = true;
             stopWheels();
 
@@ -538,7 +538,7 @@ public class Drive {
 
         // Stop the robot if it has driven the correct distance
         if (Math.abs(backRight.getDrivePositionFeet()) >= Math.abs(targetFeet)) {
-            System.out.println("Done, traveled " + backRight.getDrivePositionFeet() + "ft");
+            //System.out.println("Done, traveled " + backRight.getDrivePositionFeet() + "ft");
             driveDistanceFirstTime = true;
             stopWheels();
             return Robot.DONE;

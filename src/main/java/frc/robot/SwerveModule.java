@@ -281,7 +281,7 @@ public class SwerveModule {
      */
     public void zeroDriveEncoder() {
         driveEncoder.setPosition(0.00);
-        System.out.println("Encoder position: " + getDrivePositionFeet());
+        //System.out.println("Encoder position: " + getDrivePositionFeet());
     }
 
     /**

@@ -76,12 +76,12 @@ public class Robot extends TimedRobot {
 	 * Constructor
 	 */
 	public Robot() {
-    System.out.println("[INFO] >> Initializing chooser(s)...");
+    //System.out.println("[INFO] >> Initializing chooser(s)...");
     
     m_chooser = new SendableChooser<>();
 
 		// Instance getters
-    System.out.println("[INFO] >> Initializing instance getters...");
+    //System.out.println("[INFO] >> Initializing instance getters...");
         
 		nTables  = CustomTables.getInstance();
     FCSInfo = NetworkTableInstance.getDefault();
@@ -105,14 +105,14 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    System.out.println("[INFO] >> Robot init running.");
+    //System.out.println("[INFO] >> Robot init running.");
 
     // Start the camera server
     //System.out.println("[INFO] >> Starting camera server...");
     //CameraServer.startAutomaticCapture();
     
     // Auto selection
-    System.out.println("[INFO] >> Configuring auto...");
+    //System.out.println("[INFO] >> Configuring auto...");
     m_chooser.setDefaultOption("Speaker Center Auto", "Speaker Center Auto");
     m_chooser.addOption("Amp Side Auto", "Amp Side Auto");
     m_chooser.addOption("Feed Side Auto", "Feed Side Auto");
@@ -209,7 +209,7 @@ public class Robot extends TimedRobot {
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
-    System.out.println("[INFO] >> TeleOp mode selected.");
+    //System.out.println("[INFO] >> TeleOp mode selected.");
 
     // Reset the robot statuses. This ensures that we don't need to restart the code after every time we
     // run the robot.
@@ -366,7 +366,7 @@ public class Robot extends TimedRobot {
 
     // Get the arm extension position
     //System.out.println("Arm position: " + arm.getElevationPosition());
-    System.out.println("Arm extension position: " + arm.getExtendPosition());
+    //System.out.println("Arm extension position: " + arm.getExtendPosition());
 
     // Get drive controller values
     //System.out.println("Forward speed: " + controls.getForwardSpeed() + " Strafe speed: " + controls.getStrafeSpeed() + " Rotate speed: " + controls.getRotateSpeed());

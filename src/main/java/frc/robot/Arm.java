@@ -60,7 +60,7 @@ public class Arm {
     private double targetDistance;
 
     public Arm() {        
-        System.out.println("[INFO] >> Initializing arm motors...");
+        //System.out.println("[INFO] >> Initializing arm motors...");
 
         // Setup extender motor
         extenderMotor = new CANSparkMax(EXTENDER_MOTOR_CAN, MotorType.kBrushless);
@@ -74,7 +74,7 @@ public class Arm {
         elevationMotor.setIdleMode(IdleMode.kBrake);
 
         // Encoders        
-        System.out.println("[INFO] >> Initializing arm encoder(s)...");
+        //System.out.println("[INFO] >> Initializing arm encoder(s)...");
         
         // Extender Potentiometer
         extenderPot = new AnalogPotentiometer(
@@ -89,7 +89,7 @@ public class Arm {
         elevationEncoder.setVelocityConversionFactor(ELEVATION_ENCODER_FACTOR);
 
         // PID controllers
-        System.out.println("[INFO] >> Initializing arm PID controllers...");
+        //System.out.println("[INFO] >> Initializing arm PID controllers...");
         
         // Extender PID
         extenderMotorPidController = new PIDController(1.0, 0.0, 0.0);
@@ -109,7 +109,7 @@ public class Arm {
         elevationAngle = 0.0;
 
         startPosition = elevationEncoder.getPosition();
-        System.out.println("[INFO] >> Arm start position: " + startPosition);
+        //System.out.println("[INFO] >> Arm start position: " + startPosition);
     }
 
     /**

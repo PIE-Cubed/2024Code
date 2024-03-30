@@ -18,7 +18,7 @@ public class Climber {
 
     public Climber() {
         // Motors
-        System.out.println("[INFO] >> Initializing climber motors...");
+        //System.out.println("[INFO] >> Initializing climber motors...");
         
         leftMotor = new CANSparkMax(LEFT_MOTOR_CAN, MotorType.kBrushless);
         leftMotor.setSmartCurrentLimit(MOTOR_CURRENT_LIMIT);

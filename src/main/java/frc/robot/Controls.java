@@ -52,7 +52,7 @@ public class Controls {
 	 * The constructor for the Controls class
 	 */
 	public Controls() {
-        System.out.println("[INFO] >> Initializing controllers...");
+        //System.out.println("[INFO] >> Initializing controllers...");
 
 		// Instance Creation
 		driveController = new XboxController(DRIVE_ID);

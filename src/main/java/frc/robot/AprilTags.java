@@ -17,12 +17,12 @@ public class AprilTags {
     private final double OFFSET = 228;
 
     public AprilTags(boolean isRed) {
-        System.out.println("[INFO] >> Configuring limelight...");
+        //System.out.println("[INFO] >> Configuring limelight...");
         // Turn off the limelight LEDs so they don't blind people
         LimelightHelpers.setLEDMode_ForceOff("limelight");
 
         //aprilTagTable = NetworkTableInstance.getDefault().getTable("limelight");
-        System.out.println("[INFO] >> Getting alliance...");
+        //System.out.println("[INFO] >> Getting alliance...");
         this.isRed = isRed;
     }
 
@@ -50,7 +50,7 @@ public class AprilTags {
             System.out.println("Angle(" + angle + ") out of range (5-330deg)! Using 339");
             angle = 339;
         }
-        System.out.println(distance);
+        //System.out.println(distance);
 
         return angle;
     }

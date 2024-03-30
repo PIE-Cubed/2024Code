@@ -35,7 +35,7 @@ public class Grabber {
     private static Grabber instancedGrabber;
 
     public static synchronized Grabber getInstance() {
-        System.out.println("[INFO] >> Initializing instanced grabber...");
+        //System.out.println("[INFO] >> Initializing instanced grabber...");
 
         if (instancedGrabber == null){
             instancedGrabber = new Grabber();
@@ -46,7 +46,7 @@ public class Grabber {
     
     // Constructor
     private Grabber() {        
-        System.out.println("[INFO] >> Initializing grabber motor controllers...");
+        //System.out.println("[INFO] >> Initializing grabber motor controllers...");
 
         // Instantiate grabber motors & sensors
         grabberMotor1 = new CANSparkMax(GRABBER_MOTOR1_CAN, MotorType.kBrushed);
@@ -61,7 +61,7 @@ public class Grabber {
         grabberMotor1.setIdleMode(IdleMode.kBrake);
         grabberMotor2.setIdleMode(IdleMode.kBrake);
         
-        System.out.println("[INFO] >> Initializing grabber sensors...");
+        //System.out.println("[INFO] >> Initializing grabber sensors...");
         colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
 
         // Create the digital input for the intake buttons

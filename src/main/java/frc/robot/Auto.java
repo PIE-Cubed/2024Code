@@ -178,14 +178,14 @@ public class Auto {
         switch(step) {
             // Extend the arm so the wood holding block falls into the robot
             case 1:
-            System.out.println("RETRACT");
+            //System.out.println("RETRACT");
             //System.out.println("Arm extension position: " + arm.getExtendPosition());
                 status = arm.extendArm(23, 0.25);
                 break;
 
             // Extend the arm so the wood holding block falls into the robot
             case 2:
-            System.out.println("EXTEND");
+            //System.out.println("EXTEND");
             //System.out.println("Arm extension position: " + arm.getExtendPosition());
                 status = arm.extendArm(-23, -0.25);
                 break;
@@ -425,7 +425,7 @@ public class Auto {
 
             case 10:
                 apriltagShootAngle = apriltags.calculateArmAngleToShoot();
-                System.out.println(apriltagShootAngle);
+                //System.out.println(apriltagShootAngle);
                 status = arm.rotateArm(apriltagShootAngle);
                 break;
 
@@ -940,7 +940,7 @@ public class Auto {
             case 1:
                 shooter.spinup();
                 apriltagShootAngle = apriltags.calculateArmAngleToShoot();
-                System.out.println(apriltagShootAngle);
+                //System.out.println(apriltagShootAngle);
                 status = arm.rotateArm(apriltagShootAngle);
                 break;
 
