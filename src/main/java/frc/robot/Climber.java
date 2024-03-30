@@ -10,7 +10,7 @@ public class Climber {
     private final int RIGHT_MOTOR_CAN = 51;
     private final int MOTOR_CURRENT_LIMIT = 40;
     
-    public final double PRECISION_CLIMB_POWER = -0.2;
+    public final double PRECISION_CLIMB_POWER = -0.4;
     public final double CLIMB_POWER = 0.7;
 
     private CANSparkMax leftMotor;
@@ -23,7 +23,7 @@ public class Climber {
         leftMotor = new CANSparkMax(LEFT_MOTOR_CAN, MotorType.kBrushless);
         leftMotor.setSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
         leftMotor.setIdleMode(IdleMode.kBrake);
-        
+
         rightMotor = new CANSparkMax(RIGHT_MOTOR_CAN, MotorType.kBrushless);
         rightMotor.setSmartCurrentLimit(MOTOR_CURRENT_LIMIT);
         rightMotor.setIdleMode(IdleMode.kBrake);
