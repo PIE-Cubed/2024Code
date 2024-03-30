@@ -611,7 +611,8 @@ public class Robot extends TimedRobot {
 	 */
 	private void grabberControl() {
     // Start the grabber in ground mode 
-    if(shooterState == false) {
+    if ((shooterState     == false) && 
+        (autoShooterState == false))  {
       grabber.intakeOutake(controls.runIntake(), controls.ejectNote(), false);
     }
     
