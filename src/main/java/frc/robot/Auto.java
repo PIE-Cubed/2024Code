@@ -521,7 +521,7 @@ public class Auto {
             // Rotate the robot 57 degrees
             // Currently overturning at 57
             case 7:
-                status = drive.rotateRobot(Math.toRadians(allianceAngleModifier * -50));
+                status = drive.rotateRobot(Math.toRadians(allianceAngleModifier * 50));
                 break;
 
             case 8:
