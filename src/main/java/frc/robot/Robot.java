@@ -331,6 +331,20 @@ public class Robot extends TimedRobot {
 
     // Test AprilTags
     //drive.alignWithAprilTag();
+    /*arm.maintainPosition(SmartDashboard.getNumber("Arm Angle", arm.ARM_REST_POSITION_DEGREES));
+    if (controls.enableShooter()) {
+      status = auto.autoDelay(1);
+      shooter.spinup();
+
+      if (status == DONE)
+        grabber.setMotorPower(grabber.INTAKE_POWER);
+    }
+    else {
+      status = Robot.CONT;
+      shooter.spindown();
+      grabber.setMotorPower(0);
+    }*/
+
     System.out.println(apriltags.getDistanceToSpeakerFeet());
 
     // Test the auto selection
@@ -366,7 +380,7 @@ public class Robot extends TimedRobot {
 
     // Get the arm extension position
     //System.out.println("Arm position: " + arm.getElevationPosition());
-    //System.out.println("Arm extension position: " + arm.getExtendPosition());
+    System.out.println("Arm extension position: " + arm.getExtendPosition());
 
     // Get drive controller values
     //System.out.println("Forward speed: " + controls.getForwardSpeed() + " Strafe speed: " + controls.getStrafeSpeed() + " Rotate speed: " + controls.getRotateSpeed());
