@@ -15,7 +15,11 @@ public class Auto {
     // State tracking variables - each variable can only be used in one function at any time
     // All top level routines use firstTime and step, all helper routines have their own variables
     private int step;
+    private int restStep;
+    private int intakeStep;
     private boolean firstTime = true;
+    private boolean restFirstTime = true;
+    private boolean intakeFirstTime = true;
     private boolean teleopShootFirstTime = true;
     private boolean autoShootFirstTime = true;
     public boolean isRed = false;
@@ -125,35 +129,76 @@ public class Auto {
 
     /**
      * <p> Moves the arm back into resting position
-     * <p> -27 degrees from horizontal
-     * <p> Doesnt retract arm(loses precision from string slack)
+     * <p> Retracts first, then rotates to keep hard-stops within bumper
      * @return Robot status, CONT or DONE
      */
     public int restingPosition() {
         int status = Robot.CONT;
 
-        if(firstTime == true) {
-            firstTime = false;
-            step = 1;
+        if(restFirstTime == true) {
+            restFirstTime = false;
+            restStep = 1;
         }
 
-        switch(step) {
-            case 1:     // Rotate arm to -27 degrees from horizontal (359 - 27 = 332)
-                status = arm.rotateArm(350);
+        switch(restStep) {
+            // Retract to make sure hard-stops are within bumpers
+            case 1:
+                //System.out.println("Retract to rest");
+                status = arm.extendToRest();
                 break;
+
+            // Rotate to rest while continually retracting
             case 2:
-                arm.maintainPosition(350);
-                status = arm.extendArm(0, -0.1);
+                //System.out.println("Rotate to rest");
+                status = arm.rotateToRest(1.5);
+                arm.extendToRest(); // Keep retracting just in case it accidentally extends
                 break;
             default:    // Finished routine, reset variables and return done
-                step = 1;
-                firstTime = true;
+                restStep = 1;
+                restFirstTime = true;
                 return Robot.DONE;
         }
 
         // Done current step, goto next one
         if(status == Robot.DONE) {
-            step++;
+            restStep++;
+        }
+
+        return Robot.CONT;
+    }
+
+    /**
+     * <p> Moves the arm into intake position
+     * <p> Goes to rest, then extends arm
+     * @return Robot status, CONT or DONE
+     */
+    public int intakePosition() {
+        int status = Robot.CONT;
+
+        if(intakeFirstTime == true) {
+            intakeFirstTime = false;
+            intakeStep = 1;
+        }
+
+        switch(intakeStep) {
+            // Retract to make sure hard-stops are within bumpers
+            case 1:
+                status = restingPosition();
+                break;
+
+            // Rotate to rest while continually retracting
+            case 2:
+                status = arm.extendToIntake();
+                break;
+            default:    // Finished routine, reset variables and return done
+                intakeStep = 1;
+                intakeFirstTime = true;
+                return Robot.DONE;
+        }
+
+        // Done current step, goto next one
+        if(status == Robot.DONE) {
+            intakeStep++;
         }
 
         return Robot.CONT;
@@ -262,12 +307,12 @@ public class Auto {
 
             // Rotate the arm to it's resting position and turn off the shooter and Switch the grabber to intake mode
             case 7:
-                status = arm.rotateArm(arm.ARM_REST_POSITION_DEGREES);
+                status = restingPosition();
                 break;
 
             // Extend the arm so the wood holding block falls into the robot, and so the arm is in the shooting position
             case 8:
-                status = arm.extendToIntake();
+                status = intakePosition();
                 break;
 
             // Drive backwards 4 feet
@@ -290,22 +335,26 @@ public class Auto {
                 break;
 
             case 10:
+                status = restingPosition();
+                break;
+
+            case 11:
                 status = arm.rotateArm(SHOOT1_ANGLE);
                 break;
 
             // Drive back to the speaker
-            case 11:
+            case 12:
                 arm.maintainPosition(SHOOT1_ANGLE);
                 status = drive.driveDistanceWithAngle(0, -5.3, 0.5);
                 break;
 
             // Rotate the arm so it's in the shooting position
-            case 12:
+            case 13:
                 status = arm.rotateArm(SHOOT2_ANGLE);    
                 break;
 
             // Shoot the note
-            case 13:
+            case 14:
                 grabber.setMotorPower(grabber.INTAKE_POWER);
                 arm.maintainPosition(SHOOT2_ANGLE);
                 status = autoDelay(1);
@@ -378,13 +427,12 @@ public class Auto {
             // Rotate the arm to it's resting position and turn off the shooter and Switch the grabber to intake mode
             case 6:
                 shooter.spindown();
-                status = arm.rotateArm(arm.ARM_REST_POSITION_DEGREES);
+                //status = restingPosition();
                 break;
 
             // Extend the arm so the wood holding block falls into the robot, and so the arm is in the shooting position
             case 7:
-                arm.testElevate(0);
-                status = arm.extendToIntake();
+                status = intakePosition();
                 break;
 
             // Drive backwards 4 1/2 feet
@@ -415,12 +463,12 @@ public class Auto {
             
                 break;
 
-            // Drive back to the speaker
+            // Prepare to shoot
             case 9:
                 //arm.maintainPosition(SHOOT1_ANGLE);
                 //status = drive.driveDistanceWithAngle(0, -5.3, 0.5);
                 shooter.spinup();
-                status = arm.extendToRest();
+                status = restingPosition();
                 break;
 
             case 10:
@@ -514,25 +562,48 @@ public class Auto {
             // Rotate the arm to its resting position, and turn off the shooter & grabber
             case 6:            
                 //shooter.stopShooting();
+                status = restingPosition();
                 grabber.intakeOutake(false, false, true);
-                status = drive.driveDistanceWithAngle(0, 1.4, 0.5);            
+                            
                 break;
 
             // Rotate the robot 57 degrees
             // Currently overturning at 57
             case 7:
-                status = drive.rotateRobot(Math.toRadians(allianceAngleModifier * 47));
+                status = drive.driveDistanceWithAngle(0, 1.4, 0.5);
+                
+                //armStatus = arm.extendToRest();
+
+                //if(driveStatus == Robot.DONE && armStatus == Robot.DONE) {
+                //    driveStatus = Robot.CONT;
+                //    armStatus = Robot.CONT;
+                //    status = Robot.DONE;
+                //} 
+                //else {
+                //    status = Robot.CONT;
+                //}
                 break;
 
             case 8:
-                arm.testElevate(0);
-                status = arm.extendToIntake();
+                status = drive.rotateRobot(Math.toRadians(allianceAngleModifier * 47));
+                //status = arm.rotateToRest(1.15);
                 break;
-
-            // Rotate the wheels back to zero before driving forward
+                
+                // Rotate the wheels back to zero before driving forward
             case 9:
-                status = drive.rotateWheelsToAngle(0);            
+                armStatus = intakePosition();
+                driveStatus = drive.rotateWheelsToAngle(0);            
                 grabber.intakeOutake(true, false, true);
+                //armStatus = arm.extendToIntake();
+
+                if(driveStatus == Robot.DONE && armStatus == Robot.DONE) {
+                    driveStatus = Robot.CONT;
+                    armStatus = Robot.CONT;
+                    status = Robot.DONE;
+                } 
+                else {
+                    status = Robot.CONT;
+                }
                 break;
 
             // Drive forwards 4.5 feet and pick up a note
@@ -629,7 +700,8 @@ public class Auto {
                 //arm.maintainPosition(SHOOT1_ANGLE);
                 //status = drive.driveDistanceWithAngle(0, -5.3, 0.5);
                 //shooter.spinup();
-                status = arm.extendToRest();
+                //status = arm.extendToRest();
+                status = restingPosition();
                 break;
 
             // Raise arm to shooting angle
@@ -758,6 +830,7 @@ public class Auto {
 
         return Robot.CONT;
     }
+
     /**
      * <p> Faces the speaker
      * <p> Fail stops the auto immediatly, resets, and returns fail
@@ -830,16 +903,12 @@ public class Auto {
                 arm.maintainPosition(SHOOT1_ANGLE);
                 break;
 
-            // Rotate the arm to it's resting position and turn off the shooter and Switch the grabber to intake mode
+            // Goto rest
             case 4:
-                status = arm.rotateArm(322);
+                shooter.spindown();
+                status = restingPosition();
                 break;
 
-            // Extend the arm so the wood holding block falls into the robot, and so the arm is in the shooting position
-            case 5:
-                status = arm.extendArm(8, 0.25);
-                break;
-            
             // Finished routine, reset variables, stop motors, and return done
             default:
                 shooter.stopShooting();
@@ -954,11 +1023,15 @@ public class Auto {
                 //    status = Robot.CONT;
                 //}
                 //else {
-                    status = autoDelayMS(500);
-                    //status = Robot.DONE;
+                status = autoDelayMS(500);
+                //status = Robot.DONE;
                 //}
                 break;
             
+            case 4:
+                step = restingPosition();
+                break;
+
             default:
                 autoShootFirstTime = true;
                 grabber.intakeOutake(false, false, false);

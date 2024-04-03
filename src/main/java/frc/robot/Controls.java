@@ -196,7 +196,8 @@ public class Controls {
 	 * @return Drive controller Y button pressed
 	 */
 	public boolean autoClimb() {
-		return driveController.getYButtonPressed();
+		return false;
+		//return driveController.getYButtonPressed();
 	}
 
 	//D-Pad
@@ -246,6 +247,14 @@ public class Controls {
 	 */
 	public boolean runIntake() {
 		return manipulatorController.getLeftTriggerAxis() > 0.05;
+	}
+
+	/***
+	 * Holding the A button will run the intake motors
+	 * @return Manipulator controller A button held down
+	 */
+	public boolean overrideIntake() {
+		return manipulatorController.getYButtonPressed();
 	}
 
 	/***
@@ -356,7 +365,8 @@ public class Controls {
 	}
 
 	public boolean toggleLimelightLED() {
-		return manipulatorController.getBackButtonPressed();
+		//return manipulatorController.getBackButtonPressed();
+		return driveController.getYButtonPressed();
 	}
 
 

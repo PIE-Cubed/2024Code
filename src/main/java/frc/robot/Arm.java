@@ -8,6 +8,7 @@ import com.revrobotics.SparkAbsoluteEncoder.Type;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
+import edu.wpi.first.wpilibj.DigitalInput;
 
 import com.revrobotics.CANSparkMax;
 
@@ -15,38 +16,46 @@ public class Arm {
     private final int EXTENDER_MOTOR_CAN = 49; // 3
     private final int ELEVATION_MOTOR_CAN = 23;
     private final int MOTOR_CURRENT_LIMIT = 40;
-    private final int EXTENDER_POTENTIOMETER_ID = 0;
-
+    private final int INTAKE1_BUTTON_ID = 2;
+    private final int INTAKE2_BUTTON_ID = 3;
+    private final int REST_BUTTON_ID = 4;
+    
     private final double LOWER_EXTENSION_LIMIT_MM = 58;
     private final double UPPER_EXTENSION_LIMIT_MM = 155;
     private final double LOWER_ELEVATION_LIMIT = 0;
     private final double UPPER_ELEVATION_LIMIT = Math.PI;
-
+    
     private final double EXTENSION_TOLERANCE_MM = 10;    // TODO Test and tune
     private final double ELEVATION_TOLERANCE_DEGREES = 2;
-
+    
     private final double ELEVATION_ENCODER_FACTOR = 360;
-    private final double EXTENDER_POTENTIOMETER_ZERO = -3;     // ~3mm offset to zero
-    private final double EXTENDER_POTENTIOMETER_RANGE = 1000;  // Max value, in mm
-
+    
     private final double ARM_ELEVATION_PID_P = 0.04;
     private final double ARM_ELEVATION_PID_I = ARM_ELEVATION_PID_P / 1.5;
-
+        
     public final double ARM_REST_POSITION_DEGREES = 329;
-    public final double ARM_AMP_POSITION_DEGREES = 33;
-    public final double ARM_POT_REST_POSITION = 58;
-    public final double ARM_POT_INTAKE_POSITION = 135;
+    public final double ARM_AMP_POSITION_DEGREES = 25.65;
 
     private CANSparkMax extenderMotor;
     private CANSparkMax elevationMotor;
     
     private AbsoluteEncoder elevationEncoder;
-    private AnalogPotentiometer extenderPot;
     
     private PIDController extenderMotorPidController;
     private PIDController elevationMotorPidController;
-
+    
+    private DigitalInput restStopButton;
+    private DigitalInput intake1StopButton;
+    private DigitalInput intake2StopButton;
+    
     private int rotateTargetCount = 0;
+    
+    private AnalogPotentiometer extenderPot;
+    private final int EXTENDER_POTENTIOMETER_ID = 0;
+    private final double EXTENDER_POTENTIOMETER_ZERO = -3;     // ~3mm offset to zero
+    private final double EXTENDER_POTENTIOMETER_RANGE = 1000;  // Max value, in mm
+    //public final double ARM_POT_REST_POSITION = 58;
+    //public final double ARM_POT_INTAKE_POSITION = 135;
 
     // Action variables
     private boolean extensionFirstTime;
@@ -58,6 +67,9 @@ public class Arm {
 
     private double startPosition;
     private double targetDistance;
+
+    private double rotateStatus = Robot.CONT;
+    private double extendStatus = Robot.CONT;
 
     public Arm() {        
         //System.out.println("[INFO] >> Initializing arm motors...");
@@ -82,6 +94,11 @@ public class Arm {
             EXTENDER_POTENTIOMETER_RANGE, 
             EXTENDER_POTENTIOMETER_ZERO
         );
+
+        // Extender Retraction Button
+        restStopButton = new DigitalInput(REST_BUTTON_ID);
+        intake1StopButton = new DigitalInput(INTAKE1_BUTTON_ID);
+        intake2StopButton = new DigitalInput(INTAKE2_BUTTON_ID);
 
         // Elevation Absolute
         elevationEncoder = elevationMotor.getAbsoluteEncoder(Type.kDutyCycle);
@@ -211,12 +228,42 @@ public class Arm {
         return Robot.CONT;
     }
 
+    /**
+     * Sets motor power to 0.4 until the button is activated
+     * @return CONT, if the button isn't activated
+     * <p>     DONE, if the button is activated
+     */
     public int extendToRest() {
-        return extendArmToPosition(ARM_POT_REST_POSITION, 0.4);
+        if(restStopButton.get()){
+            extenderMotor.set(0.4);
+            
+            return Robot.CONT;
+        }
+        else {
+            extenderMotor.set(0);
+            return Robot.DONE;
+        }
+
+        //return extendArmToPosition(ARM_POT_REST_POSITION, 0.4);
     }
 
+    /**
+     * Sets motor power to -0.4
+     * @return CONT
+     * <p>     DONE
+     */
     public int extendToIntake() {
-        return extendArmToPosition(ARM_POT_INTAKE_POSITION, 0.4);
+        if(intake1StopButton.get() || intake2StopButton.get()){
+            extenderMotor.set(-0.4);
+            
+            return Robot.CONT;
+        }
+        else {
+            extenderMotor.set(0);
+            
+            return Robot.DONE;
+        }
+        //return extendArmToPosition(ARM_POT_INTAKE_POSITION, 0.4);
     }
 
     /**
@@ -237,6 +284,37 @@ public class Arm {
         /* Negative power moves the arm upward;
             The PID value will be positive to increase the angle */
         double power = -elevationMotorPidController.calculate(elevationEncoder.getPosition(), degrees);
+        //SmartDashboard.putNumber("Arm power", power);
+        elevationMotor.set(MathUtil.clamp(power, -0.3, 0.3)); // Clamp
+                
+        if(elevationMotorPidController.atSetpoint()) {
+            rotateTargetCount++;
+
+            if (rotateTargetCount >= 5) {
+                elevationFirstTime = true;
+                //elevationMotor.set(0.1);
+                return Robot.DONE;
+            }
+        }
+        else{
+            rotateTargetCount = 0;
+        }
+
+        return Robot.CONT;
+    }
+
+    public int rotateToRest(double powerMultiplier) {
+        if(elevationFirstTime) {
+            elevationFirstTime = false;
+            elevationMotorPidController.setSetpoint(ARM_REST_POSITION_DEGREES);
+            rotateTargetCount = 0;
+        }
+
+        //System.out.println("From: " + elevationEncoder.getPosition() + " To: " + degrees);
+        /* Negative power moves the arm upward;
+            The PID value will be positive to increase the angle */
+        double power = -elevationMotorPidController.calculate(elevationEncoder.getPosition(), ARM_REST_POSITION_DEGREES);
+        power *= powerMultiplier;
         //SmartDashboard.putNumber("Arm power", power);
         elevationMotor.set(MathUtil.clamp(power, -0.3, 0.3)); // Clamp
                 
@@ -365,5 +443,26 @@ public class Arm {
     /// Move the arm to its starting/balancing position (54 degrees)
     public int testStartingPosition() {
         return rotateArm(54);
+    }
+
+    /// Returns the status of intake button 2
+    public boolean getIntakeButton1() {
+        return !intake1StopButton.get();
+    }
+
+    /// Returns the status of intake button 2
+    public boolean getIntakeButton2() {
+        return !intake2StopButton.get();
+    }
+
+    /// Returns the status of the intake buttons
+    /// Returns whether either are pressed
+    public boolean getIntakeButtons() {
+        return !intake1StopButton.get() || !intake2StopButton.get();
+    }
+    
+    /// Returns the status of the intake button
+    public boolean getRestButton() {
+        return !restStopButton.get();
     }
 }

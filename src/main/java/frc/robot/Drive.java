@@ -87,7 +87,7 @@ public class Drive {
     private final double ROTATE_TOLERANCE_RADIANS = 0.05;
     private final double ROTATE_ADJUST_TOLERANCE_RADIANS = 0.01745329;   // ~1 degree
     private final double ROTATE_TOLERANCE_DEGREES = 3;
-    private final double APRILTAG_TOLERANCE_DEGREES = 2;
+    private final double APRILTAG_TOLERANCE_DEGREES = 3.5;
 
     // Apriltags
     AprilTags apriltags;
@@ -777,6 +777,8 @@ public class Drive {
             // Get the horizontal offset of the AprilTag to the crosshair
             double targetOffset = apriltags.getHorizontalOffset();
             double rotateVelocity = -1 * aprilTagRotatePidController.calculate(targetOffset, 0);    // Drive to zero
+
+            //System.out.println("Offset: " + targetOffset + " | Power: " + rotateVelocity);
 
             // Increment setpointCounter if the robot is at the setpoint
             if(aprilTagRotatePidController.atSetpoint()){

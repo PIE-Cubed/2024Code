@@ -25,7 +25,7 @@ public class Grabber {
     public final double AUTO_INTAKE_POWER = 0.6;
     public final double OUTTAKE_POWER = -0.75;
     public final double FEED_POWER = 0.9;  
-    public final double PROXIMITY_THRESHOLD = 65;    //95
+    public final double PROXIMITY_THRESHOLD = 72;    //95
     public final double IR_THRESHOLD = 150;
     
     private CANSparkMax grabberMotor1;

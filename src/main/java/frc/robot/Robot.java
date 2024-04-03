@@ -52,6 +52,7 @@ public class Robot extends TimedRobot {
   private int grabberStatus     = CONT;
   private int moveStatus        = CONT;
   private int armStatus         = CONT;
+  private int armRotateStatus   = CONT;
   private int restingStatus     = CONT;
   
   // Statuses for AprilTag targeting
@@ -123,6 +124,7 @@ public class Robot extends TimedRobot {
     // run the robot.
     grabberStatus = Robot.CONT;
     armStatus = Robot.CONT;
+    armRotateStatus = Robot.CONT;
     status = Robot.CONT;
 
     shooterSpinning = false;
@@ -170,6 +172,7 @@ public class Robot extends TimedRobot {
     // run the robot.
     grabberStatus = Robot.CONT;
     armStatus = Robot.CONT;
+    armRotateStatus = Robot.CONT;
     status = Robot.CONT;
 
     System.out.println("[INFO] >> Auto program selected: " + m_autoSelected);    
@@ -215,6 +218,7 @@ public class Robot extends TimedRobot {
     // run the robot.
     grabberStatus = Robot.CONT;
     armStatus = Robot.CONT;
+    armRotateStatus = Robot.CONT;
     status = Robot.CONT;
 
     shooterSpinning = false;
@@ -270,6 +274,7 @@ public class Robot extends TimedRobot {
     // run the robot.
     grabberStatus = Robot.CONT;
     armStatus = Robot.CONT;
+    armRotateStatus = Robot.CONT;
     status = Robot.CONT;
 
     //driveDistance = false;
@@ -289,8 +294,6 @@ public class Robot extends TimedRobot {
     //apriltags.setSpeakerPipeline();
     //System.out.println(apriltags.calculateArmAngleToShoot());
 
-    //drive.setAllRotateMotorPower(power);    
-
     //apriltags.setSpeakerPipeline();
     //if(drive.alignWithAprilTag() == DONE) {
     //  System.out.println("Finished in: " + (System.currentTimeMillis() - startTime) + "ms | " + iterCount + " iterations");
@@ -308,9 +311,7 @@ public class Robot extends TimedRobot {
     System.out.println(arm.getExtendPosition());*/
 
     //System.out.println(drive.getFLRot());
-
     //System.out.println(Math.toDegrees(drive.getBRAngle()));
-
     //testTeleopDrive();
   
     // Test shooter
@@ -319,11 +320,10 @@ public class Robot extends TimedRobot {
     // Test grabber
     // Does not automatically stop the grabber or check for a note
     //grabber.setMotorPower(1);
-
     // Automatically stops the grabber when a note is detected
-    /*if (grabberStatus == Robot.CONT) {
-      grabberStatus = grabber.intakeOutake(true, false);
-    }*/
+    //if (grabberStatus == Robot.CONT) {
+    //  grabberStatus = grabber.intakeOutake(true, false);
+    //}
 
     // Retrieve RGB, IR, and proximity values from the color sensor
     //grabber.testColorSensor();
@@ -344,14 +344,20 @@ public class Robot extends TimedRobot {
       shooter.spindown();
       grabber.setMotorPower(0);
     }*/
-
-    System.out.println(apriltags.getDistanceToSpeakerFeet());
+    //System.out.println(apriltags.getDistanceToSpeakerFeet());
+    
 
     // Test the auto selection
     //System.out.println("Selected auto: " + m_chooser.getSelected());
 
     // Test LEDs
     //ledControl();
+
+    System.out.println("Arm Angle: " + arm.getElevationPosition());
+
+    //arm.extendToRest();
+    //arm.rotateToRest(1.25);
+    //System.out.println("At Rest Pos: " + arm.getRestButton() + " | " + arm.getElevationPosition());
 
     // Move the arm to a certain degree
     /*if (armStatus == Robot.CONT) {
@@ -378,13 +384,27 @@ public class Robot extends TimedRobot {
       status = drive.driveDistanceWithAngle(0, -2, 0.3);
     }*/
 
+    //if(controls.toggleLimelightLED()) {
+    //  on = !on;
+    //}
+    //apriltags.setLED(on);
+
     // Get the arm extension position
     //System.out.println("Arm position: " + arm.getElevationPosition());
-    System.out.println("Arm extension position: " + arm.getExtendPosition());
+    //System.out.println("Arm extension position: " + arm.getExtendPosition());
+    //System.out.println(
+    //                   "Intake Button 1 State: " + arm.getIntakeButton1() +
+    //                   " | Intake Button 2 State: " + arm.getIntakeButton2() +
+    //                   " | Rest Button State: " + arm.getRestButton()
+    //);
+
+    System.out.println("Proximity: " + grabber.getProximity());
 
     // Get drive controller values
     //System.out.println("Forward speed: " + controls.getForwardSpeed() + " Strafe speed: " + controls.getStrafeSpeed() + " Rotate speed: " + controls.getRotateSpeed());
   }
+
+  boolean on = false;
 
   /** This function is called once when the robot is first started up. */
   @Override
@@ -552,7 +572,9 @@ public class Robot extends TimedRobot {
       }
       else if (armState == ArmState.REST)
       {
-          armStatus = arm.extendToRest();
+          //armRotateStatus = arm.rotateArm(arm.ARM_REST_POSITION_DEGREES);
+          //armStatus = arm.extendToRest();
+          armStatus = auto.restingPosition();
 
           if (armStatus == Robot.DONE) {
               armState = ArmState.TELEOP;
@@ -560,7 +582,8 @@ public class Robot extends TimedRobot {
       }
       else if (armState == ArmState.INTAKE)
       {
-          armStatus = arm.extendToIntake();
+          armStatus = auto.intakePosition();
+          //armStatus = arm.extendToIntake();
 
           if (armStatus == Robot.DONE) {
               armState = ArmState.TELEOP;
@@ -627,7 +650,12 @@ public class Robot extends TimedRobot {
     // Start the grabber in ground mode 
     if ((shooterState     == false) && 
         (autoShooterState == false))  {
-      grabber.intakeOutake(controls.runIntake(), controls.ejectNote(), false);
+      if(controls.overrideIntake()) {
+        grabber.setMotorPower(grabber.INTAKE_POWER);      
+      }
+      else {
+        grabber.intakeOutake(controls.runIntake(), controls.ejectNote(), false);  
+      }
     }
     
     /*else if (controls.runIntake()){

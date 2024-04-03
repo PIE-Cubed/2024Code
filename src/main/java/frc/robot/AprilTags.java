@@ -11,10 +11,10 @@ public class AprilTags {
     private boolean isRed = false;
 
     private final double MAX_DISTANCE_FT = 6;   // Maximum distance to speaker until its too unreliable to shoot
-    private final double CUBED_CONST = 0.00000325;
-    private final double SQUARED_CONST = 0.00317;
-    private final double SINGLE_CONST = 1.09;
-    private final double OFFSET = 228;
+    private final double CUBED_CONST = 0.0331;      // Old: 0.00000325 w cm
+    private final double SQUARED_CONST = 1.2643;    // Old: 0.00317 w cm
+    private final double SINGLE_CONST = 17.396;       // Old: 1.09 w cm
+    private final double OFFSET = 277.39;              // Old: 228 w cm
 
     public AprilTags(boolean isRed) {
         //System.out.println("[INFO] >> Configuring limelight...");
@@ -34,9 +34,9 @@ public class AprilTags {
      */
     public double calculateArmAngleToShoot() {
         //double distance = getDistanceToSpeakerFeet() * 30.48;
-        //double angle = (CUBED_CONST * Math.pow(distance, 3)) - (SQUARED_CONST * Math.pow(distance, 2)) + (SINGLE_CONST * distance) + OFFSET;
         double distance = getDistanceToSpeakerFeet();
-        double angle = (0.0331 * Math.pow(distance, 3)) - (1.2643 * Math.pow(distance, 2)) + (17.396 * distance) + 277.39;
+        double angle = (-0.0139 * Math.pow(distance, 3)) + (0.1651 * Math.pow(distance, 2)) + (3.8277 * distance) + 315.39;
+        //double angle = (CUBED_CONST * Math.pow(distance, 3)) - (SQUARED_CONST * Math.pow(distance, 2)) + (SINGLE_CONST * distance) + OFFSET;
 
         if(angle >= 360) {
             angle -= 360;
