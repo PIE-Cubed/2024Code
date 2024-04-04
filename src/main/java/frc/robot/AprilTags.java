@@ -34,10 +34,10 @@ public class AprilTags {
      */
     public double calculateArmAngleToShoot() {
         //double distance = getDistanceToSpeakerFeet() * 30.48;
+        //double angle = (CUBED_CONST * Math.pow(distance, 3)) - (SQUARED_CONST * Math.pow(distance, 2)) + (SINGLE_CONST * distance) + OFFSET;
         double distance = getDistanceToSpeakerFeet();
         double angle = (-0.0139 * Math.pow(distance, 3)) + (0.1651 * Math.pow(distance, 2)) + (3.8277 * distance) + 315.39;
-        //double angle = (CUBED_CONST * Math.pow(distance, 3)) - (SQUARED_CONST * Math.pow(distance, 2)) + (SINGLE_CONST * distance) + OFFSET;
-
+        
         if(angle >= 360) {
             angle -= 360;
         }

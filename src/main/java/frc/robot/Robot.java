@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.math.controller.struct.ArmFeedforwardStruct;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -47,9 +48,11 @@ public class Robot extends TimedRobot {
 	private SendableChooser<String> m_chooser = new SendableChooser<>();
 	private String m_autoSelected;
   
-  // Statuses for each "module" 
+  // Statuses for each "module"   
+  private int armIntakeStatus   = CONT;
   private int shooterStatus     = CONT;
   private int grabberStatus     = CONT;
+  private int armRestStatus     = CONT;
   private int moveStatus        = CONT;
   private int armStatus         = CONT;
   private int armRotateStatus   = CONT;
@@ -489,6 +492,7 @@ public class Robot extends TimedRobot {
       led.partyColor();           // Sets the color to rainbow
     } else if(hasNote) {        // If the grabber has a note, second priority
       led.capturedNoteColor();    // Sets the color to green
+      //drive.rumbleController();
     } else if(runningIntake) {  // If the grabber is running(no note), third priority
       led.gettingNoteColor();     // Sets the color to orange
     } else {                    // Default state
@@ -504,6 +508,8 @@ public class Robot extends TimedRobot {
 	 */
   private void armControl()
   {
+      System.out.println(armState);
+
       if (armState == ArmState.TELEOP)
       {
           // Move the arm up/down incrementally
@@ -574,19 +580,25 @@ public class Robot extends TimedRobot {
       {
           //armRotateStatus = arm.rotateArm(arm.ARM_REST_POSITION_DEGREES);
           //armStatus = arm.extendToRest();
-          armStatus = auto.restingPosition();
+          armStatus = auto.restingPosition();          
+          armRestStatus = auto.autoDelayMS(1500);
 
-          if (armStatus == Robot.DONE) {
+          if (armStatus == Robot.DONE || armRestStatus == Robot.DONE) {
               armState = ArmState.TELEOP;
+              armRestStatus = Robot.CONT;
+              armIntakeStatus = Robot.CONT;
           }
       }
       else if (armState == ArmState.INTAKE)
       {
           armStatus = auto.intakePosition();
           //armStatus = arm.extendToIntake();
+          armIntakeStatus = auto.autoDelayMS(1500);
 
-          if (armStatus == Robot.DONE) {
+          if (armStatus == Robot.DONE || armIntakeStatus == Robot.DONE) {
               armState = ArmState.TELEOP;
+              armRestStatus = Robot.CONT;
+              armIntakeStatus = Robot.CONT;
           }
       }
       else if (armState == ArmState.SHOOT)
