@@ -21,7 +21,7 @@ import com.revrobotics.CANSparkFlex;
     private final int SHOOTER_MOTOR_2_CAN = 22;
     private final int MOTOR_CURRENT_LIMIT = 40;
     private final double DUMP_SHOT_POWER  = 0.25;
-    private final double SHOT_POWER  = 1; 
+    private final double SHOT_POWER  = 0.25;   // Competition speed: 1, Demo speed: 0.25
     private CANSparkFlex shooterMotor1;
     private CANSparkFlex shooterMotor2;
     private Grabber instancedGrabber;
