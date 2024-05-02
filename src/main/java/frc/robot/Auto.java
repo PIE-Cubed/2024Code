@@ -991,6 +991,59 @@ public class Auto {
      * <p> First rotates, then retracts the arm
      * @return Robot status, CONT or DONE
      */
+    public int teleopShootCrabDrive(boolean shooterEnable) {
+        //int intakeStatus = Robot.CONT;
+        //int driveStatus = Robot.CONT;
+        int status = Robot.CONT;
+
+        if(teleopShootFirstTime == true) {
+            teleopShootFirstTime = false;
+            step = 1;
+        }
+
+        switch(step) {            
+            // Start the shooter motors and rotate the arm to -23 (336) degrees from 54
+            case 1:
+                shooter.spinup();
+                //status = autoDelayMS(500);
+                status = Robot.DONE;
+                break;
+            
+            // Start the grabber and keep the arm in shooting position
+            case 2:
+                grabber.setMotorPower(grabber.INTAKE_POWER);
+                
+                if(shooterEnable) {
+                    status = Robot.CONT;
+                }
+                else {
+                    status = Robot.DONE;
+                }
+                break;
+            
+            default:
+                teleopShootFirstTime = true;
+                grabber.intakeOutake(false, false, false);
+                arm.disableRotation();
+                step = 1;
+                return Robot.DONE;
+        }
+
+        // Done current step, goto next one
+        if(status == Robot.DONE) {
+            step++;
+        }
+
+        return Robot.CONT;
+    }
+
+    /**
+     * <p> Moves the arm so the shooter is aiming at the speaker
+     * <p> -27 degrees from horizontal
+     * <p> Fully retracts arm
+     * <p> First rotates, then retracts the arm
+     * @return Robot status, CONT or DONE
+     */
     public int apriltagShoot(boolean shooterEnable) {
         int status = Robot.CONT;
 
@@ -1162,6 +1215,22 @@ public class Auto {
         }
 
         return Robot.CONT;
+    }
+
+    public int extendArmWithTimer() {
+        int extendStatus = arm.extendToRest();
+        int stopStatusTimer = autoDelayMS(1500);
+
+        if (stopStatusTimer == Robot.DONE || extendStatus == Robot.DONE) {
+            arm.testExtend(0);
+
+            // Allows autoDelayMS to restart if it never finishes
+            delayFirstTime = true;
+            return Robot.DONE;
+        }
+        else{
+            return Robot.CONT;
+        }
     }
 
 

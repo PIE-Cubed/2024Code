@@ -235,7 +235,7 @@ public class Arm {
      */
     public int extendToRest() {
         if(restStopButton.get()){
-            extenderMotor.set(-0.4);
+            extenderMotor.set(0.4);
             
             return Robot.CONT;
         }
@@ -254,7 +254,7 @@ public class Arm {
      */
     public int extendToIntake() {
         if(intake1StopButton.get() || intake2StopButton.get()){
-            extenderMotor.set(0.4);
+            extenderMotor.set(-0.4);
             
             return Robot.CONT;
         }

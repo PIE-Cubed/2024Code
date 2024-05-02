@@ -76,7 +76,7 @@ public class Grabber {
      * @param power
      */
     public void setMotorPower(double power) {
-        grabberMotor1.set(MathUtil.clamp(power, -1, 1));
+        grabberMotor1.set(MathUtil.clamp(-1 * power, -1, 1));
         grabberMotor2.set(MathUtil.clamp(power, -1, 1));
     }
 

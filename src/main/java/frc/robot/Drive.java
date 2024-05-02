@@ -802,6 +802,30 @@ public class Drive {
         return Robot.FAIL;  // No AprilTag in sight, fail
     }
 
+    /**
+     * <p> Sort of wrapper function which uses an AprilTag as a target angle
+     * <p> If the pipeline is out of range, it returns Robot.FAIL
+     * @return Robot status
+     */
+    public int maintainShootingWithCrabDrive(double forwardSpeed, double strafeSpeed) {        
+        // Only run if there is a valid Apriltag
+        if (apriltags.validApriltagInView()) {
+            // Get the horizontal offset of the AprilTag to the crosshair
+            double targetOffset = apriltags.getHorizontalOffset();
+            double rotateVelocity = -1 * aprilTagRotatePidController.calculate(targetOffset, 0);    // Drive to zero
+
+            //System.out.println("Offset: " + targetOffset + " | Power: " + rotateVelocity);
+            
+            // Get rotate velocity and rotate with teleopDrive()
+            teleopDrive(forwardSpeed, strafeSpeed, MathUtil.clamp(rotateVelocity, -1.0, 1.0), false);
+
+            return Robot.CONT;
+        }
+        else {
+            return Robot.FAIL;  // No AprilTag in sight, fail
+        }
+    }
+
     /******************************************************************************************
     *
     *    SETTING FUNCTIONS

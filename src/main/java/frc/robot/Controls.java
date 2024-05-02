@@ -184,11 +184,11 @@ public class Controls {
 	// Stage Functions
 
 	/***
-	 * Pressing the X button will toggle trap sequence
+	 * Pressing the X button will align the robot with the april tag while still allowing the driver to drive (crab drive)
 	 * @return Drive controller X button pressed
 	 */
-	public boolean toggleTrapSequence() {
-		return driveController.getXButtonPressed();
+	public boolean alignWithAprilTagAndDrive() {
+		return driveController.getXButton();
 	}
 
 	/***
@@ -254,7 +254,7 @@ public class Controls {
 	 * @return Manipulator controller A button held down
 	 */
 	public boolean overrideIntake() {
-		return manipulatorController.getYButtonPressed();
+		return manipulatorController.getYButton();
 	}
 
 	/***

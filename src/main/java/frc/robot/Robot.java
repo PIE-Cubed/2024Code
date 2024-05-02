@@ -69,11 +69,11 @@ public class Robot extends TimedRobot {
   private int iterCount = 0;
 
   /* arm states */
-  enum ArmState {TELEOP, CLIMB, AMP, REST, INTAKE, SHOOT};
+  enum ArmState { TELEOP, CLIMB, AMP, REST, INTAKE, SHOOT, CRAB_SHOOT };
   private ArmState armState = ArmState.TELEOP;
 
   /* TeleOp States */
-  enum TeleopState { TELEOP, TARGET };
+  enum TeleopState { TELEOP, TARGET, CRAB_SHOOT };
   private TeleopState teleopState = TeleopState.TELEOP;
 
 	/**
@@ -422,9 +422,10 @@ public class Robot extends TimedRobot {
 	 */
 	private void wheelControl() {
 		// Gets the Drive Values
-		double  rotateSpeed       = controls.getRotateSpeed();
-		double  strafeSpeed       = controls.getStrafeSpeed();
-		double  forwardSpeed      = controls.getForwardSpeed();
+		double  rotateSpeed        = controls.getRotateSpeed();
+		double  strafeSpeed        = controls.getStrafeSpeed();
+		double  forwardSpeed       = controls.getForwardSpeed();
+    boolean driveWhileAligning = controls.alignWithAprilTagAndDrive();
     
 		// Gets Manipulator values
 		boolean zeroYaw           = controls.zeroYaw();
@@ -437,17 +438,26 @@ public class Robot extends TimedRobot {
 		}
 
     // Targets the speaker
-    if(targetSpeaker) {
+    /*if(targetSpeaker) {
       teleopState = TeleopState.TARGET;
       apriltags.setSpeakerPipeline();   // Set the pipeline depending on alliance color(0,ID4,Red, 1,ID7,Blue)
-    }
+    }*/
     
     if(teleopState == TeleopState.TELEOP) {
       drive.teleopDrive(forwardSpeed, strafeSpeed, rotateSpeed, fieldDrive);
 
-      teleopState = TeleopState.TELEOP;
+      if (targetSpeaker == true) {
+        teleopState = TeleopState.TARGET;
+      }
+      else if (driveWhileAligning == true) {
+        teleopState = TeleopState.CRAB_SHOOT;
+      }
+      else {
+        teleopState = TeleopState.TELEOP;
+      }
     }
     else if(teleopState == TeleopState.TARGET) {
+      apriltags.setSpeakerPipeline();   // Set the pipeline depending on alliance color(0,ID4,Red, 1,ID7,Blue)
       int targetStatus = auto.targetSpeaker();
       
       if(targetStatus == DONE) {      // Done rotating, drive forward
@@ -458,6 +468,16 @@ public class Robot extends TimedRobot {
       }
       else if(targetStatus == FAIL) { // Can't find AprilTag
         teleopState = TeleopState.TELEOP;
+      }
+    }
+    else if (teleopState == TeleopState.CRAB_SHOOT) {
+      drive.maintainShootingWithCrabDrive(forwardSpeed, strafeSpeed);
+
+      if (driveWhileAligning == false) {
+        teleopState = TeleopState.TELEOP;
+      }
+      else {
+        teleopState = TeleopState.CRAB_SHOOT;
       }
     }
 
@@ -508,8 +528,6 @@ public class Robot extends TimedRobot {
 	 */
   private void armControl()
   {
-      System.out.println(armState);
-
       if (armState == ArmState.TELEOP)
       {
           // Move the arm up/down incrementally
@@ -550,6 +568,9 @@ public class Robot extends TimedRobot {
           }
           else if (controls.enableShooter())  {
               armState = ArmState.SHOOT;
+          }
+          else if (controls.alignWithAprilTagAndDrive()) {
+            armState = ArmState.CRAB_SHOOT;
           }
 
       }
@@ -592,7 +613,6 @@ public class Robot extends TimedRobot {
       else if (armState == ArmState.INTAKE)
       {
           armStatus = auto.intakePosition();
-          //armStatus = arm.extendToIntake();
           armIntakeStatus = auto.autoDelayMS(1500);
 
           if (armStatus == Robot.DONE || armIntakeStatus == Robot.DONE) {
@@ -611,19 +631,39 @@ public class Robot extends TimedRobot {
             armState = ArmState.SHOOT;
           }
       }
+      else if (armState == ArmState.CRAB_SHOOT)
+      {
+          //armRotateStatus = arm.rotateArm(arm.ARM_REST_POSITION_DEGREES);
+          //armStatus = arm.extendToRest();
+          arm.maintainPosition(apriltags.calculateArmAngleToShoot());  
+          //armStatus = auto.extendArmWithTimer(); 
+
+          // Determine next state
+          if (controls.alignWithAprilTagAndDrive() == false) {
+            armState = ArmState.TELEOP;
+            armRestStatus = Robot.CONT;
+          } 
+          else {
+            armState = ArmState.CRAB_SHOOT;
+          }
+      }
   }
 
   /**
 	 * Controls the shooter in TeleOp
 	 */
 	private void shooterControl() {
-    boolean enableShooter = controls.enableShooter();
-    boolean enableAutoShooter = controls.enableAutoShoot();
+    boolean enableShooter = controls.enableShooter();          // Manipulator right trigger
+    boolean enableAutoShooter = controls.enableAutoShoot();    // Manipulator right bumper
+    //boolean crabShoot = controls.alignWithAprilTagAndDrive();  // Drive X button
 
     // Shoot a note
     if (enableShooter == true) {
       shooterState = true;
+
+      //if (!crabShoot) {
       auto.teleopShoot(enableShooter);
+      //}
     }
     
     if(enableAutoShooter == true && enableShooter == false) {
@@ -661,13 +701,13 @@ public class Robot extends TimedRobot {
 	private void grabberControl() {
     // Start the grabber in ground mode 
     if ((shooterState     == false) && 
-        (autoShooterState == false))  {
-      if(controls.overrideIntake()) {
-        grabber.setMotorPower(grabber.INTAKE_POWER);      
-      }
-      else {
+        (autoShooterState == false) &&
+        controls.overrideIntake() == false)  {
         grabber.intakeOutake(controls.runIntake(), controls.ejectNote(), false);  
-      }
+    }
+
+    if(controls.overrideIntake()) {
+      grabber.setMotorPower(grabber.INTAKE_POWER);      
     }
     
     /*else if (controls.runIntake()){
