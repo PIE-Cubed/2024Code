@@ -281,7 +281,10 @@ public class Controls {
 	public boolean enableShooter() {
 		return manipulatorController.getRightTriggerAxis() > 0.05;
 	}
-
+	//dump shot
+	/*public boolean doDumpShots() {
+		return manipulatorController.getBackButtonPressed();
+	} */
 	/***
 	 * Pressing the Start button will start the shooting processs
 	 * @return Manipulator controller Start button pressed
@@ -289,7 +292,7 @@ public class Controls {
 	public boolean startShooterWheels() {
 		return manipulatorController.getStartButtonPressed();
 	}
-
+	
 	/***
 	 * Pressing the Back button will stop the shooter wheels
 	 * @return Manipulator controller Stop button pressed

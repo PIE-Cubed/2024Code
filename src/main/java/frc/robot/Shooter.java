@@ -20,8 +20,8 @@ import com.revrobotics.CANSparkFlex;
     private final int SHOOTER_MOTOR_1_CAN = 21;
     private final int SHOOTER_MOTOR_2_CAN = 22;
     private final int MOTOR_CURRENT_LIMIT = 40;
-    private final double DUMP_SHOT_POWER  = 0.25;
-    private final double SHOT_POWER  = 0.25;   // Competition speed: 1, Demo speed: 0.25
+    private final double DUMP_SHOT_POWER  = 0.1;
+    private final double SHOT_POWER  = .5;   // Competition speed: 1, Demo speed: 0.35
     private CANSparkFlex shooterMotor1;
     private CANSparkFlex shooterMotor2;
     private Grabber instancedGrabber;
@@ -42,13 +42,6 @@ import com.revrobotics.CANSparkFlex;
 
         // Spin the motors
         //spinup();
-    }
-
-    /**
-     * Shoots the note at low power
-     */
-    public void doDumpShot() {
-        startShooting(DUMP_SHOT_POWER);
     }
 
     /**
